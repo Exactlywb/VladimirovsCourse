@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/ufa/Desktop/VladimirovsCourse/cache_frolov/main.cpp
+iostream
+-
+iterator
+-
+list
+-
+unordered_map
+-
+

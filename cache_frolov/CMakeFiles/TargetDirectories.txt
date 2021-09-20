@@ -1,0 +1,3 @@
+/home/ufa/Desktop/VladimirovsCourse/cache_frolov/CMakeFiles/rebuild_cache.dir
+/home/ufa/Desktop/VladimirovsCourse/cache_frolov/CMakeFiles/edit_cache.dir
+/home/ufa/Desktop/VladimirovsCourse/cache_frolov/CMakeFiles/main.dir
