@@ -79,7 +79,6 @@ struct Cache {
                 auto outFirstElem = out.mainList.begin ();
                 out.mainList.splice (outFirstElem, in.mainList, inLastElem);
 
-                auto inLastElemHash = hashTable.find (inLastElem->first);
                 hashTable.erase (inLastElem->first);
 
                 hashTable.insert ({inLastElem->first, out.mainList.begin ()});
