@@ -18,11 +18,8 @@ struct ListWrapper {
     
     std::list<std::pair<elemType, listType>> mainList;
 
-    ListWrapper (size_t maxSizeVal):
+    ListWrapper (size_t maxSizeVal = 0):
                 maxSize (maxSizeVal) {}
-    
-    ListWrapper ():
-                maxSize (0) {}
 
     int overFlow () const {
 
@@ -30,77 +27,62 @@ struct ListWrapper {
 
     }
 
-    ~ListWrapper () {
-
-        maxSize = 0;
-
-    }
-
 };
 
 template <typename elemType, typename keyType = int>
-struct Cache {
+class Cache {
 
     size_t cacheSize;
 
     typedef typename std::list<std::pair<elemType, listType>>::iterator ListIterator;
+    typedef typename std::unordered_map<keyType, ListIterator>::iterator HashIterator;
     std::unordered_map<keyType, ListIterator> hashTable;
 
-    ListWrapper<elemType> in;
-    ListWrapper<elemType> out;
-    ListWrapper<elemType> hot;
+    const double outSizeCoef    = 0.6;
+    const double hotSizeCoef    = 0.2;
+    const double inSizeCoef     = 0.2;
 
-    Cache (size_t size):
-            in (size - 4 * (size / 5)),
-            out (3 * (size / 5)),
-            hot (size / 5)
-    {}
+    ListWrapper<elemType> in    {(size_t)(cacheSize * inSizeCoef)};
+    ListWrapper<elemType> out   {(size_t)(cacheSize * outSizeCoef)};
+    ListWrapper<elemType> hot   {(size_t)(cacheSize * hotSizeCoef)};
+    
+    int insert_new_key (keyType key) {
+    
+        in.mainList.push_front ({key, IN});
+        hashTable.insert ({key, in.mainList.begin ()});
 
-    ~Cache <elemType, keyType> () {
+        if (in.overFlow ()) {
 
-        cacheSize = 0;
+            auto inLastElem = (hashTable.find (in.mainList.back ().first))->second;
+            inLastElem->second = OUT;
 
-    }
+            auto outFirstElem = out.mainList.begin ();
+            out.mainList.splice (outFirstElem, in.mainList, inLastElem);
 
-    int lookup (keyType key) {
+            hashTable.erase (inLastElem->first);
 
-        auto hashPage = hashTable.find (key);
-        
-        if (hashPage == hashTable.end ()) {
-
-            in.mainList.push_front ({key, IN});
-            hashTable.insert ({key, in.mainList.begin ()});
-
-            if (in.overFlow ()) {
-
-                auto inLastElem = (hashTable.find (in.mainList.back ().first))->second;
-                inLastElem->second = OUT;
-
-                auto outFirstElem = out.mainList.begin ();
-                out.mainList.splice (outFirstElem, in.mainList, inLastElem);
-
-                hashTable.erase (inLastElem->first);
-
-                hashTable.insert ({inLastElem->first, out.mainList.begin ()});
+            hashTable.insert ({inLastElem->first, out.mainList.begin ()});
                 
-                if (out.overFlow ()) {
+            if (out.overFlow ()) {
 
-                    auto outLastElem        = out.mainList.back ();
+                auto outLastElem        = out.mainList.back ();
 
-                    auto outLastElemHash    = hashTable.find (outLastElem.first);
+                auto outLastElemHash    = hashTable.find (outLastElem.first);
 
-                    hashTable.erase (outLastElemHash);
+                hashTable.erase (outLastElemHash);
                     
-                    out.mainList.pop_back ();
-
-                }
+                out.mainList.pop_back ();
 
             }
 
-            return 0;
-
         }
 
+        return 0;
+    
+    }
+
+    int handle_existed_key (HashIterator hashPage) {
+    
         auto elemIt     = hashPage->second;
         auto listType   = elemIt->second;
 
@@ -130,6 +112,28 @@ struct Cache {
 
         return 1;
 
+    }
+
+public:
+    Cache (size_t size):
+        cacheSize (size)
+    {
+
+        // in  (inSizeCoef * size) ,
+        // out (outSizeCoef * size),
+        // hot (hotSizeCoef * size)
+
+    }
+
+    int lookup (keyType key) {
+
+        auto hashPage = hashTable.find (key);
+        
+        if (hashPage == hashTable.end ())
+            return insert_new_key (key);
+
+        return handle_existed_key (hashPage);    
+    
     }
 
 };
