@@ -54,7 +54,7 @@ int main () {
                             {"tests/test2.txt", 459},
                             {"tests/test3.txt", 23},
                             {"tests/test4.txt", 369},
-                            {"tests/test5.txt", 4980},
+                            {"tests/test5.txt", 2285},
                             {"tests/test6.txt", 10},
                             {"tests/test7.txt", 32},
                             {"tests/test8.txt", 7},
