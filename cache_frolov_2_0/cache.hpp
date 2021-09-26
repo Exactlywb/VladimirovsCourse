@@ -117,13 +117,7 @@ class Cache {
 public:
     Cache (size_t size):
         cacheSize (size)
-    {
-
-        // in  (inSizeCoef * size) ,
-        // out (outSizeCoef * size),
-        // hot (hotSizeCoef * size)
-
-    }
+    {}
 
     int lookup (keyType key) {
 
