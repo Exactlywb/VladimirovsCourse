@@ -81,6 +81,17 @@ namespace GObjects {
         
     }
 
+	template <typename pType = double>
+    Vector<pType> operator / (const Vector<pType>& v, pType divN) {
+
+        Vector<pType> newVector (v.getCoord (0) / divN,
+                                 v.getCoord (1) / divN,
+                                 v.getCoord (2) / divN);
+
+        return newVector;
+        
+    }
+
     template <typename pType = double>
     pType operator * (const Vector<pType>& firstV, const Vector<pType>& secondV) {
 

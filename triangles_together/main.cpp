@@ -1,18 +1,14 @@
-#include "include/vector.hpp"
+#include <iostream>
+#include "include/octotree.hpp"
 
-int main () {
+int main()
+{
+	int countTriangles;
+	std::cin >> countTriangles;
 
-    GObjects::Vector<double> myVector {1, 2, 1};
-    std::cout << myVector << std::endl;
+	Tree::Octotree <double> tree;
 
-    std::cin >> myVector;
-    
-    std::cout << myVector << std::endl;
-    std::cout << -myVector << std::endl;
-    std::cout << ((-myVector) ^ myVector) << std::endl;
-    std::cout << ((-myVector) * myVector) << std::endl;
-    std::cout << myVector.squareLength () << std::endl;
+	tree.fillTree(countTriangles);
 
-    return 0;
-
+	return 0;
 }

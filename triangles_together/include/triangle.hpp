@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TRIANGLE_H__
+#define TRIANGLE_H__
 
 #include <iostream>
 #include <new>
@@ -7,13 +8,14 @@
 #include <algorithm>
 #include <list>
 #include <cmath>
+#include "vector.hpp"
 
 namespace GObjects {
 
     //##############################################################################
     //                         PLANE-CLASS PART
     //##############################################################################
-    template <typename PType> class Plane {
+    template <typename pType> class Plane {
         Vector<pType> nVec_;
         pType d_;
 
@@ -54,7 +56,10 @@ namespace GObjects {
     private:
         Vector<pType> rVecs_[3]{};
 
-    public:       
+    public:
+		Triangle (): 
+			rVecs_ {} {}
+
         Triangle (const Vector<pType> &vec1, const Vector<pType> &vec2, const Vector<pType> &vec3) :
             rVecs_{vec1, vec2, vec3} {}
 
@@ -73,7 +78,7 @@ namespace GObjects {
         }   
         
         bool isTriangle () const {
-            if ((rVecs[2] - rVecs[0] ^ rVecs[1] - rVecs[0]) == Vector<pType> ({0, 0, 0}))
+            if (((rVecs_[2] - rVecs_[0]) ^ (rVecs_[1] - rVecs_[0])) == Vector<pType> ({0, 0, 0}))
                 return false;
             else    
                 return true;
@@ -93,9 +98,10 @@ namespace GObjects {
         }
 
     
-        bool isIntersected (objects::Triangle<pType> &tr) {
+        bool isIntersected (Triangle<pType> &tr) {
 
             //TODO: For the future
+			return false;
         }
     };
         //##############################################################################
@@ -118,8 +124,9 @@ namespace GObjects {
         }
         template <typename pType> 
         std::ostream &operator << (std::ostream &out, const Triangle<pType> &triangle) {
-            out << "{ " << right.get_vertex(0) << " ;\n " << right.get_vertex(1) << " ;\n " << right.get_vertex(2) << " }\n";
+            out << "{ " << triangle.getVec(0) << " ;\n " << triangle.getVec(1) << " ;\n " << triangle.getVec(2) << " }\n";
             return out;
         }
-    }
 }
+
+#endif

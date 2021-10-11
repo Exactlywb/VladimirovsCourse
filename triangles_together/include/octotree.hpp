@@ -1,4 +1,5 @@
-#pragma once
+#ifndef OCTOTREE_HPP__
+#define OCTOTREE_HPP__
 
 #include <iostream>
 #include <cmath>
@@ -37,7 +38,7 @@ namespace Tree {
 				GObjects::Vector<pType> tmp = tr.getVec(vertexNum);
 
 				for (int coordNum = 0; coordNum < 3; ++coordNum) {		// 1 is positive
-					pType mid = ((leftBorder + rightBorder) / 2).getCoord(coordNum);
+					pType mid = ((leftBorder + rightBorder) / 2.0).getCoord(coordNum);
 
 					if(tmp.getCoord(coordNum) > mid)
 						chapter[vertexNum] |= 1 << coordNum;
@@ -60,17 +61,17 @@ namespace Tree {
 			
 			GObjects::Vector<pType> right = curRoot.rightBorder_;
 			GObjects::Vector<pType> left = curRoot.leftBorder_;
-			GObjects::Vector<pType> mid = (right + left) / 2;
+			GObjects::Vector<pType> mid = (right + left) / 2.0;
 
-			for(size_t i = 0; i < 3; ++j)
+			for(size_t i = 0; i < 3; ++i)
 			{
 				if((chapter >> i) & 1) {
-					curRoot.child_[chapter]->leftBorder_.setCoord (i, mid.getCoord(j));
-					curRoot.child_[chapter]->rightBorder_.setCoord (i, right.getCoord(j));
+					curRoot.child_[chapter]->leftBorder_.setCoord (i, mid.getCoord(i));
+					curRoot.child_[chapter]->rightBorder_.setCoord (i, right.getCoord(i));
 				}
 				else {
-					curRoot.child_[chapter]->leftBorder_.setCoord (i, left.getCoord(j));
-					curRoot.child_[chapter]->rightBorder_.setCoord (i, mid.getCoord(j));
+					curRoot.child_[chapter]->leftBorder_.setCoord (i, left.getCoord(i));
+					curRoot.child_[chapter]->rightBorder_.setCoord (i, mid.getCoord(i));
 				}
 			}
 		}
@@ -118,18 +119,18 @@ namespace Tree {
 				if (!curRoot.child_[i])
 					continue;
 
-				delete_node (*(curRoot.child_[i]));
+				deleteNode (*(curRoot.child_[i]));
 			}
 			delete &curRoot;
 		}
 
 	public:
 
-		octotree_t() {}
+		Octotree () {}
 
 //-----------------------------------------------------------------------------------------------------
 
-		~octotree_t() {
+		~Octotree () {
 			for (int i = 0; i < 8; ++i) {
 				if (!root_.child_[i])
 					continue;
@@ -140,10 +141,10 @@ namespace Tree {
 
 ///-----------------------------------------------------------------------------------------------------
 
-		void fillTree(size_t countTriangles) {
-			T 	maxInTriangle 	= 0, 
-				maxInTree 		= 0;
-			GObjects::Triangle<T> tmp;
+		void fillTree(int countTriangles) {
+			pType 	maxInTriangle 	= 0, 
+					maxInTree 		= 0;
+			GObjects::Triangle<pType> tmp;
 
 			for (int i = 0; i < countTriangles; ++i) {
 				std::cin >> tmp;
@@ -167,10 +168,10 @@ namespace Tree {
 
 //-----------------------------------------------------------------------------------------------------
 
-		void dump_tree (node_t &curRoot) {
+		void dumpTree (node_t &curRoot) {
 			std::cout << "left = " << curRoot.leftBorder_ << "; right = " << curRoot.rightBorder_ << std::endl;
 
-			for(auto v : curRoot.lisOfTriangles_)
+			for(auto v : curRoot.listOfTriangles_)
 				std::cout << v << std::endl;
 
 			std::cout << std::endl;
@@ -179,8 +180,10 @@ namespace Tree {
 				if(!curRoot.child_[i])
 					continue;
 
-				dump_tree (*(curRoot.child_[i]));
+				dumpTree (*(curRoot.child_[i]));
 			}
 		}
 	};
 }
+
+#endif
