@@ -15,7 +15,8 @@ namespace GObjects {
     //##############################################################################
     //                         PLANE-CLASS PART
     //##############################################################################
-    template <typename pType> class Plane {
+    template <typename pType> 
+	class Plane {
         Vector<pType> nVec_;
         pType d_;
 
@@ -23,6 +24,10 @@ namespace GObjects {
         Plane (const Vector<pType> &vec, const pType d) :
             nVec_(vec),
             d_(d) {}
+
+		Plane ():
+			vec {},
+			d_  {} {} //nicely
 
         Vector<pType> getVec () const {
             return nVec_;
@@ -72,9 +77,11 @@ namespace GObjects {
         }
 
         pType getAbsMaxCoord () {
-            return (std::max ({(const pType) std::abs(rVecs_[0].getCoord(0)), (const pType) std::abs(rVecs_[0].getCoord(1)), (const pType) std::abs(rVecs_[0].getCoord(2)), 
-                             (const pType) std::abs(rVecs_[1].getCoord(0)), (const pType) std::abs(rVecs_[1].getCoord(1)), (const pType) std::abs(rVecs_[1].getCoord(2)), 
-                             (const pType) std::abs(rVecs_[2].getCoord(0)), (const pType) std::abs(rVecs_[2].getCoord(1)), (const pType) std::abs(rVecs_[2].getCoord(2))}));
+            return std::max (
+							{(const PType) rVecs_ [0].getAbsMaxCoord (), 
+                             (const PType) rVecs_ [1].getAbsMaxCoord (), 
+                             (const PType) rVecs_ [2].getAbsMaxCoord ()}
+							);
         }   
         
         bool isTriangle () const {
@@ -87,22 +94,79 @@ namespace GObjects {
         bool signedDistance (Plane<pType> &plain) {
             pType dists[3]{};
 
-            for (int i = 0; i < 3; ++i) {
-                dists[i] = (rVecs_(i).getCoord(0) * plain.getVec().getCoord(0) + 
-                            rVecs_(i).getCoord(1) * plain.getVec().getCoord(1) +
-                            rVecs_(i).getCoord(2) * plain.getVec().getCoord(2) +
-                            plain.getD(3));
-            }
-            return ((((long long) (dists[0]) & (long long) (dists[1]) & (long long) (dists[2])) | ~(((long long) (dists[0]) | (long long) (dists[1]) | (long long) (dists[2])))) 
+            for (int i = 0; i < 3; ++i)
+                dists[i] = rVecs_ [i] * plain.getVec () + plain.getD ();
+
+			long long firstPSide = dists [0];
+            return ((( (long long) (dists[0]) & (long long) (dists[1]) & (long long) (dists[2])) | 
+					~(((long long) (dists[0]) | (long long) (dists[1]) 
+					|  (long long) (dists[2])))) //it was Vlad. Blame it on him :))))))))) 
                                     >> (sizeof(pType) * 8 - 1));
-        }
+		
+		}
 
-    
+		void CalcNormal (Vector<pType> &normalVector) {
+
+			Vector<pType> firstSide 	= rVecs_ [0] - rVecs_ [1];
+			Vector<pType> secondSide 	= rVecs_ [0] - rVecs_ [2];
+
+			normalVector = firstSide ^ secondSide;
+
+			normalVector = normalVector / sqrt (normalVector.squareLength ());
+
+		}
+
+		void calcCoefD (Vector<pType> &normalV, pType &ourCoefD) {
+
+			ourCoefD {};
+
+			for (int i = 0; i < 3; ++i) {
+
+				outCoefD += normalV.getCoord (i) * rVecs_ [0].getCoord (i);
+				std::cout << ourCoefD << std::endl;
+
+			}
+
+			outCoefD = -outCoefD;
+
+		}
+
         bool isIntersected (Triangle<pType> &tr) {
+			//future exists
 
-            //TODO: For the future
-			return false;
+			Plane<pType> firstPlane {};
+			Plane<pType> secondPlane {};
+
+			Vector<pType> normalVector;
+			CalcNormal (normalVector);
+			
+			Vector<pType> anotherNormalVector;
+			tr.CalcNormal (anotherNormalVector);
+
+			pType ourCoefD;
+			calcCoefD (normalVector, ourCoefD);
+
+			pType anotherCoefD;
+			tr.calcCoefD (anotherNormalVector, anotherCoefD);
+			
+			if(normalVector == anotherNormalVector) {
+				if(coef_d_ == other.coef_d_)
+					return false;
+
+				//return intersect_one_plane_triangle_test (other);	//TODO:
+			}
+
+			if(tr.signedDistance (firstPlane))
+				return false;
+			//TODO rename signedDistance
+			if(signedDistance (secondPlane))
+				return false;
+			//fall asleep
+			line_t<T> intersection_line {*this, other};
+
+			return intersectTwoTriangle (...);
         }
+
     };
         //##############################################################################
         //                         TRIANGLE-OVERLOAD PART
@@ -127,6 +191,7 @@ namespace GObjects {
             out << "{ " << triangle.getVec(0) << " ;\n " << triangle.getVec(1) << " ;\n " << triangle.getVec(2) << " }\n";
             return out;
         }
+
 }
 
 #endif
