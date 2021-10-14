@@ -16,19 +16,10 @@ namespace Tree {
 	private:
 		using ListIt = typename std::list < GObjects::Triangle <pType> > ::iterator;
 
-		struct node_t {
-			GObjects::Vector<pType> rightBorder_, leftBorder_;
-
-			node_t (GObjects::Vector<pType> left = 0, GObjects::Vector<pType> right = 0) :
-				rightBorder_ (right),
-				leftBorder_ (left) {}
-			
-			node_t *child_[8] {};
-			std::list < GObjects::Triangle<pType> > listOfTriangles_; 
-		};
+		GObjects::Vector<pType> rightBorder_, leftBorder_;	
+		Octotree *child_[8] {};
+		std::list < GObjects::Triangle<pType> > listOfTriangles_;
 		
-		node_t root_;
-
 //-----------------------------------------------------------------------------------------------------
 
 		int whatChapter (GObjects::Vector<pType> &leftBorder, GObjects::Vector<pType> &rightBorder, const GObjects::Triangle<pType> &tr) {
@@ -56,8 +47,8 @@ namespace Tree {
 
 //-----------------------------------------------------------------------------------------------------
 
-		void createNewNode (node_t &curRoot, int chapter) {
-			curRoot.child_[chapter] = new node_t {};
+		void createNewNode (Octotree &curRoot, int chapter) {
+			curRoot.child_[chapter] = new Octotree {};
 			
 			GObjects::Vector<pType> right = curRoot.rightBorder_;
 			GObjects::Vector<pType> left = curRoot.leftBorder_;
@@ -78,7 +69,7 @@ namespace Tree {
 
 //-----------------------------------------------------------------------------------------------------
 
-		void siftTree(node_t &curRoot) {
+		void siftTree(Octotree &curRoot) {
 			if (curRoot.listOfTriangles_.size() <= 2 || (curRoot.rightBorder_ - curRoot.leftBorder_).squareLength() < LittleSpace)
 				return;
 
@@ -114,34 +105,28 @@ namespace Tree {
 
 //-----------------------------------------------------------------------------------------------------
 
-		void deleteNode(node_t &curRoot) {
-			for (int i = 0; i < 8; ++i) {
-				if (!curRoot.child_[i])
-					continue;
-
-				deleteNode (*(curRoot.child_[i]));
-			}
-			delete &curRoot;
-		}
-
 	public:
 
-		Octotree () {}
+		Octotree (GObjects::Vector<pType> right = 0, GObjects::Vector<pType> left = 0) :
+			rightBorder_ (right),
+			leftBorder_ (left),
+			child_ {} {
+		}
 
 //-----------------------------------------------------------------------------------------------------
 
 		~Octotree () {
-			for (int i = 0; i < 8; ++i) {
-				if (!root_.child_[i])
+			for(int i = 0; i < 8; ++i) {
+				if(!child_[i])
 					continue;
 
-				deleteNode(*(root_.child_[i]));
+				delete child_[i];
 			}
 		}
 
 ///-----------------------------------------------------------------------------------------------------
 
-		void fillTree(int countTriangles) {
+		void fillTree(int countTriangles) {			
 			pType 	maxInTriangle 	= 0, 
 					maxInTree 		= 0;
 			GObjects::Triangle<pType> tmp;
@@ -149,26 +134,27 @@ namespace Tree {
 			for (int i = 0; i < countTriangles; ++i) {
 				std::cin >> tmp;
 
-				if (!tmp.isTriangle())
-					continue;
+				// if (!tmp.isTriangle())
+				// 	continue;
+				// TODO: we must handle degenerate triangles
 				
-				root_.listOfTriangles_.push_front(tmp);
+				listOfTriangles_.push_front(tmp);
 
 				maxInTriangle = tmp.getAbsMaxCoord();
 				if (maxInTriangle > maxInTree)
 					maxInTree = maxInTriangle;
 			}
-			root_.rightBorder_ = {maxInTree, maxInTree, maxInTree};
-			root_.leftBorder_ = - root_.rightBorder_;
+			rightBorder_ = {maxInTree, maxInTree, maxInTree};
+			leftBorder_ = - rightBorder_;
 
-			siftTree (root_);
+			siftTree (*this);
 
-			dumpTree (root_);
+			dumpTree (*this);
 		}
 
 //-----------------------------------------------------------------------------------------------------
 
-		void dumpTree (node_t &curRoot) {
+		void dumpTree (Octotree &curRoot) {
 			std::cout << "left = " << curRoot.leftBorder_ << "; right = " << curRoot.rightBorder_ << std::endl;
 
 			for(auto v : curRoot.listOfTriangles_)
