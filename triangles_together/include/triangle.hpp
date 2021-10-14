@@ -26,7 +26,7 @@ namespace GObjects {
             d_(d) {}
 
 		Plane ():
-			vec {},
+			nVec_ {},
 			d_  {} {} //nicely
 
         Vector<pType> getVec () const {
@@ -78,9 +78,9 @@ namespace GObjects {
 
         pType getAbsMaxCoord () {
             return std::max (
-							{(const PType) rVecs_ [0].getAbsMaxCoord (), 
-                             (const PType) rVecs_ [1].getAbsMaxCoord (), 
-                             (const PType) rVecs_ [2].getAbsMaxCoord ()}
+							{(const pType) rVecs_ [0].getAbsMaxCoord (), 
+                             (const pType) rVecs_ [1].getAbsMaxCoord (), 
+                             (const pType) rVecs_ [2].getAbsMaxCoord ()}
 							);
         }   
         
@@ -118,16 +118,16 @@ namespace GObjects {
 
 		void calcCoefD (Vector<pType> &normalV, pType &ourCoefD) {
 
-			ourCoefD {};
+			ourCoefD = 0;
 
 			for (int i = 0; i < 3; ++i) {
 
-				outCoefD += normalV.getCoord (i) * rVecs_ [0].getCoord (i);
+				ourCoefD += normalV.getCoord (i) * rVecs_ [0].getCoord (i);
 				std::cout << ourCoefD << std::endl;
 
 			}
 
-			outCoefD = -outCoefD;
+			ourCoefD = -ourCoefD;
 
 		}
 
@@ -149,12 +149,12 @@ namespace GObjects {
 			pType anotherCoefD;
 			tr.calcCoefD (anotherNormalVector, anotherCoefD);
 			
-			if(normalVector == anotherNormalVector) {
-				if(coef_d_ == other.coef_d_)
-					return false;
+			// if(normalVector == anotherNormalVector) {
+			// 	if(d_ == other.d_)
+			// 		return false;
 
 				//return intersect_one_plane_triangle_test (other);	//TODO:
-			}
+			// }
 
 			if(tr.signedDistance (firstPlane))
 				return false;
@@ -162,9 +162,8 @@ namespace GObjects {
 			if(signedDistance (secondPlane))
 				return false;
 			//fall asleep
-			line_t<T> intersection_line {*this, other};
 
-			return intersectTwoTriangle (...);
+			// return intersectTwoTriangle (...);
         }
 
     };
