@@ -54,8 +54,7 @@ namespace Tree {
 			GObjects::Vector<pType> left = curRoot.leftBorder_;
 			GObjects::Vector<pType> mid = (right + left) / 2.0;
 
-			for(size_t i = 0; i < 3; ++i)
-			{
+			for(int i = 0; i < 3; ++i) {
 				if((chapter >> i) & 1) {
 					curRoot.child_[chapter]->leftBorder_.setCoord (i, mid.getCoord(i));
 					curRoot.child_[chapter]->rightBorder_.setCoord (i, right.getCoord(i));
