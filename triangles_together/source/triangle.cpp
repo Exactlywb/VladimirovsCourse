@@ -290,7 +290,7 @@ namespace GObjects {
     //                         TRIANGLE-2D INTERSECTION (Belov)
     //##############################################################################
 
-	bool Triangle::pointInTriangle (Vector &point) {
+	bool Triangle::pointInTriangle (const Vector &point) const{
 		Vector side = rVecs_[2] - rVecs_[1];
 
 		Vector vec = point - rVecs_[0];
@@ -310,16 +310,16 @@ namespace GObjects {
 		return false;
 	} 
 
-    bool Triangle::intersectOnePlaneTriangle (Triangle &tr) {	
-		if(pointInTriangle(tr.rVecs_[0]) || tr.pointInTriangle(rVecs_[0]))
+    bool intersect2DTriangles (const GObjects::Triangle &tr1, const GObjects::Triangle &tr2) {	
+		if(tr2.pointInTriangle(tr1.getVec(0)) || tr1.pointInTriangle(tr2.getVec(0)))
 			return true;
 
         for (int firstTriangleCounter = 0; firstTriangleCounter < 3; ++firstTriangleCounter) {
 
             for (int secondTriangleCounter = 0; secondTriangleCounter < 3; ++secondTriangleCounter) {
 				
-                if (intersectSegments (rVecs_[firstTriangleCounter], -rVecs_[firstTriangleCounter] + rVecs_[(firstTriangleCounter + 1) % 3], 
-                    tr.rVecs_[secondTriangleCounter], -tr.rVecs_[secondTriangleCounter] + tr.rVecs_[(secondTriangleCounter + 1) % 3]))
+                if (intersectSegments (tr1.getVec(firstTriangleCounter), -tr1.getVec(firstTriangleCounter) + tr1.getVec((firstTriangleCounter + 1) % 3), 
+                    tr2.getVec(secondTriangleCounter), -tr2.getVec(secondTriangleCounter) + tr2.getVec((secondTriangleCounter + 1) % 3)))
                     return true;
             }
         }

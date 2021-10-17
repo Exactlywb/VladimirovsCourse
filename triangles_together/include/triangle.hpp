@@ -57,9 +57,7 @@ namespace GObjects {
 
         bool isIntersected (Triangle &tr);
 	
-		bool pointInTriangle (Vector &point);
-
-        bool intersectOnePlaneTriangle (Triangle &tr); 
+		bool pointInTriangle (const Vector &point) const;
     };
 
 	//##############################################################################
@@ -89,6 +87,7 @@ namespace GObjects {
     bool Intersect3DTriangles (const Triangle& tr1, const Triangle& tr2);
     bool intersectSegments (const Vector& begin_1, const Vector& segment_1, const Vector& begin_2, const Vector& segment_2);
 
+    bool intersect2DTriangles (const GObjects::Triangle &tr1, const GObjects::Triangle &tr2);
 }
 
 #endif
