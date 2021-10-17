@@ -300,12 +300,14 @@ namespace GObjects {
 
 		Vector cross = side ^ vec;
 
-		Vector intersect = intersectionPointOfTwoLines (rVecs_[1], side, vec, cross, rVecs_[0] - rVecs_[1]) - rVecs_[0];
+		Vector vectorPsOfTwoLines     = intersectionPointOfTwoLines (rVecs_[1], side, vec, cross, rVecs_[0] - rVecs_[1]) - rVecs_[0];
+        double vectorPsOfTwoLinesLen  = vectorPsOfTwoLines.squareLength ();
 
-		pType dir = ((vec * intersect) / (std::sqrt(vec.squareLength()) * std::sqrt(intersect.squareLength())));
+        double vecLen = vec.squareLength ();
+		pType dir = ((vec * vectorPsOfTwoLines) / (std::sqrt(vecLen) * std::sqrt(vectorPsOfTwoLinesLen)));
 
-		if(std::abs(dir - 1) < __DBL_EPSILON__ && (intersect.squareLength() >= vec.squareLength()))
-			return true;
+        if (DoubleCmp (dir, 1.0) == 0 && DoubleCmp (vectorPsOfTwoLinesLen, vecLen) >= 0)
+            return true;
 
 		return false;
 	} 
@@ -318,12 +320,25 @@ namespace GObjects {
 
             for (int secondTriangleCounter = 0; secondTriangleCounter < 3; ++secondTriangleCounter) {
 				
-                if (intersectSegments (tr1.getVec(firstTriangleCounter), -tr1.getVec(firstTriangleCounter) + tr1.getVec((firstTriangleCounter + 1) % 3), 
-                    tr2.getVec(secondTriangleCounter), -tr2.getVec(secondTriangleCounter) + tr2.getVec((secondTriangleCounter + 1) % 3)))
+                Vector tr1CurVec = tr1.getVec (firstTriangleCounter);
+                Vector tr2CurVec = tr2.getVec (secondTriangleCounter);
+                if (intersectSegments  (tr1CurVec, -tr1CurVec + tr1.getVec((firstTriangleCounter  + 1) % 3), 
+                                        tr2CurVec, -tr2CurVec + tr2.getVec((secondTriangleCounter + 1) % 3)))
                     return true;
             }
         }
         return false;
+    }
+
+    static void CheckCurCoords (const pType first, const pType second, const pType toCmp, char& counter) {
+        
+        pType minCoord = std::min (first, second);
+        pType maxCoord = std::max (first, second);
+
+        if (DoubleCmp (minCoord, toCmp) <= 0 &&
+            DoubleCmp (maxCoord, toCmp) >= 0)
+            ++counter;
+    
     }
 
     bool intersectSegments (const Vector& begin_1, const Vector& segment_1, const Vector& begin_2, const Vector& segment_2) {        
@@ -331,17 +346,17 @@ namespace GObjects {
         Vector difVec = begin_2 - begin_1;
 
         if (cross == Vector {}) {
-			printf("vasya gay\n");
+
             char counter = 0;
 
             for (int coordNum = 0; coordNum < 3; ++coordNum) {
         
-                pType first  = begin_1.getCoord(coordNum);
-                pType second = begin_1.getCoord(coordNum) + segment_1.getCoord(coordNum);
+                pType curBeginCoord = begin_1.getCoord (coordNum);
+                CheckCurCoords (curBeginCoord, 
+                                curBeginCoord + segment_1.getCoord (coordNum),
+                                begin_2.getCoord (coordNum),
+                                counter);
 
-                if (std::min (first, second) <= begin_2.getCoord(coordNum) && 
-                    std::max (first, second) >= begin_2.getCoord(coordNum))
-                        ++counter;
             }
 
             if (counter == 3) return true;
@@ -349,13 +364,13 @@ namespace GObjects {
             counter = 0;
 
             for (int coordNum = 0; coordNum < 3; ++coordNum) {
-        
-                pType first  = begin_1.getCoord(coordNum);
-                pType second = begin_1.getCoord(coordNum) + segment_1.getCoord(coordNum);
 
-                if (std::min (first, second) <= begin_2.getCoord(coordNum) + segment_2.getCoord(coordNum) && 
-                    std::max (first, second) >= begin_2.getCoord(coordNum) + segment_2.getCoord(coordNum))
-                        ++counter;
+                pType curBeginCoord = begin_1.getCoord (coordNum);
+                CheckCurCoords (curBeginCoord,
+                                curBeginCoord + segment_1.getCoord (coordNum),
+                                begin_2.getCoord (coordNum) + segment_2.getCoord (coordNum),
+                                counter);
+
             }
 
             if (counter == 3) return true;
@@ -368,22 +383,22 @@ namespace GObjects {
 
         for (int coordNum = 0; coordNum < 3; ++coordNum) {
         
-            pType first  = begin_1.getCoord(coordNum);
-            pType second = begin_1.getCoord(coordNum) + segment_1.getCoord(coordNum);
+            pType curBeginCoord = begin_1.getCoord (coordNum);
+            CheckCurCoords (curBeginCoord,
+                            curBeginCoord + segment_1.getCoord (coordNum),
+                            interPoint.getCoord (coordNum),
+                            counter);
 
-            if (std::min (first, second) <= interPoint.getCoord(coordNum)  && 
-                std::max (first, second) >= interPoint.getCoord(coordNum))
-                    ++counter;
         }
 
         for (int coordNum = 0; coordNum < 3; ++coordNum) {
-        
-            pType first  = begin_2.getCoord(coordNum);
-            pType second = begin_2.getCoord(coordNum) + segment_2.getCoord(coordNum);
 
-            if (std::min (first, second) <= interPoint.getCoord(coordNum)  && 
-                std::max (first, second) >= interPoint.getCoord(coordNum))
-                    ++counter;
+            pType curBeginCoord = begin_2.getCoord (coordNum);
+            CheckCurCoords (curBeginCoord,
+                            curBeginCoord + segment_2.getCoord (coordNum),
+                            interPoint.getCoord (coordNum),
+                            counter);
+
         }
 
         if (counter == 6) return true;       
