@@ -5,172 +5,36 @@
 #include <algorithm>
 
 namespace GObjects {
+	using pType = double;
 
-    template <typename pType = double>
     class Vector {
 
         pType coordinates_ [3];
 
     public:
-        Vector (pType x = 0, pType y = 0, pType z = 0):
-                coordinates_ {x, y, z} {}
+        Vector (pType x = 0, pType y = 0, pType z = 0);
 
-        pType getCoord (int coordNum) const {
-            if (coordNum > 2) {
-                return 0;
-            }
+        pType getCoord (int coordNum) const;
 
-            return coordinates_ [coordNum];
-        }
+        pType getAbsMaxCoord () const;
 
-        pType getAbsMaxCoord () const {
-            return std::max ({(const pType)std::abs (coordinates_ [0]), 
-                              (const pType)std::abs (coordinates_ [1]), 
-                              (const pType)std::abs (coordinates_ [2])});
-        }
-
-        void setCoord (const int coordNum, pType coord) {
-
-            coordinates_ [coordNum] = coord;
-
-        }
+        void setCoord (const int coordNum, pType coord);
 
         pType squareLength () const;
-
     };
 
-    template <typename pType = double>
-    Vector<pType> operator - (const Vector<pType>& v) {
-
-        return Vector<pType>    (-v.getCoord (0),
-                                 -v.getCoord (1),
-                                 -v.getCoord (2));
-
-    }
-
-    template <typename pType = double>
-    Vector<pType> operator + (const Vector<pType>& firstV, const Vector<pType>& secondV) {
-
-        Vector<pType> newVector     (firstV.getCoord (0) + secondV.getCoord (0),
-                                     firstV.getCoord (1) + secondV.getCoord (1),
-                                     firstV.getCoord (2) + secondV.getCoord (2));
-
-        return newVector;
-
-    }
-
-    template <typename pType = double>
-    Vector<pType> operator - (const Vector<pType>& firstV, const Vector<pType>& secondV) {
-
-        Vector<pType> newVector     (firstV.getCoord (0) - secondV.getCoord (0),
-                                     firstV.getCoord (1) - secondV.getCoord (1),
-                                     firstV.getCoord (2) - secondV.getCoord (2));
-
-        return newVector;
-
-    }
-
-    template <typename pType = double>
-    Vector<pType> operator * (pType mulN, const Vector<pType>& v) {
-
-        Vector<pType> newVector (mulN * v.getCoord (0),
-                                 mulN * v.getCoord (1),
-                                 mulN * v.getCoord (2));
-
-        return newVector;
-        
-    }
-
-	template <typename pType = double>
-    Vector<pType> operator / (const Vector<pType>& v, pType divN) {
-
-        Vector<pType> newVector (v.getCoord (0) / divN,
-                                 v.getCoord (1) / divN,
-                                 v.getCoord (2) / divN);
-
-        return newVector;
-        
-    }
-
-    template <typename pType = double>
-    pType operator * (const Vector<pType>& firstV, const Vector<pType>& secondV) {
-
-        pType resScal = firstV.getCoord (0) * secondV.getCoord (0) +
-                        firstV.getCoord (1) * secondV.getCoord (1) +
-                        firstV.getCoord (2) * secondV.getCoord (2);
-
-        return resScal;
-        
-    }
-
-    template <typename pType>
-    pType Vector<pType>::squareLength () const {
-
-        const Vector<pType>* thisRef = this;
-        return (*thisRef) * (*thisRef);
-            
-    }
-
-    template <typename pType = double>
-    Vector<pType> operator ^ (const Vector<pType>& firstV, const Vector<pType>& secondV) {
-        
-        Vector<pType> newVector (firstV.getCoord (1) * secondV.getCoord (2) - firstV.getCoord (2) * secondV.getCoord (1),
-                                 firstV.getCoord (2) * secondV.getCoord (0) - firstV.getCoord (0) * secondV.getCoord (2),
-                                 firstV.getCoord (0) * secondV.getCoord (1) - firstV.getCoord (1) * secondV.getCoord (0));
-
-        return newVector;
-
-    }
-
-    template <typename pType = double>
-    std::ostream& operator << (std::ostream &out, const Vector<pType>& thou) {
-
-        out << "(" << thou.getCoord (0) << ", " << thou.getCoord (1) << ", " << thou.getCoord (2) << ")";
-        return out;
-
-    }
-
-
-    template <typename pType = double>
-    std::istream& operator >> (std::istream &in, Vector<pType>& thou) {
-
-        pType newX;
-        pType newY;
-        pType newZ;
-
-        in >> newX >> newY >> newZ;
-
-        thou.setCoord (0, newX);
-        thou.setCoord (1, newY);
-        thou.setCoord (2, newZ);
-
-        return in;
-
-    }
-
-    template <typename pType = double>
-    bool operator == (const Vector<pType>& firstV, const Vector<pType>& secondV) {
-
-        if (std::fabs((firstV.getCoord (0) - secondV.getCoord (0))) < __DBL_EPSILON__ &&
-            std::fabs((firstV.getCoord (1) - secondV.getCoord (1))) < __DBL_EPSILON__ &&
-            std::fabs((firstV.getCoord (2) - secondV.getCoord (2))) < __DBL_EPSILON__)
-            return 1;
-        
-        return 0;
-
-    }
-
-    template <typename pType = double>
-    pType determinant (Vector<pType> first, Vector<pType> second, Vector<pType> third) {
-
-        return (first.getCoord(0) * second.getCoord(1) * third.getCoord(2) - 
-                first.getCoord(0) * second.getCoord(2) * third.getCoord(1) -
-                first.getCoord(1) * second.getCoord(0) * third.getCoord(2) +
-                first.getCoord(1) * second.getCoord(2) * third.getCoord(0) +
-                first.getCoord(2) * second.getCoord(0) * third.getCoord(1) -
-                first.getCoord(2) * second.getCoord(1) * third.getCoord(0));
-    }
-
+    Vector operator - (const Vector &v);
+    Vector operator + (const Vector &firstV, const Vector &secondV);
+    Vector operator - (const Vector &firstV, const Vector &secondV);
+    Vector operator * (pType mulN, const Vector &v);
+    Vector operator / (const Vector &v, pType divN);
+    pType operator * (const Vector &firstV, const Vector &secondV);
+    Vector operator ^ (const Vector &firstV, const Vector &secondV);
+    std::ostream& operator << (std::ostream &out, const Vector &thou);
+    std::istream& operator >> (std::istream &in, Vector &thou);
+    bool operator == (const Vector &firstV, const Vector &secondV);
 }
+
+GObjects::pType determinant (GObjects::Vector first, GObjects::Vector second, GObjects::Vector third);
 
 #endif
