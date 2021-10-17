@@ -91,12 +91,8 @@ namespace GObjects {
 
 		ourCoefD = 0;
 
-		for (int i = 0; i < 3; ++i) {
-
+		for (int i = 0; i < 3; ++i)
 			ourCoefD += normalV.getCoord (i) * rVecs_ [0].getCoord (i);
-			std::cout << ourCoefD << std::endl;
-
-		}
 
 		ourCoefD = -ourCoefD;
 
@@ -198,11 +194,15 @@ namespace GObjects {
     
         if (firstTParams [0] > firstTParams [1])
             std::swap (firstTParams [0], firstTParams [1]);
+		if (secondTParams [0] > secondTParams [1])
+            std::swap (secondTParams [0], secondTParams [1]);
 
         for (int i = 0; i < 2; i++) {
-        
+			
             if (firstTParams [0] <= secondTParams [i] && firstTParams [1] >= secondTParams [i])
                 return 1;
+			if (secondTParams[0] <= firstTParams[i] && secondTParams[1] >= firstTParams[i])
+				return 1;
 
         }
 
@@ -222,18 +222,26 @@ namespace GObjects {
 
     void CalcTParams (pType tParams [2], const pType projection [3], 
                       const Vector& normalV, const pType dCoef, const Triangle& tr) {
-    
-        pType distThirdVert = CalcDist (normalV, dCoef, tr.getVec (2));
+						  
+		int outlaw;
 
-        for (int i = 0; i < 2; i++) {
-            
-            pType verticeDist = CalcDist (normalV, dCoef, tr.getVec (i));
-            pType distFrac = verticeDist / (verticeDist - distThirdVert);
+		if (CalcDist (normalV, dCoef, tr.getVec (0)) * CalcDist (normalV, dCoef, tr.getVec (1)) > 0) 
+			outlaw = 2;
+		else if(CalcDist (normalV, dCoef, tr.getVec (0)) * CalcDist (normalV, dCoef, tr.getVec (2)) > 0)
+			outlaw = 1;
+		else outlaw = 0;
 
-            tParams [i] = projection [i] + (projection [2] - projection [i]) * distFrac;
-        
-        }
-    
+        pType distThirdVert = CalcDist (normalV, dCoef, tr.getVec (outlaw));
+
+		int curTParamInd = 0;
+        for (int i = 0; i < 3; i++) {
+            if(i == outlaw)
+				continue;
+            pType vertexDist = CalcDist (normalV, dCoef, tr.getVec (i));
+            pType distFrac = vertexDist / (vertexDist - distThirdVert);
+
+            tParams [curTParamInd++] = projection [i] + (projection [outlaw] - projection [i]) * distFrac;
+		}
     }
 
     bool Intersect3DTriangles (const Triangle& tr1, const Triangle& tr2) {

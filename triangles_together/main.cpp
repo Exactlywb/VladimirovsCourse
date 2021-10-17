@@ -10,17 +10,17 @@ int main()
 
 //	tree.fillTree(countTriangles);
 
-    GObjects::Triangle tr1 {{1,1,1}, {5,1,1}, {3,4,1}};
+    GObjects::Triangle tr1 {{0,0,1}, {-1,0,-1}, {1,0,-1}};
     std::cout << tr1 << std::endl;
 
-    GObjects::Triangle tr2 {{8,4,1}, {7,1,1}, {9,1,1}};
+    GObjects::Triangle tr2 {{0.5,0.5,-2}, {-1,0,1}, {1,0,-1}};
     std::cout << tr2 << std::endl;
 
 	GObjects::Vector point {8,2,1};
 
-    bool test =  tr2.pointInTriangle(point);
+    bool test = GObjects::Intersect3DTriangles(tr1, tr2);
     if (test)
-        std::cout << "In" << std::endl;
+        std::cout << "Intersect" << std::endl;
     else
         std::cout << "Not :(" << std::endl;
 

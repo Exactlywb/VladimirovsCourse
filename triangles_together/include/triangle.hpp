@@ -18,7 +18,7 @@ namespace GObjects {
         Vector nVec_;
         pType d_;
 
-  public:
+  	public:
         Plane (const Vector &vec, const pType d);
 
 				Plane ();

@@ -11,7 +11,6 @@ GObjects::pType determinant (GObjects::Vector first, GObjects::Vector second, GO
 }
 
 GObjects::Vector intersectionPointOfTwoLines (GObjects::Vector begin_1, GObjects::Vector segment_1, GObjects::Vector segment_2, GObjects::Vector segment_3, GObjects::Vector difVec) {
-	std::cout << begin_1 << segment_1 << segment_2 << segment_3 << difVec << std::endl;
 	
 	GObjects::pType det_0 = determinant (segment_1, segment_2, segment_3);
 
