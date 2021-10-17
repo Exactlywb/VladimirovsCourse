@@ -151,13 +151,24 @@ namespace GObjects {
     template <typename pType = double>
     bool operator == (const Vector<pType>& firstV, const Vector<pType>& secondV) {
 
-        if ((firstV.getCoord (0) - secondV.getCoord (0)) < __DBL_EPSILON__ &&
-            (firstV.getCoord (1) - secondV.getCoord (1)) < __DBL_EPSILON__ &&
-            (firstV.getCoord (2) - secondV.getCoord (2)) < __DBL_EPSILON__)
+        if (std::fabs((firstV.getCoord (0) - secondV.getCoord (0))) < __DBL_EPSILON__ &&
+            std::fabs((firstV.getCoord (1) - secondV.getCoord (1))) < __DBL_EPSILON__ &&
+            std::fabs((firstV.getCoord (2) - secondV.getCoord (2))) < __DBL_EPSILON__)
             return 1;
         
         return 0;
 
+    }
+
+    template <typename pType = double>
+    pType determinant (Vector<pType> first, Vector<pType> second, Vector<pType> third) {
+
+        return (first.getCoord(0) * second.getCoord(1) * third.getCoord(2) - 
+                first.getCoord(0) * second.getCoord(2) * third.getCoord(1) -
+                first.getCoord(1) * second.getCoord(0) * third.getCoord(2) +
+                first.getCoord(1) * second.getCoord(2) * third.getCoord(0) +
+                first.getCoord(2) * second.getCoord(0) * third.getCoord(1) -
+                first.getCoord(2) * second.getCoord(1) * third.getCoord(0));
     }
 
 }

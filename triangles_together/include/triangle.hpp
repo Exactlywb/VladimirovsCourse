@@ -123,13 +123,26 @@ namespace GObjects {
 			for (int i = 0; i < 3; ++i) {
 
 				ourCoefD += normalV.getCoord (i) * rVecs_ [0].getCoord (i);
-				std::cout << ourCoefD << std::endl;
-
 			}
 
 			ourCoefD = -ourCoefD;
 
 		}
+
+        bool intersectOnePlaneTriangle (Triangle<pType> &tr) {
+            
+            std::cout << " wefwfwef\n";
+            for (int firstTriangleCounter = 0; firstTriangleCounter < 3; ++firstTriangleCounter) {
+
+                for (int secondTriangleCounter = 0; secondTriangleCounter < 3; ++secondTriangleCounter) {
+
+                    if (intersectSegments (rVecs_[firstTriangleCounter], -rVecs_[firstTriangleCounter] + rVecs_[(firstTriangleCounter + 1) % 3], 
+                        tr.rVecs_[secondTriangleCounter], -tr.rVecs_[secondTriangleCounter] + tr.rVecs_[(secondTriangleCounter + 1) % 3]))
+                        return true;
+                }
+            }
+            return false;
+        }
 
         bool isIntersected (Triangle<pType> &tr) {
 			//future exists
@@ -149,12 +162,13 @@ namespace GObjects {
 			pType anotherCoefD;
 			tr.calcCoefD (anotherNormalVector, anotherCoefD);
 			
-			// if(normalVector == anotherNormalVector) {
-			// 	if(d_ == other.d_)
-			// 		return false;
+        
+			if(normalVector == anotherNormalVector) {
+				if(ourCoefD != anotherCoefD)
+					return false;
 
-				//return intersect_one_plane_triangle_test (other);	//TODO:
-			// }
+				return intersectOnePlaneTriangle (tr);	//TODO:
+			}
 
 			if(tr.signedDistance (firstPlane))
 				return false;
@@ -166,30 +180,139 @@ namespace GObjects {
 			// return intersectTwoTriangle (...);
         }
 
+        
+
     };
-        //##############################################################################
-        //                         TRIANGLE-OVERLOAD PART
-        //##############################################################################
-        template <typename pType> 
-        std::istream &operator >> (std::istream &in, Triangle<pType> &triangle) {
+    //##############################################################################
+    //                         TRIANGLE-OVERLOAD PART
+    //##############################################################################
+    template <typename pType> 
+    std::istream &operator >> (std::istream &in, Triangle<pType> &triangle) {
 
-            Vector<pType> vec1;
-            Vector<pType> vec2;
-            Vector<pType> vec3;
+        Vector<pType> vec1;
+        Vector<pType> vec2;
+        Vector<pType> vec3;
 
-            in >> vec1 >> vec2 >> vec3;
+        in >> vec1 >> vec2 >> vec3;
 
-            triangle.setVec(vec1, 0); 
-            triangle.setVec(vec2, 1); 
-            triangle.setVec(vec3, 2);
+        triangle.setVec(vec1, 0); 
+        triangle.setVec(vec2, 1); 
+        triangle.setVec(vec3, 2);
 
-            return in;
+        return in;
+    }
+    template <typename pType> 
+    std::ostream &operator << (std::ostream &out, const Triangle<pType> &triangle) {
+        out << "{ " << triangle.getVec(0) << " ;\n " << triangle.getVec(1) << " ;\n " << triangle.getVec(2) << " }\n";
+        return out;
+    }
+
+    template <typename pType>
+    bool intersectSegments (Vector<pType> begin_1, Vector<pType> segment_1, Vector<pType> begin_2, Vector<pType> segment_2) {
+        
+        
+
+        Vector<pType> cross  = segment_1 ^ segment_2;
+        Vector<pType> difVec = begin_2 - begin_1;
+
+        // std::cout << cross << std::endl;
+
+        std::cout << "Here!\n";
+
+        if (cross == Vector<pType> {}) {
+
+            std::cout << "Cross == 0" << std::endl;
+            char counter = 0;
+
+            for (int coordNum = 0; coordNum < 3; ++coordNum) {
+        
+                pType first  = begin_1.getCoord(coordNum);
+                pType second = begin_1.getCoord(coordNum) + segment_1.getCoord(coordNum);
+
+                if (std::fabs(std::min (first, second) - begin_2.getCoord(coordNum)) < __DBL_EPSILON__ && 
+                    std::fabs(std::max (first, second) - begin_2.getCoord(coordNum)) < __DBL_EPSILON__)
+                        ++counter;
+            }
+
+            if (counter == 3) return true;
+
+            counter = 0;
+
+            for (int coordNum = 0; coordNum < 3; ++coordNum) {
+        
+                pType first  = begin_1.getCoord(coordNum);
+                pType second = begin_1.getCoord(coordNum) + segment_1.getCoord(coordNum);
+
+                if (std::min (first, second) <= begin_2.getCoord(coordNum) + segment_2.getCoord(coordNum) && 
+                    std::max (first, second) >= begin_2.getCoord(coordNum) + segment_2.getCoord(coordNum))
+                        ++counter;
+            }
+
+            if (counter == 3) return true;
+            return false;
         }
-        template <typename pType> 
-        std::ostream &operator << (std::ostream &out, const Triangle<pType> &triangle) {
-            out << "{ " << triangle.getVec(0) << " ;\n " << triangle.getVec(1) << " ;\n " << triangle.getVec(2) << " }\n";
-            return out;
+
+        pType det_0 = determinant (segment_1, segment_2, cross);
+
+        // std::cout << "det_0 = " << det_0 << std::endl;
+
+        pType detX = determinant (difVec, segment_2, cross);
+        // std::cout << "detX = " << detX << std::endl;
+        pType detY = determinant (segment_1, difVec, cross);
+        // std::cout << "detY = " << detY << std::endl;
+        pType detZ = determinant (segment_1, segment_2, difVec);
+        // std::cout << "detZ = " << detZ << std::endl;
+
+        pType x     = detX / det_0;
+        pType y     = detY / det_0;
+        pType z     = detZ / det_0; 
+
+        // std::cout << "X = " << x << std::endl;
+        // std::cout << "Y = " << y << std::endl;
+        // std::cout << "Z = " << z << std::endl;
+
+        pType xVec = begin_1.getCoord(0) + x * segment_1.getCoord(0);
+        pType yVec = begin_1.getCoord(1) + x * segment_1.getCoord(1);
+        pType zVec = begin_1.getCoord(2) + x * segment_1.getCoord(2); 
+
+        Vector<pType> interPoint = {xVec, yVec, 0};
+
+        std::cout << "Interpoint " << interPoint << std::endl;
+
+        // std::cout << "xVec = " << xVec << std::endl;
+        // std::cout << "yVec = " << yVec << std::endl;
+        // std::cout << "zVec = " << zVec << std::endl;
+
+        char counter = 0;
+
+        // std::cout << "BEGIN_1 = " << begin_1 << " END_1 = " << begin_1 + segment_1 << " ; BEGIN_2 = " << begin_2 << " END_2 = " << begin_2 + segment_2 << std::endl; 
+
+        for (int coordNum = 0; coordNum < 3; ++coordNum) {
+        
+            pType first  = begin_1.getCoord(coordNum);
+            pType second = begin_1.getCoord(coordNum) + segment_1.getCoord(coordNum);
+
+            if (std::min (first, second) <= interPoint.getCoord(coordNum)  && 
+                std::max (first, second) >= interPoint.getCoord(coordNum))
+                    ++counter;
         }
+        // std::cout << "Counter " << (int)counter << std::endl;
+
+        for (int coordNum = 0; coordNum < 3; ++coordNum) {
+        
+            pType first  = begin_2.getCoord(coordNum);
+            pType second = begin_2.getCoord(coordNum) + segment_2.getCoord(coordNum);
+
+            if (std::min (first, second) <= interPoint.getCoord(coordNum)  && 
+                std::max (first, second) >= interPoint.getCoord(coordNum))
+                    ++counter;
+        }
+
+        // std::cout << "Counter " << (int)counter << std::endl;
+
+        if (counter == 6) return true;       
+        return false;
+    }
 
 }
 
