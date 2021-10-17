@@ -51,11 +51,13 @@ namespace GObjects {
 
         bool signedDistance (Plane &plain);
 
-				void calcNormal (Vector &normalVector) const;
+		void calcNormal (Vector &normalVector) const;
 
-				void calcCoefD (Vector &normalV, pType &ourCoefD) const;
+		void calcCoefD (Vector &normalV, pType &ourCoefD) const;
 
         bool isIntersected (Triangle &tr);
+	
+		bool pointInTriangle (Vector &point);
 
         bool intersectOnePlaneTriangle (Triangle &tr); 
     };
@@ -85,7 +87,7 @@ namespace GObjects {
                       const Vector& normalV, const pType dCoef, const Triangle& tr);
 
     bool Intersect3DTriangles (const Triangle& tr1, const Triangle& tr2);
-    bool intersectSegments (Vector begin_1, Vector segment_1, Vector begin_2, Vector segment_2);
+    bool intersectSegments (const Vector& begin_1, const Vector& segment_1, const Vector& begin_2, const Vector& segment_2);
 
 }
 

@@ -266,7 +266,6 @@ namespace GObjects {
         //project triangle's vertices
         pType firstProj [3] = {};
         ProjectEdges (firstProj, tr1, leadVec, commonP);
-        //std::cout << "proj " << firstProj [0] << " " << firstProj [1] << " " << firstProj [2] << std::endl;
         pType secondProj [3] = {};
         ProjectEdges (secondProj, tr2, leadVec, commonP);
 
@@ -287,16 +286,38 @@ namespace GObjects {
         return IsIntersectedTIntervals (firstTParams, secondTParams);
     }
 
-		//##############################################################################
+	//##############################################################################
     //                         TRIANGLE-2D INTERSECTION (Belov)
     //##############################################################################
 
-    bool Triangle::intersectOnePlaneTriangle (Triangle &tr) {
-        
+	bool Triangle::pointInTriangle (Vector &point) {
+		Vector side = rVecs_[2] - rVecs_[1];
+
+		Vector vec = point - rVecs_[0];
+
+		if(vec == 0)
+			return true;
+
+		Vector cross = side ^ vec;
+
+		Vector intersect = intersectionPointOfTwoLines (rVecs_[1], side, vec, cross, rVecs_[0] - rVecs_[1]) - rVecs_[0];
+
+		pType dir = ((vec * intersect) / (std::sqrt(vec.squareLength()) * std::sqrt(intersect.squareLength())));
+
+		if(std::abs(dir - 1) < __DBL_EPSILON__ && (intersect.squareLength() >= vec.squareLength()))
+			return true;
+
+		return false;
+	} 
+
+    bool Triangle::intersectOnePlaneTriangle (Triangle &tr) {	
+		if(pointInTriangle(tr.rVecs_[0]) || tr.pointInTriangle(rVecs_[0]))
+			return true;
+
         for (int firstTriangleCounter = 0; firstTriangleCounter < 3; ++firstTriangleCounter) {
 
             for (int secondTriangleCounter = 0; secondTriangleCounter < 3; ++secondTriangleCounter) {
-
+				
                 if (intersectSegments (rVecs_[firstTriangleCounter], -rVecs_[firstTriangleCounter] + rVecs_[(firstTriangleCounter + 1) % 3], 
                     tr.rVecs_[secondTriangleCounter], -tr.rVecs_[secondTriangleCounter] + tr.rVecs_[(secondTriangleCounter + 1) % 3]))
                     return true;
@@ -305,18 +326,12 @@ namespace GObjects {
         return false;
     }
 
-    bool intersectSegments (Vector begin_1, Vector segment_1, Vector begin_2, Vector segment_2) {
-        
-        Vector cross  = segment_1 ^ segment_2;
+    bool intersectSegments (const Vector& begin_1, const Vector& segment_1, const Vector& begin_2, const Vector& segment_2) {        
+		Vector cross  = segment_1 ^ segment_2;
         Vector difVec = begin_2 - begin_1;
 
-        // std::cout << cross << std::endl;
-
-        std::cout << "Here!\n";
-
         if (cross == Vector {}) {
-
-            std::cout << "Cross == 0" << std::endl;
+			printf("vasya gay\n");
             char counter = 0;
 
             for (int coordNum = 0; coordNum < 3; ++coordNum) {
@@ -324,8 +339,8 @@ namespace GObjects {
                 pType first  = begin_1.getCoord(coordNum);
                 pType second = begin_1.getCoord(coordNum) + segment_1.getCoord(coordNum);
 
-                if (std::fabs(std::min (first, second) - begin_2.getCoord(coordNum)) < __DBL_EPSILON__ && 
-                    std::fabs(std::max (first, second) - begin_2.getCoord(coordNum)) < __DBL_EPSILON__)
+                if (std::min (first, second) <= begin_2.getCoord(coordNum) && 
+                    std::max (first, second) >= begin_2.getCoord(coordNum))
                         ++counter;
             }
 
@@ -347,40 +362,9 @@ namespace GObjects {
             return false;
         }
 
-        pType det_0 = determinant (segment_1, segment_2, cross);
-
-        // std::cout << "det_0 = " << det_0 << std::endl;
-
-        pType detX = determinant (difVec, segment_2, cross);
-        // std::cout << "detX = " << detX << std::endl;
-        // pType detY = determinant (segment_1, difVec, cross);
-        // std::cout << "detY = " << detY << std::endl;
-        // pType detZ = determinant (segment_1, segment_2, difVec);
-        // std::cout << "detZ = " << detZ << std::endl;
-
-        pType x     = detX / det_0;
-        // pType y     = detY / det_0;
-        // pType z     = detZ / det_0; 
-
-        // std::cout << "X = " << x << std::endl;
-        // std::cout << "Y = " << y << std::endl;
-        // std::cout << "Z = " << z << std::endl;
-
-        pType xVec = begin_1.getCoord(0) + x * segment_1.getCoord(0);
-        pType yVec = begin_1.getCoord(1) + x * segment_1.getCoord(1);
-        // pType zVec = begin_1.getCoord(2) + x * segment_1.getCoord(2); 
-
-        Vector interPoint = {xVec, yVec, 0};
-
-        std::cout << "Interpoint " << interPoint << std::endl;
-
-        // std::cout << "xVec = " << xVec << std::endl;
-        // std::cout << "yVec = " << yVec << std::endl;
-        // std::cout << "zVec = " << zVec << std::endl;
+		Vector interPoint = intersectionPointOfTwoLines(begin_1, segment_1, segment_2, cross, difVec);
 
         char counter = 0;
-
-        // std::cout << "BEGIN_1 = " << begin_1 << " END_1 = " << begin_1 + segment_1 << " ; BEGIN_2 = " << begin_2 << " END_2 = " << begin_2 + segment_2 << std::endl; 
 
         for (int coordNum = 0; coordNum < 3; ++coordNum) {
         
@@ -391,7 +375,6 @@ namespace GObjects {
                 std::max (first, second) >= interPoint.getCoord(coordNum))
                     ++counter;
         }
-        // std::cout << "Counter " << (int)counter << std::endl;
 
         for (int coordNum = 0; coordNum < 3; ++coordNum) {
         
@@ -402,8 +385,6 @@ namespace GObjects {
                 std::max (first, second) >= interPoint.getCoord(coordNum))
                     ++counter;
         }
-
-        // std::cout << "Counter " << (int)counter << std::endl;
 
         if (counter == 6) return true;       
         return false;

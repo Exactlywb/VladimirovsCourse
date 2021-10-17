@@ -36,5 +36,6 @@ namespace GObjects {
 }
 
 GObjects::pType determinant (GObjects::Vector first, GObjects::Vector second, GObjects::Vector third);
+GObjects::Vector intersectionPointOfTwoLines (GObjects::Vector begin_1, GObjects::Vector segment_1, GObjects::Vector segment_2, GObjects::Vector segment_3, GObjects::Vector difVec);
 
 #endif

@@ -124,9 +124,9 @@ namespace GObjects {
     
     bool operator == (const Vector &firstV, const Vector &secondV) {
 
-        if ((firstV.getCoord (0) - secondV.getCoord (0)) < __DBL_EPSILON__ &&
-            (firstV.getCoord (1) - secondV.getCoord (1)) < __DBL_EPSILON__ &&
-            (firstV.getCoord (2) - secondV.getCoord (2)) < __DBL_EPSILON__)
+        if (std::abs((firstV.getCoord (0) - secondV.getCoord (0))) < __DBL_EPSILON__ &&
+            std::abs((firstV.getCoord (1) - secondV.getCoord (1))) < __DBL_EPSILON__ &&
+            std::abs((firstV.getCoord (2) - secondV.getCoord (2))) < __DBL_EPSILON__)
             return 1;
         
         return 0;
