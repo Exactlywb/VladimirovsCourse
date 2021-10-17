@@ -1,4 +1,5 @@
 #include "../include/vector.hpp"
+#include "../include/triangle.hpp"
 
 GObjects::pType determinant (GObjects::Vector first, GObjects::Vector second, GObjects::Vector third) {
 
@@ -23,4 +24,15 @@ GObjects::Vector intersectionPointOfTwoLines (GObjects::Vector begin_1, GObjects
 	GObjects::pType zVec = begin_1.getCoord(2) + x * segment_1.getCoord(2);
 
 	return {xVec, yVec, zVec};
+}
+
+int GObjects::DoubleCmp (const GObjects::pType firstDouble, const GObjects::pType secondDouble) {
+
+	if (std::abs (firstDouble - secondDouble) < __DBL_EPSILON__) 
+		return 0;
+	else if (firstDouble > secondDouble)
+		return 1;
+	else 
+		return -1;
+
 }
