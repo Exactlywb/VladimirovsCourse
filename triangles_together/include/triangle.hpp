@@ -226,13 +226,32 @@ namespace GObjects {
             }
         
         }
+         bool IsIntersectedTIntervals (double firstTParams [2], double secondTParams [2]) {
+        
+            if (firstTParams [0] > firstTParams [1])
+                std::swap (firstTParams [0], firstTParams [1]);
+
+            for (int i = 0; i < 2; i++) {
+            
+                if (firstTParams [0] <= secondTParams [i] && firstTParams [1] >= secondTParams [i])
+                    return 1;
+
+            }
+
+            return 0;
+        
+        }
 
         template<typename pType>
         pType CalcDist (const Vector<pType>& normalV, const pType dCoef, const Vector<pType>& point) {
         
-            pType dist = std::abs  (normalV.getCoord (0) * point.getCoord (0) + 
+            pType dist = normalV.getCoord (0) * point.getCoord (0) + 
+                         normalV.getCoord (1) * point.getCoord (1) +
+                         normalV.getCoord (2) * point.getCoord (2)+ dCoef;
+            
+            std::cout << normalV.getCoord (0) * point.getCoord (0) + 
                                     normalV.getCoord (1) * point.getCoord (1) +
-                                    normalV.getCoord (2) * point.getCoord (2) + dCoef) / std::sqrt(normalV.squareLength ());
+                                    normalV.getCoord (2) * point.getCoord (2) << std::endl;
 
             return dist; 
         
@@ -243,13 +262,14 @@ namespace GObjects {
                           const Vector<pType> normalV, const pType dCoef, const Triangle<pType>& tr) {
         
             pType distThirdVert = CalcDist (normalV, dCoef, tr.getVec (2));
+            //std::cout << "fucking here " << distThirdVert << std::endl;
             for (int i = 0; i < 2; i++) {
                 
                 pType verticeDist = CalcDist (normalV, dCoef, tr.getVec (i));
                 pType distFrac = verticeDist / (verticeDist - distThirdVert);
-
+                //std::cout << "HERE " << verticeDist - distThirdVert << std::endl;
                 tParams [i] = projection [i] + (projection [2] - projection [i]) * distFrac;
-                std::cout << "here " << distThirdVert << std::endl;
+                //std::cout << "here " << tParams [i] << std::endl;
             
             }
         
@@ -286,16 +306,16 @@ namespace GObjects {
             //project triangle's vertices
             pType firstProj [3] = {};
             ProjectEdges (firstProj, tr1, leadVec, commonP);
-            std::cout << "proj " << firstProj [0] << " " << firstProj [1] << " " << firstProj [2] << std::endl;
+            //std::cout << "proj " << firstProj [0] << " " << firstProj [1] << " " << firstProj [2] << std::endl;
             pType secondProj [3] = {};
             ProjectEdges (secondProj, tr2, leadVec, commonP);
 
             //now let's compute t_{0,i} params. Better watch GCT 578 page 
             pType firstTParams [2] = {};
-            CalcTParams (firstTParams, firstProj, firstNormalVec, firstD, tr1);
+            CalcTParams (firstTParams, firstProj, secondNormalVec, secondD, tr1);
             
             pType secondTParams [2] = {};
-            CalcTParams (secondTParams, secondProj, secondNormalVec, secondD, tr2);
+            CalcTParams (secondTParams, secondProj, firstNormalVec, firstD, tr2);
 
             for (size_t i = 0; i < 2; i++) {
             
@@ -304,8 +324,8 @@ namespace GObjects {
             
             }
 
-            return 0;
-        }
+            return IsIntersectedTIntervals (firstTParams, secondTParams);
+        }   
 
 }
 
