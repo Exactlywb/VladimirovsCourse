@@ -75,17 +75,11 @@ namespace GObjects {
         Vector firstV = rVecs_ [0];
 
         if ((((rVecs_[2] - firstV) ^ (rVecs_[1] - firstV))) == Vector (0, 0, 0)) {
-
-            // std::cout << "Max = " << getAbsMaxCoord () << " Min = " << getAbsMinCoord() << std::endl;
-
-            // std::cout << "wefwfw = " << DoubleCmp(getAbsMaxCoord (), getAbsMinCoord ()) << std::endl; 
             if(DoubleCmp(getAbsMaxCoord (), getAbsMinCoord ()) == 0){
                 typeOfDegeneration_ = (1 << 1);        //point
                 return;
             }
             else{
-
-                // std::cout << "Always here!\n";
                 typeOfDegeneration_ = (1 << 2);         //segment
                 return;
             }
@@ -267,8 +261,6 @@ namespace GObjects {
         //
         //As we can see, there's the only one value for every combination (up to permutation). 
 
-        std::cout << int (degFlag) << std::endl;
-
         switch (degFlag) {
 
             
@@ -305,8 +297,14 @@ namespace GObjects {
                 }
 
             }
-            case 0b1000:
+            case 0b1000: {
+
+                Segment tr1Seg (tr1);
+                Segment tr2Seg (tr2);
+
                 return IntersectDegenerates (Segment (tr1), Segment (tr2));
+
+            }
             default:
                 std::cout << "Unexpected bitmask in function " << (int) degFlag << " " << __func__ << std::endl;
                 return false;
@@ -319,7 +317,6 @@ namespace GObjects {
 
         //Handling for the degenerated triangles
 
-        // std::cout << "Tr1 deg = " << (int) tr1.getDegenerationType() << " Tr2 deg = " <<  (int) tr2.getDegenerationType() << std::endl;
         char degFlag = tr1.getDegenerationType () + tr2.getDegenerationType ();
         if(degFlag != (1 << 1)) {
 
@@ -346,11 +343,9 @@ namespace GObjects {
         tr2.calcCoefD (secondNormalVec, secondD);
 
         if ((firstNormalVec ^ secondNormalVec) == 0) {
-            
-            std::cout << "Oh, pain!\n";
             if (DoubleCmp(firstD, secondD))
                 return false;
-            printf("2D called\n");
+            
             return Intersect2DTriangles(tr1, tr2);
         }
 
@@ -401,22 +396,14 @@ namespace GObjects {
     
     static bool CheckPointInSegment (const Vector& beginPVec, const Vector& directVec) {
         
-        // std::cout << "HERE????\n";
         double vecLen = beginPVec.squareLength ();
 
         double directLen = directVec.squareLength ();
-
-        // std::cout << beginPVec << std::endl;
-        // std::cout << directVec << std::endl;
-        
         pType dir = ((beginPVec * directVec) / (std::sqrt(vecLen) * std::sqrt(directLen)));
 
-        // std::cout << "Dir = " << dir << std::endl;
         if (DoubleCmp (dir, 1.0) == 0 && DoubleCmp (directLen, vecLen) >= 0)
             return true;
-        
-        // std::cout << "POPALLLLLLLL?\n";
-
+    
         return false;
 
     }
@@ -483,11 +470,13 @@ namespace GObjects {
 
     bool IntersectSegments (const Vector& begin_1, const Vector& segment_1, const Vector& begin_2, const Vector& segment_2) { 
 
-        // std::cout << "JFSKFJWEKFJWEKFWJEFKWJEFKWEJFWEFJKWEFKEJKFWFHEWJFNKWJFN\n";       
         Vector cross  = segment_1 ^ segment_2;
         Vector difVec = begin_2 - begin_1;
 
-        if (cross == Vector {}) {
+        if (cross == GetZeroVector ()) {
+
+            if (!(((begin_2 - begin_1) ^ segment_1) == GetZeroVector ()))
+                return false;
 
             char counter = 0;
 
@@ -555,13 +544,26 @@ namespace GObjects {
     }
 
     bool IntersectDegenerates (const Triangle &tr, const Segment &segment) {
+
         Vector norm{};
         pType coefD = 0;
         tr.calcNormal (norm);
         tr.calcCoefD (norm, coefD);
 
+        Vector end = segment.begin_ + segment.direct_;
         pType beginDist = CalcDist (norm, coefD, segment.begin_);
-        pType endDist = CalcDist (norm, coefD, segment.begin_ + segment.direct_);
+        pType endDist = CalcDist (norm, coefD, end);
+
+        if (DoubleCmp (beginDist, 0) == 0) {
+            if (tr.pointInTriangle (segment.begin_)) //TODO remove from class Triangle
+                return true;
+
+        }
+
+        if (DoubleCmp(endDist, 0) == 0) {
+            if (tr.pointInTriangle (end))
+                return true;
+        }
 
         if (DoubleCmp (beginDist, 0) == 0 && DoubleCmp(endDist, 0) == 0) {
             for (int i = 0; i < 3; ++i)
@@ -571,18 +573,10 @@ namespace GObjects {
             return false;
         }
 
-        if (DoubleCmp (beginDist, 0) == 0)
-            if (tr.pointInTriangle (segment.begin_)) //TODO remove from class Triangle
-                return true;
-
-        if (DoubleCmp(endDist, 0) == 0)
-            if (tr.pointInTriangle (segment.begin_ + segment.direct_))
-                return true;
-
         if (beginDist * endDist > 0)
             return false;
 
-        pType param = (-coefD - segment.begin_ * norm) / (norm.getCoord(0) + norm.getCoord(1) + norm.getCoord(2));
+        pType param = (-coefD - segment.begin_ * norm) / (norm * segment.direct_);
         
         Vector intersectionPoint {};
         for (int i = 0; i < 3; ++i) {
@@ -593,13 +587,11 @@ namespace GObjects {
     }
 
     bool IntersectDegenerates (const Segment &segment1, const Segment &segment2) {
-
-
         
         Vector firstBeginVec  = segment1.begin_;
         Vector secondBeginVec = segment2.begin_;
 
-        Vector connectingVec  = firstBeginVec - secondBeginVec;
+        Vector connectingVec  = secondBeginVec - firstBeginVec;
 
         double mixedProduct   = firstBeginVec * (secondBeginVec ^ connectingVec);
 
@@ -607,21 +599,16 @@ namespace GObjects {
 
         if (DoubleCmp (mixedProduct, 0.0) == 0)
         {
-            // std::cout << "INTERSECT = " << IntersectSegments    (segment1.begin_, segment1.direct_, 
-                                        //  segment2.begin_, segment2.direct_) << std::endl;
 
             return IntersectSegments    (segment1.begin_, segment1.direct_, 
                                          segment2.begin_, segment2.direct_); //TODO maybe it's better to rewrite InsersectSegments
         }
+
         return false;
 
     }
 
     bool IntersectDegenerates (const Segment &segment, const Vector &point) {
-
-        //here we using ((x - x_0) / a_x = (y - y_0) / a_y = (z - z_0) / a_z);
-        //  std::cout << "Seg 1 = " << segment.begin_ << std::endl;
-        // std::cout << "Point " << point << std::endl;
 
         Vector beginVec     = segment.begin_;
         Vector directVec    = segment.direct_;

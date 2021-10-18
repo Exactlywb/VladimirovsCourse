@@ -1,15 +1,15 @@
 #include <iostream>
 #include "include/octotree.hpp"
 
-const int numTests = 8;
+const int numTests = 7;
 
 
 int TestIntersectionFunction () {
 
     // const char* nameTests[numTests] = {"../tests/test7.txt"};
 
-    const char* nameTests[numTests] = {"../tests/test1.txt", "../tests/test2.txt", "../tests/test3.txt", "../tests/test4.txt", "../tests/test5.txt",
-                                       "../tests/test6.txt", "../tests/test7.txt", "../tests/test8.txt"};
+    const char* nameTests[numTests] = {"../tests/trXseg/test1.txt", "../tests/trXseg/test2.txt", "../tests/trXseg/test3.txt", "../tests/trXseg/test4.txt", "../tests/trXseg/test5.txt",
+                                       "../tests/trXseg/test6.txt", "../tests/trXseg/test7.txt"};
 
 
     for (int i = 0; i < numTests; ++i) {
