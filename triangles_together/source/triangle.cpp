@@ -452,7 +452,7 @@ namespace GObjects {
     }
 
     bool IntersectSegments (const Vector& begin_1, const Vector& segment_1, const Vector& begin_2, const Vector& segment_2) {        
-		Vector cross  = segment_1 ^ segment_2; //TODO ask Vlad why it's not just a mixed product
+		Vector cross  = segment_1 ^ segment_2;
         Vector difVec = begin_2 - begin_1;
 
         if (cross == Vector {}) {
@@ -536,7 +536,8 @@ namespace GObjects {
         double mixedProduct   = firstBeginVec * (secondBeginVec ^ connectingVec);
 
         if (DoubleCmp (mixedProduct, 0.0) == 0)
-            return true;
+            return IntersectSegments    (segment1.begin_, segment1.direct_, 
+                                         segment2.begin_, segment2.direct_); //TODO maybe it's better to rewrite InsersectSegments
 
         return false;
 
@@ -556,7 +557,6 @@ namespace GObjects {
         if (DoubleCmp (firstFrac, secondFrac) == 0 &&
             DoubleCmp (secondFrac, thirdFrac) == 0)
             return true;
-        
         return false;
 
 	}
