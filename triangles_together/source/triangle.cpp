@@ -53,16 +53,33 @@ namespace GObjects {
 		return std::max ({rVecs_ [0].getAbsMaxCoord (), 
 						  rVecs_ [1].getAbsMaxCoord (), 
 						  rVecs_ [2].getAbsMaxCoord ()});
-	}   
-	
-	bool Triangle::isTriangle () const {
-		if (((rVecs_[2] - rVecs_[0]) ^ (rVecs_[1] - rVecs_[0])) == Vector ({0, 0, 0}))
-			return false;
-		else    
-			return true;
 	}
 
-	bool Triangle::signedDistance (Plane &plain) {
+	pType Triangle::getAbsMinCoord () const {
+		return std::min ({rVecs_ [0].getAbsMinCoord (), 
+						  rVecs_ [1].getAbsMinCoord (), 
+						  rVecs_ [2].getAbsMinCoord ()});
+	}   
+
+	void Triangle::typeOfDegenerate (){
+		if (((rVecs_[2] - rVecs_[0]) ^ (rVecs_[1] - rVecs_[0])) == Vector ({0, 0, 0})) {
+			if(!DoubleCmp(getAbsMaxCoord(), getAbsMinCoord())){
+				typeOfDegeneration_ = 2;
+				return;
+			}
+			else{
+				typeOfDegeneration_ = 1;
+				return;
+			}
+		}
+		typeOfDegeneration_ = 0;
+	}
+
+	char Triangle::getDegenerationType () const {
+		return typeOfDegeneration_;
+	}
+
+	bool Triangle::signedDistance (const Plane &plain) const {
 		pType dists[3]{};
 
 		for (int i = 0; i < 3; ++i)
@@ -96,41 +113,6 @@ namespace GObjects {
 
 		ourCoefD = -ourCoefD;
 
-	}
-
-	bool Triangle::isIntersected (Triangle &tr) {
-		//future exists
-
-		Plane firstPlane {};
-		Plane secondPlane {};
-
-		Vector normalVector;
-		//CalcNormal (normalVector);
-		
-		Vector anotherNormalVector;
-		//tr.CalcNormal (anotherNormalVector);
-
-		// pType ourCoefD;
-		//calcCoefD (normalVector, ourCoefD);
-
-		// pType anotherCoefD;
-		//tr.calcCoefD (anotherNormalVector, anotherCoefD);
-		
-		// if(normalVector == anotherNormalVector) {
-		// 	if(d_ == other.d_)
-		// 		return false;
-
-			//return intersect_one_plane_triangle_test (other);	//TODO:
-		// }
-
-		if(tr.signedDistance (firstPlane))
-			return false;
-		//TODO rename signedDistance
-		if(signedDistance (secondPlane))
-			return false;
-		//fall asleep
-        return 0;
-		// return intersectTwoTriangle (...);
 	}
 
 	//##############################################################################
@@ -245,13 +227,14 @@ namespace GObjects {
     }
 
     bool Intersect3DTriangles (const Triangle& tr1, const Triangle& tr2) {
-        //Normal vector for the first plane
+		//Normal vector for the first plane
         Vector firstNormalVec;
         tr1.calcNormal (firstNormalVec);
         
         //Coef D for the first plane
         pType firstD = 0;
         tr1.calcCoefD (firstNormalVec, firstD);
+
 
         //Normal vector for the second plane
         Vector secondNormalVec;
@@ -260,6 +243,20 @@ namespace GObjects {
         //Coef D for the second plane
         pType secondD = 0;
         tr2.calcCoefD (secondNormalVec, secondD);
+
+		if ((firstNormalVec ^ secondNormalVec) == 0) {
+
+			if (DoubleCmp(firstD, secondD))
+				return false;
+			printf("2D called\n");
+			return Intersect2DTriangles(tr1, tr2);
+		}
+
+		if (tr1.signedDistance ({secondNormalVec, secondD}))
+			return false;
+		
+		if (tr2.signedDistance ({firstNormalVec, firstD}))
+			return false;
 
         //leading vector for the common lane
         Vector leadVec = firstNormalVec ^ secondNormalVec;
@@ -308,7 +305,7 @@ namespace GObjects {
 
 		Vector cross = side ^ vec;
 
-		Vector vectorPsOfTwoLines     = intersectionPointOfTwoLines (rVecs_[1], side, vec, cross, rVecs_[0] - rVecs_[1]) - rVecs_[0];
+		Vector vectorPsOfTwoLines     = IntersectionPointOfTwoLines (rVecs_[1], side, vec, cross, rVecs_[0] - rVecs_[1]) - rVecs_[0];
         double vectorPsOfTwoLinesLen  = vectorPsOfTwoLines.squareLength ();
 
         double vecLen = vec.squareLength ();
@@ -320,7 +317,7 @@ namespace GObjects {
 		return false;
 	} 
 
-    bool Intersect2DTriangles (const GObjects::Triangle &tr1, const GObjects::Triangle &tr2) {	
+    bool Intersect2DTriangles (const Triangle &tr1, const Triangle &tr2) {	
 		if(tr2.pointInTriangle(tr1.getVec(0)) || tr1.pointInTriangle(tr2.getVec(0)))
 			return true;
 
@@ -337,6 +334,21 @@ namespace GObjects {
         }
         return false;
     }
+
+	Vector IntersectionPointOfTwoLines (const Vector &begin_1, const Vector &segment_1, const Vector &segment_2, const Vector &segment_3, const Vector &difVec) {
+	
+		pType det_0 = determinant (segment_1, segment_2, segment_3);
+
+		pType detX = determinant (difVec, segment_2, segment_3);
+
+		pType x     = detX / det_0;
+
+		pType xVec = begin_1.getCoord(0) + x * segment_1.getCoord(0);
+		pType yVec = begin_1.getCoord(1) + x * segment_1.getCoord(1);
+		pType zVec = begin_1.getCoord(2) + x * segment_1.getCoord(2);
+
+		return {xVec, yVec, zVec};
+	}
 
     static void CheckCurCoords (const pType first, const pType second, const pType toCmp, char& counter) {
         
@@ -385,7 +397,7 @@ namespace GObjects {
             return false;
         }
 
-		Vector interPoint = intersectionPointOfTwoLines(begin_1, segment_1, segment_2, cross, difVec);
+		Vector interPoint = IntersectionPointOfTwoLines(begin_1, segment_1, segment_2, cross, difVec);
 
         char counter = 0;
 

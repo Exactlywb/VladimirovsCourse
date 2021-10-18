@@ -13,12 +13,12 @@ int main()
     GObjects::Triangle tr1 {{0,0,1}, {-1,0,-1}, {1,0,-1}};
     std::cout << tr1 << std::endl;
 
-    GObjects::Triangle tr2 {{0,0,-2}, {-1,0,1}, {1,0,-1}};
+    GObjects::Triangle tr2 {{0,0,1}, {0,0,1}, {0,0,1}};
     std::cout << tr2 << std::endl;
 
-	GObjects::Vector point {8,2,1};
+	GObjects::Vector point {0.5,0,-0.5};
 
-    bool test = GObjects::Intersect2DTriangles(tr1, tr2);
+    bool test = tr1.pointInTriangle(point);
     if (test)
         std::cout << "Intersect" << std::endl;
     else

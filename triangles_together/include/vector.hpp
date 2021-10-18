@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include "common.hpp"
 
 namespace GObjects {
 	using pType = double;
@@ -17,6 +18,7 @@ namespace GObjects {
         pType getCoord (int coordNum) const;
 
         pType getAbsMaxCoord () const;
+		pType getAbsMinCoord () const;
 
         void setCoord (const int coordNum, pType coord);
 
@@ -33,9 +35,9 @@ namespace GObjects {
     std::ostream& operator << (std::ostream &out, const Vector &thou);
     std::istream& operator >> (std::istream &in, Vector &thou);
     bool operator == (const Vector &firstV, const Vector &secondV);
+	double determinant (Vector first, Vector second, Vector third);
+	Vector intersectionPointOfTwoLines (Vector begin_1, Vector segment_1, Vector segment_2, Vector segment_3, Vector difVec);
 }
 
-GObjects::pType determinant (GObjects::Vector first, GObjects::Vector second, GObjects::Vector third);
-GObjects::Vector intersectionPointOfTwoLines (GObjects::Vector begin_1, GObjects::Vector segment_1, GObjects::Vector segment_2, GObjects::Vector segment_3, GObjects::Vector difVec);
 
 #endif

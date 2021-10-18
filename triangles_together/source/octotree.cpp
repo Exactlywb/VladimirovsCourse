@@ -110,9 +110,7 @@ namespace Tree {
 		for (int i = 0; i < countTriangles; ++i) {
 			std::cin >> tmp;
 
-			// if (!tmp.isTriangle())
-			// 	continue;
-			// TODO: we must handle degenerate triangles
+			tmp.typeOfDegenerate();
 			
 			listOfTriangles_.push_front(tmp);
 

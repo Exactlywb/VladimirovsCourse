@@ -5,7 +5,7 @@
 #include <cmath>
 #include <list>
 #include "triangle.hpp"
-#include "vector.hpp"
+// #include "vector.hpp"
 
 namespace Tree {
 	using pType = double;
