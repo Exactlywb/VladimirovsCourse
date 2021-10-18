@@ -461,11 +461,7 @@ namespace GObjects {
     }
 
     bool IntersectSegments (const Vector& begin_1, const Vector& segment_1, const Vector& begin_2, const Vector& segment_2) {        
-<<<<<<< HEAD
-        Vector cross  = segment_1 ^ segment_2; //TODO ask Vlad why it's not just a mixed product
-=======
         Vector cross  = segment_1 ^ segment_2;
->>>>>>> d286a22b1e831b3c19104950a93e52b1dca00d1d
         Vector difVec = begin_2 - begin_1;
 
         if (cross == Vector {}) {
@@ -531,51 +527,6 @@ namespace GObjects {
     //##############################################################################
     //                          DEGENERATE INTERSECTION
     //##############################################################################
-<<<<<<< HEAD
-    bool IntersectDegenerates (const Triangle &tr, const Vector &point) {
-        return tr.pointInTriangle(point);
-    }
-
-    bool IntersectDegenerates (const Triangle &tr, const Segment &segment) {
-        Vector norm{};
-        pType coefD = 0;
-        tr.calcNormal (norm);
-        tr.calcCoefD (norm, coefD);
-
-        pType beginDist = CalcDist (norm, coefD, segment.begin_);
-        pType endDist = CalcDist (norm, coefD, segment.begin_ + segment.direct_);
-
-        if (DoubleCmp (beginDist, 0) == 0 && DoubleCmp(endDist, 0) == 0) {
-            for (int i = 0; i < 3; ++i)
-                if(IntersectSegments (segment.begin_, segment.direct_, tr.getVec(i), tr.getVec((i + 1) % 3) - tr.getVec(i)))
-                    return true;
-            
-            return false;
-        }
-
-        if (DoubleCmp (beginDist, 0) == 0)
-            if (tr.pointInTriangle (segment.begin_))
-                return true;
-
-        if (DoubleCmp(endDist, 0) == 0)
-            if (tr.pointInTriangle (segment.begin_ + segment.direct_))
-                return true;
-
-        if (beginDist * endDist > 0)
-            return false;
-
-        pType param = (-coefD - segment.begin_ * norm) / (norm.getCoord(0) + norm.getCoord(1) + norm.getCoord(2));
-        
-        Vector intersectionPoint {};
-        for (int i = 0; i < 3; ++i) {
-            intersectionPoint.setCoord(i, segment.begin_.getCoord(i) + param * segment.direct_.getCoord(i));
-        }
-
-        return tr.pointInTriangle (intersectionPoint);
-    }
-
-    bool IntersectDegenerates (const Segment &segment1, const Segment &segment2) {
-=======
     bool IntersectDegenerates (const Triangle &tr, const Vector &point) {
         return tr.pointInTriangle(point);
     }
@@ -619,7 +570,6 @@ namespace GObjects {
     }
 
     bool IntersectDegenerates (const Segment &segment1, const Segment &segment2) {
->>>>>>> d286a22b1e831b3c19104950a93e52b1dca00d1d
 
         Vector firstBeginVec  = segment1.begin_;
         Vector secondBeginVec = segment2.begin_;
