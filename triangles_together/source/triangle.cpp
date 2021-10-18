@@ -384,27 +384,36 @@ namespace GObjects {
 	//##############################################################################
     //                         TRIANGLE-2D INTERSECTION (Belov)
     //##############################################################################
+    
+    static bool CheckPointInSegment (const Vector& beginPVec, const Vector& directVec) {
+
+        double vecLen = beginPVec.squareLength ();
+
+        double directLen = directVec.squareLength ();
+        
+		pType dir = ((beginPVec * directVec) / (std::sqrt(vecLen) * std::sqrt(directLen)));
+
+        if (DoubleCmp (dir, 1.0) == 0 && DoubleCmp (directLen, vecLen) >= 0)
+            return true;
+        
+        return false;
+
+    }
 
 	bool Triangle::pointInTriangle (const Vector &point) const{
 		Vector side = rVecs_[2] - rVecs_[1];
 
-		Vector vec = point - rVecs_[0];
+		Vector beginPVec = point - rVecs_[0];
 
-		if(vec == 0)
+		if(beginPVec == 0)
 			return true;
 
-		Vector cross = side ^ vec;
+		Vector cross = side ^ beginPVec;
 
-		Vector vectorPsOfTwoLines     = IntersectionPointOfTwoLines (rVecs_[1], side, vec, cross, rVecs_[0] - rVecs_[1]) - rVecs_[0];
-        double vectorPsOfTwoLinesLen  = vectorPsOfTwoLines.squareLength ();
+		Vector vectorPsOfTwoLines = IntersectionPointOfTwoLines (rVecs_[1], side, beginPVec, cross, rVecs_[0] - rVecs_[1]) - rVecs_[0];
+        
+        return CheckPointInSegment (beginPVec, vectorPsOfTwoLines);
 
-        double vecLen = vec.squareLength ();
-		pType dir = ((vec * vectorPsOfTwoLines) / (std::sqrt(vecLen) * std::sqrt(vectorPsOfTwoLinesLen)));
-
-        if (DoubleCmp (dir, 1.0) == 0 && DoubleCmp (vectorPsOfTwoLinesLen, vecLen) >= 0)
-            return true;
-
-		return false;
 	} 
 
     bool Intersect2DTriangles (const Triangle &tr1, const Triangle &tr2) {	
@@ -540,7 +549,7 @@ namespace GObjects {
 		}
 
 		if (DoubleCmp (beginDist, 0) == 0)
-			if (tr.pointInTriangle (segment.begin_))
+			if (tr.pointInTriangle (segment.begin_)) //TODO remove from class Triangle
 				return true;
 
 		if (DoubleCmp(endDist, 0) == 0)
@@ -584,13 +593,12 @@ namespace GObjects {
         Vector beginVec     = segment.begin_;
         Vector directVec    = segment.direct_;
 
-        double firstFrac    = (point.getCoord (0) - beginVec.getCoord (0)) / (directVec.getCoord (0));
-        double secondFrac   = (point.getCoord (1) - beginVec.getCoord (1)) / (directVec.getCoord (1));
-        double thirdFrac    = (point.getCoord (2) - beginVec.getCoord (2)) / (directVec.getCoord (2));
+        Vector pBeginVec    = beginVec - point;
 
-        if (DoubleCmp (firstFrac, secondFrac) == 0 &&
-            DoubleCmp (secondFrac, thirdFrac) == 0)
-            return true;
+        Vector crossProduct = pBeginVec ^ directVec;
+        if (crossProduct == GetZeroVector ())
+            return CheckPointInSegment (pBeginVec, directVec);
+
         return false;
 
 	}
