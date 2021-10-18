@@ -1,32 +1,32 @@
 #include "../include/vector.hpp"
 
 namespace GObjects {
-	Vector::Vector (pType x, pType y, pType z):
+    Vector::Vector (pType x, pType y, pType z):
                 coordinates_ {x, y, z} {}
 
     pType Vector::getCoord (int coordNum) const {
-		if (coordNum > 2) {
-			return 0;
-		}
+        if (coordNum > 2) {
+            return 0;
+        }
 
-		return coordinates_ [coordNum];
-	}
+        return coordinates_ [coordNum];
+    }
 
-	pType Vector::getAbsMaxCoord () const {
-		return std::max ({std::abs (coordinates_ [0]), 
-						  std::abs (coordinates_ [1]), 
-						  std::abs (coordinates_ [2])});
-	}
+    pType Vector::getAbsMaxCoord () const {
+        return std::max ({std::abs (coordinates_ [0]), 
+                          std::abs (coordinates_ [1]), 
+                          std::abs (coordinates_ [2])});
+    }
 
-	pType Vector::getAbsMinCoord () const {
-		return std::min ({std::abs (coordinates_ [0]), 
-						  std::abs (coordinates_ [1]), 
-						  std::abs (coordinates_ [2])});
-	}
+    pType Vector::getAbsMinCoord () const {
+        return std::min ({std::abs (coordinates_ [0]), 
+                          std::abs (coordinates_ [1]), 
+                          std::abs (coordinates_ [2])});
+    }
 
-	void Vector::setCoord (const int coordNum, pType coord) {
-		coordinates_ [coordNum] = coord;
-	}
+    void Vector::setCoord (const int coordNum, pType coord) {
+        coordinates_ [coordNum] = coord;
+    }
 
     pType Vector::squareLength () const {
         const Vector* thisRef = this;
@@ -64,13 +64,13 @@ namespace GObjects {
     Vector operator * (pType mulN, const Vector &v) {
 
         Vector newVector   (mulN * v.getCoord (0),
-                        	mulN * v.getCoord (1),
+                            mulN * v.getCoord (1),
                             mulN * v.getCoord (2));
 
         return newVector;
         
     }
-	
+    
     Vector operator / (const Vector &v, pType divN) {
 
         Vector newVector (v.getCoord (0) / divN,
@@ -132,20 +132,20 @@ namespace GObjects {
 
         if (!DoubleCmp(firstV.getCoord (0), secondV.getCoord (0)) &&
             !DoubleCmp(firstV.getCoord (1), secondV.getCoord (1)) &&
-			!DoubleCmp(firstV.getCoord (2), secondV.getCoord (2)))
+            !DoubleCmp(firstV.getCoord (2), secondV.getCoord (2)))
             return 1;
         
         return 0;
 
     }
 
-	double determinant (const Vector &first, const Vector &second, const Vector &third) {
+    double determinant (const Vector &first, const Vector &second, const Vector &third) {
 
-		return (first.getCoord(0) * second.getCoord(1) * third.getCoord(2) - 
-				first.getCoord(0) * second.getCoord(2) * third.getCoord(1) -
-				first.getCoord(1) * second.getCoord(0) * third.getCoord(2) +
-				first.getCoord(1) * second.getCoord(2) * third.getCoord(0) +
-				first.getCoord(2) * second.getCoord(0) * third.getCoord(1) -
-				first.getCoord(2) * second.getCoord(1) * third.getCoord(0));
-	}
+        return (first.getCoord(0) * second.getCoord(1) * third.getCoord(2) - 
+                first.getCoord(0) * second.getCoord(2) * third.getCoord(1) -
+                first.getCoord(1) * second.getCoord(0) * third.getCoord(2) +
+                first.getCoord(1) * second.getCoord(2) * third.getCoord(0) +
+                first.getCoord(2) * second.getCoord(0) * third.getCoord(1) -
+                first.getCoord(2) * second.getCoord(1) * third.getCoord(0));
+    }
 }

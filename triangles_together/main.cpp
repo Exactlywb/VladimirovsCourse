@@ -3,12 +3,12 @@
 
 int main()
 {
-//	int countTriangles;
-//	std::cin >> countTriangles;
+// int countTriangles;
+// std::cin >> countTriangles;
 
-//	Tree::Octotree tree;
+// Tree::Octotree tree;
 
-//	tree.fillTree(countTriangles);
+// tree.fillTree(countTriangles);
 
     GObjects::Triangle tr1 {};
     GObjects::Triangle tr2 {};

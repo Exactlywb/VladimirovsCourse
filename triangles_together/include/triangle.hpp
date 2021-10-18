@@ -12,25 +12,23 @@
 #include "common.hpp"
 
 namespace GObjects {
+//***
+//*  Actually, it makes sense to give opportunity to handle
+//* of the degradated cases to the classes themselves. Some geometric
+//* objects may not be interested in that. Anothers may handle it by
+//* another way.
+//***
+// enum DegenerateType {
 
+//     NONE_DEG,
+//     DEG_POINT,
+//     DEG_SEGMENT
 
-    //***
-    //*  Actually, it makes sense to give opportunity to handle
-    //* of the degradated cases to the classes themselves. Some geometric
-    //* objects may not be interested in that. Anothers may handle it by
-    //* another way.
-    //***
-    // enum DegenerateType {
+// };
 
-    //     NONE_DEG,
-    //     DEG_POINT,
-    //     DEG_SEGMENT
-
-    // };
-
-    //##############################################################################
-    //                         PLANE-CLASS PART
-    //##############################################################################
+//##############################################################################
+//                         PLANE-CLASS PART
+//##############################################################################
     class Plane {
           Vector nVec_;
           pType d_;
@@ -54,31 +52,31 @@ namespace GObjects {
 
     private:
           Vector rVecs_[3] {};
-		  char typeOfDegeneration_; 	// 1 is not degenerate;
-										// 2 is a point
-										// 4 is a segment
+            char typeOfDegeneration_;   // 1 is not degenerate;
+                                        // 2 is a point
+                                        // 4 is a segment
 
     public:
-          Triangle ();
+        Triangle ();
 
-          Triangle (const Vector &vec1, const Vector &vec2, const Vector &vec3);
+        Triangle (const Vector &vec1, const Vector &vec2, const Vector &vec3);
 
-          void setVec (Vector &vec, int num);
+        void setVec (Vector &vec, int num);
 
-          Vector getVec (int num) const;
+        Vector getVec (int num) const;
 
-          pType getAbsMaxCoord () const;
-		  pType getAbsMinCoord () const;
+        pType getAbsMaxCoord () const;
+        pType getAbsMinCoord () const;
 
-		  void typeOfDegenerate     ();
-		  char getDegenerationType  () const;
+        void typeOfDegenerate     ();
+        char getDegenerationType  () const;
 
-          bool signedDistance (const Plane &plain) const;
+        bool signedDistance (const Plane &plain) const;
 
-          void calcNormal (Vector &normalVector) const;
-          void calcCoefD (Vector &normalV, pType &ourCoefD) const;
-    
-          bool pointInTriangle (const Vector &point) const;
+        void calcNormal (Vector &normalVector) const;
+        void calcCoefD (Vector &normalV, pType &ourCoefD) const;
+
+        bool pointInTriangle (const Vector &point) const;
     };
 
     //##############################################################################
@@ -109,41 +107,41 @@ namespace GObjects {
     bool IntersectSegments    (const Vector& begin_1, const Vector& segment_1, const Vector& begin_2, const Vector& segment_2);
 
     bool Intersect2DTriangles (const Triangle &tr1, const Triangle &tr2);
-	Vector IntersectionPointOfTwoLines (const Vector &begin_1, const Vector &segment_1, 
-										const Vector &segment_2, const Vector &segment_3, 
-										const Vector &difVec);
+    Vector IntersectionPointOfTwoLines (const Vector &begin_1, const Vector &segment_1, 
+                                        const Vector &segment_2, const Vector &segment_3, 
+                                        const Vector &difVec);
 
 
 //=====================================================================================================
 
-	struct Segment {
-		Vector begin_, direct_;
+    struct Segment {
+        Vector begin_, direct_;
 
-		Segment (const Triangle &tr) {
-			Vector side1 = tr.getVec(0) - tr.getVec(1);
-			Vector side2 = tr.getVec(2) - tr.getVec(1);
+        Segment (const Triangle &tr) {
+            Vector side1 = tr.getVec(0) - tr.getVec(1);
+            Vector side2 = tr.getVec(2) - tr.getVec(1);
 
-			if ((side1 * side2) / (std::sqrt(side1.squareLength()) * std::sqrt(side2.squareLength())) == -1) {
-				begin_ = tr.getVec(0);
-				direct_ = tr.getVec(2) - tr.getVec(0);
-			}
-			else {
-				begin_ = tr.getVec(1);
-				if (side1.squareLength() > side2.squareLength())
-					direct_ = side1;
-				else 
-					direct_ = side2;
-			}
-		}
-	};
+            if ((side1 * side2) / (std::sqrt(side1.squareLength()) * std::sqrt(side2.squareLength())) == -1) {
+                begin_ = tr.getVec(0);
+                direct_ = tr.getVec(2) - tr.getVec(0);
+            }
+            else {
+                begin_ = tr.getVec(1);
+                if (side1.squareLength() > side2.squareLength())
+                    direct_ = side1;
+                else 
+                    direct_ = side2;
+            }
+        }
+    };
 
 //=====================================================================================================
 
-	bool IntersectDegenerates (const Triangle &tr, const Vector &point);
-	bool IntersectDegenerates (const Triangle &tr, const Segment &segment);
-	bool IntersectDegenerates (const Segment &segment1, const Segment &segment2);
-	bool IntersectDegenerates (const Segment &segment, const Vector &point);
-	bool IntersectDegenerates (const Vector &point1, const Vector &point2);
+    bool IntersectDegenerates (const Triangle &tr, const Vector &point);
+    bool IntersectDegenerates (const Triangle &tr, const Segment &segment);
+    bool IntersectDegenerates (const Segment &segment1, const Segment &segment2);
+    bool IntersectDegenerates (const Segment &segment, const Vector &point);
+    bool IntersectDegenerates (const Vector &point1, const Vector &point2);
 
 }
 #endif
