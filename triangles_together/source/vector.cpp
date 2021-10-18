@@ -13,15 +13,15 @@ namespace GObjects {
 	}
 
 	pType Vector::getAbsMaxCoord () const {
-		return std::max ({(const pType)std::abs (coordinates_ [0]), 
-						  (const pType)std::abs (coordinates_ [1]), 
-						  (const pType)std::abs (coordinates_ [2])});
+		return std::max ({std::abs (coordinates_ [0]), 
+						  std::abs (coordinates_ [1]), 
+						  std::abs (coordinates_ [2])});
 	}
 
 	pType Vector::getAbsMinCoord () const {
-		return std::min ({(const pType)std::abs (coordinates_ [0]), 
-						  (const pType)std::abs (coordinates_ [1]), 
-						  (const pType)std::abs (coordinates_ [2])});
+		return std::min ({std::abs (coordinates_ [0]), 
+						  std::abs (coordinates_ [1]), 
+						  std::abs (coordinates_ [2])});
 	}
 
 	void Vector::setCoord (const int coordNum, pType coord) {
@@ -139,7 +139,7 @@ namespace GObjects {
 
     }
 
-	double determinant (Vector first, Vector second, Vector third) {
+	double determinant (const Vector &first, const Vector &second, const Vector &third) {
 
 		return (first.getCoord(0) * second.getCoord(1) * third.getCoord(2) - 
 				first.getCoord(0) * second.getCoord(2) * third.getCoord(1) -
