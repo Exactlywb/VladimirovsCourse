@@ -6,6 +6,6 @@
 8 5 2    
 5 7 1
 
-NOT INTERSECTED
+0
 
 

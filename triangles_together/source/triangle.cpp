@@ -38,7 +38,7 @@ namespace GObjects {
 	Triangle::Triangle (): 
 		rVecs_ {} {
 
-        typeOfDegeneration_ = 1; //Point
+        typeOfDegeneration_ = 2; //Point
         
     }
 
@@ -51,6 +51,7 @@ namespace GObjects {
 
 	void Triangle::setVec (Vector &vec, int num) { 
 		rVecs_[num] = vec;
+        typeOfDegenerate();
 	}
 
 	Vector Triangle::getVec (int num) const { 
@@ -291,7 +292,7 @@ namespace GObjects {
             case 0b1000:
                 return IntersectDegenerates (Segment (tr1), Segment (tr2));
             default:
-                std::cout << "Unexpected bitmask in function " << __func__ << std::endl;
+                std::cout << "Unexpected bitmask in function " << (int) degFlag << " " << __func__ << std::endl;
                 return false;
 
         }
