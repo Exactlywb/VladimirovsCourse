@@ -6,7 +6,7 @@
 #include "common.hpp"
 
 namespace GObjects {
-	using pType = double;
+    using pType = double;
 
     class Vector {
 
@@ -18,7 +18,7 @@ namespace GObjects {
         pType getCoord (int coordNum) const;
 
         pType getAbsMaxCoord () const;
-		pType getAbsMinCoord () const;
+        pType getAbsMinCoord () const;
 
         void setCoord (const int coordNum, pType coord);
 
@@ -40,10 +40,10 @@ namespace GObjects {
     std::istream& operator >>   (std::istream &in, Vector &thou);
 
     bool operator ==            (const Vector &firstV, const Vector &secondV);
-	
+    
     double determinant                  (const Vector &first, const Vector &second,
                                          const Vector &third);
-	Vector IntersectionPointOfTwoLines  (const Vector &begin_1, const Vector &segment_1, 
+    Vector IntersectionPointOfTwoLines  (const Vector &begin_1, const Vector &segment_1, 
                                          const Vector &segment_2, const Vector &segment_3, 
                                          const Vector &difVec);
 }

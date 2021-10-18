@@ -1,15 +1,15 @@
 #include <iostream>
 #include "include/octotree.hpp"
 
-const int numTests = 2;
+const int numTests = 8;
 
 
 int TestIntersectionFunction () {
 
-    const char* nameTests[numTests] = {"../tests/test7.txt", "../tests/test8.txt"};
+    // const char* nameTests[numTests] = {"../tests/test7.txt"};
 
-    // const char* nameTests[numTests] = {"../tests/test1.txt", "../tests/test2.txt", "../tests/test3.txt", "../tests/test4.txt", "../tests/test5.txt",
-    //                                    "../tests/test6.txt", "../tests/test7.txt", "../tests/test8.txt"};
+    const char* nameTests[numTests] = {"../tests/test1.txt", "../tests/test2.txt", "../tests/test3.txt", "../tests/test4.txt", "../tests/test5.txt",
+                                       "../tests/test6.txt", "../tests/test7.txt", "../tests/test8.txt"};
 
 
     for (int i = 0; i < numTests; ++i) {
@@ -49,12 +49,12 @@ int TestIntersectionFunction () {
 
 int main()
 {
-//	int countTriangles;
-//	std::cin >> countTriangles;
+// int countTriangles;
+// std::cin >> countTriangles;
 
-//	Tree::Octotree tree;
+// Tree::Octotree tree;
 
-//	tree.fillTree(countTriangles);
+// tree.fillTree(countTriangles);
 
     // GObjects::Triangle tr1 {};
     // GObjects::Triangle tr2 {};
