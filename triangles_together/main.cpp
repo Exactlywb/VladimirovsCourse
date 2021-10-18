@@ -9,24 +9,21 @@ int TestIntersectionFunction ();
 
 int main()
 {
-    std::cout << GetTriangles() << std::endl;
+
+    std::cout << GetTriangles () << std::endl;
 
     return 0;
 }
 
 int TestIntersectionFunction () {
 
-    // const char* nameTests[numTests] = {"../tests/test7.txt"};
-
-    const char* nameTests[numTests] = {"../tests/trXseg/test1.txt", "../tests/trXseg/test2.txt", "../tests/trXseg/test3.txt", "../tests/trXseg/test4.txt", "../tests/trXseg/test5.txt",
-                                       "../tests/trXseg/test6.txt", "../tests/trXseg/test7.txt"};
+    const char* nameTests[numTests] = {"tests/trXtr/test1.txt", "tests/trXtr/test2.txt", "tests/trXtr/test3.txt", "tests/trXtr/test4.txt", "tests/trXtr/test5.txt",
+                                       "tests/trXtr/test6.txt", "tests/trXtr/test7.txt"};
 
 
     for (int i = 0; i < numTests; ++i) {
 
         FILE* ftest;
-
-        
 
         ftest = freopen (nameTests[i], "r", stdin);
             if (ftest == NULL) {

@@ -314,7 +314,7 @@ namespace GObjects {
     }
 
     bool Intersect3DTriangles (const Triangle& tr1, const Triangle& tr2) {
-
+        
         //Handling for the degenerated triangles
 
         char degFlag = tr1.getDegenerationType () + tr2.getDegenerationType ();
@@ -327,7 +327,6 @@ namespace GObjects {
         //Normal vector for the first plane
         Vector firstNormalVec;
         tr1.calcNormal (firstNormalVec);
-
         //Coef D for the first plane
         pType firstD = 0;
         tr1.calcCoefD (firstNormalVec, firstD);
@@ -360,7 +359,6 @@ namespace GObjects {
         
         Vector commonP;
         CountCommonP (firstD, secondD, firstNormalVec, secondNormalVec, commonP);
-
         //result: now we have common point and direction vector for the common lane
 
         //project triangle's vertices
