@@ -328,7 +328,6 @@ namespace GObjects {
         Vector firstNormalVec;
         tr1.calcNormal (firstNormalVec);
 
-        std::cout << "Here!\n";
         //Coef D for the first plane
         pType firstD = 0;
         tr1.calcCoefD (firstNormalVec, firstD);
@@ -363,8 +362,6 @@ namespace GObjects {
         CountCommonP (firstD, secondD, firstNormalVec, secondNormalVec, commonP);
 
         //result: now we have common point and direction vector for the common lane
-        std::cout << "Common point: " << commonP << std::endl;
-        std::cout << "Direction: " << leadVec << std::endl;
 
         //project triangle's vertices
         pType firstProj [3] = {};
@@ -378,13 +375,6 @@ namespace GObjects {
         
         pType secondTParams [2] = {};
         CalcTParams (secondTParams, secondProj, firstNormalVec, firstD, tr2);
-
-        for (size_t i = 0; i < 2; i++) {
-        
-            std::cout << "firstT: "  << firstTParams  [i] << std::endl;
-            std::cout << "secondT: " << secondTParams [i] << std::endl;
-        
-        }
 
         return IsIntersectedTIntervals (firstTParams, secondTParams);
         
@@ -594,8 +584,6 @@ namespace GObjects {
         Vector connectingVec  = secondBeginVec - firstBeginVec;
 
         double mixedProduct   = firstBeginVec * (secondBeginVec ^ connectingVec);
-
-        // std::cout << "Mixed product "  << mixedProduct << std::endl; 
 
         if (DoubleCmp (mixedProduct, 0.0) == 0)
         {
