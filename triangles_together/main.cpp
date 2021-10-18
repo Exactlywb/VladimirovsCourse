@@ -1,8 +1,18 @@
 #include <iostream>
-#include "include/octotree.hpp"
+#include "include/octree.hpp"
 
 const int numTests = 7;
 
+int GetTriangles ();
+int TestIntersectionFunction ();
+
+
+int main()
+{
+    std::cout << GetTriangles() << std::endl;
+
+    return 0;
+}
 
 int TestIntersectionFunction () {
 
@@ -45,33 +55,4 @@ int TestIntersectionFunction () {
 
     return 0;   
 
-}
-
-int main()
-{
-// int countTriangles;
-// std::cin >> countTriangles;
-
-// Tree::Octotree tree;
-
-// tree.fillTree(countTriangles);
-
-    // GObjects::Triangle tr1 {};
-    // GObjects::Triangle tr2 {};
-    // std::cin >> tr1 >> tr2;
-    // assert (std::cin.good());
-
-    // std::cout << tr1;
-    // std::cout << tr2;
-    
-    // bool test = GObjects::Intersect3DTriangles (tr1, tr2);
-    // if (test)
-    //     std::cout << "Intersect" << std::endl;
-    // else
-    //     std::cout << "Not :(" << std::endl;
-
-    if ( (TestIntersectionFunction ()) == -1)
-        std::cout << "Troubles with files!" << std::endl;
-
-    return 0;
 }

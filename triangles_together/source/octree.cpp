@@ -1,7 +1,7 @@
-#include "../include/octotree.hpp"
+#include "../include/octree.hpp"
 
 namespace Tree {
-    int Octotree::whatChapter (GObjects::Vector &leftBorder, GObjects::Vector &rightBorder, const GObjects::Triangle &tr) {
+    int Octree::whatChapter (GObjects::Vector &leftBorder, GObjects::Vector &rightBorder, const GObjects::Triangle &tr) {
         int chapter[3] {}; // (z,y,x)
 
         for (int vertexNum = 0; vertexNum < 3; ++vertexNum) {
@@ -26,8 +26,8 @@ namespace Tree {
 
     //-----------------------------------------------------------------------------------------------------
 
-    void Octotree::createNewNode (Octotree &curRoot, int chapter) {
-        curRoot.child_[chapter] = new Octotree {};
+    void Octree::createNewNode (Octree &curRoot, int chapter) {
+        curRoot.child_[chapter] = new Octree {};
         
         GObjects::Vector right = curRoot.rightBorder_;
         GObjects::Vector left = curRoot.leftBorder_;
@@ -47,7 +47,7 @@ namespace Tree {
 
     //-----------------------------------------------------------------------------------------------------
 
-    void Octotree::siftTree(Octotree &curRoot) {
+    void Octree::siftTree(Octree &curRoot) {
         if (curRoot.listOfTriangles_.size() <= 2 || (curRoot.rightBorder_ - curRoot.leftBorder_).squareLength() < LittleSpace)
             return;
 
@@ -83,7 +83,7 @@ namespace Tree {
 
     //-----------------------------------------------------------------------------------------------------
 
-    Octotree::Octotree (GObjects::Vector right, GObjects::Vector left) :
+    Octree::Octree (GObjects::Vector right, GObjects::Vector left) :
         rightBorder_ (right),
         leftBorder_ (left),
         child_ {} {
@@ -91,7 +91,7 @@ namespace Tree {
 
     //-----------------------------------------------------------------------------------------------------
 
-    Octotree::~Octotree () {
+    Octree::~Octree () {
         for(int i = 0; i < 8; ++i) {
             if(!child_[i])
                 continue;
@@ -102,7 +102,7 @@ namespace Tree {
 
     ///-----------------------------------------------------------------------------------------------------
 
-    void Octotree::fillTree(int countTriangles) {			
+    void Octree::fillTree(int countTriangles) {			
         pType 	maxInTriangle 	= 0, 
                 maxInTree 		= 0;
         GObjects::Triangle tmp;
@@ -128,7 +128,7 @@ namespace Tree {
 
     //-----------------------------------------------------------------------------------------------------
 
-    void Octotree::dumpTree (Octotree &curRoot) {
+    void Octree::dumpTree (Octree &curRoot) {
         std::cout << "left = " << curRoot.leftBorder_ << "; right = " << curRoot.rightBorder_ << std::endl;
 
         for(auto v : curRoot.listOfTriangles_)
