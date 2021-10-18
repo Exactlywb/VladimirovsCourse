@@ -99,12 +99,11 @@ namespace GObjects {
 		for (int i = 0; i < 3; ++i)
 			dists[i] = rVecs_ [i] * plain.getVec () + plain.getD ();
 
-		// long long firstPSide = dists [0];
-		return ((( (long long) (dists[0]) & (long long) (dists[1]) & (long long) (dists[2])) | 
-				~(((long long) (dists[0]) | (long long) (dists[1]) 
-				|  (long long) (dists[2])))) //it was Vlad. Blame it on him :))))))))) 
-								>> (sizeof(pType) * 8 - 1));
-	
+        if (dists[0] * dists[1] > 0)
+            if (dists[0] * dists[2] > 0)
+                return true;
+
+        return false;	
 	}
 
 	void Triangle::calcNormal (Vector &normalVector) const {
@@ -312,7 +311,8 @@ namespace GObjects {
 		//Normal vector for the first plane
         Vector firstNormalVec;
         tr1.calcNormal (firstNormalVec);
-        
+
+        std::cout << "Here!\n";
         //Coef D for the first plane
         pType firstD = 0;
         tr1.calcCoefD (firstNormalVec, firstD);
@@ -327,7 +327,8 @@ namespace GObjects {
         tr2.calcCoefD (secondNormalVec, secondD);
 
 		if ((firstNormalVec ^ secondNormalVec) == 0) {
-
+            
+            std::cout << "Oh, pain!\n";
 			if (DoubleCmp(firstD, secondD))
 				return false;
 			printf("2D called\n");
@@ -335,10 +336,16 @@ namespace GObjects {
 		}
 
 		if (tr1.signedDistance ({secondNormalVec, secondD}))
+        {
+            std::cout << "wefwfwfwfef";
 			return false;
+        }
 		
-		if (tr2.signedDistance ({firstNormalVec, firstD}))
+		if (tr2.signedDistance ({firstNormalVec, firstD})) 
+        {
+            std::cout << " fwfwefwefwefwefwefewfwe\n";
 			return false;
+        }
 
         //leading vector for the common lane
         Vector leadVec = firstNormalVec ^ secondNormalVec;
