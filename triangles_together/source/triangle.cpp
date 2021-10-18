@@ -435,7 +435,30 @@ namespace GObjects {
 	}
 
 	bool IntersectDegenerates (const Triangle &tr, const Segment &segment) {	//TODO
+		Vector norm{};
+		pType coefD = 0;
+		tr.calcNormal (norm);
+		tr.calcCoefD (norm, coefD);
 
+		pType beginDist = CalcDist (norm, coefD, segment.begin_);
+		pType endDist = CalcDist (norm, coefD, segment.begin_ + segment.direct_);
+
+		if (DoubleCmp (beginDist, 0) == 0 && DoubleCmp(endDist, 0) == 0) {
+			
+		}
+
+		if (DoubleCmp (beginDist, 0) == 0)
+			if (tr.pointInTriangle (segment.begin_))
+				return true;
+
+		if (DoubleCmp(endDist, 0) == 0)
+			if (tr.pointInTriangle (segment.begin_ + segment.direct_))
+				return true;
+
+		if (beginDist * endDist > 0)
+			return false;
+
+		
 	}
 
 	bool IntersectDegenerates (const Segment &segment1, const Segment &segment2) {	//TODO
