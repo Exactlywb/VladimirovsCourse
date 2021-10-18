@@ -450,8 +450,20 @@ namespace GObjects {
         return false;
 	}
 
-	bool IntersectDegenerates (const Segment &segment1, const Segment &segment2) {	//TODO
+	bool IntersectDegenerates (const Segment &segment1, const Segment &segment2) {
+
+        Vector firstBeginVec  = segment1.begin_;
+        Vector secondBeginVec = segment2.begin_;
+
+        Vector connectingVec  = firstBeginVec - secondBeginVec;
+
+        double mixedProduct   = firstBeginVec * (secondBeginVec ^ connectingVec);
+
+        if (DoubleCmp (mixedProduct, 0.0) == 0)
+            return true;
+
         return false;
+
 	}
 
 	bool IntersectDegenerates (const Segment &segment, const Vector &point) {
