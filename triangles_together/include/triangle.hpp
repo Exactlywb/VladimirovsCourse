@@ -13,13 +13,20 @@
 
 namespace GObjects {
 
-    enum DegenerateType {
 
-        NONE_DEG,
-        DEG_POINT,
-        DEG_SEGMENT
+    //***
+    //*  Actually, it makes sense to give opportunity to handle
+    //* of the degradated cases to the classes themselves. Some geometric
+    //* objects may not be interested in that. Anothers may handle it by
+    //* another way.
+    //***
+    // enum DegenerateType {
 
-    };
+    //     NONE_DEG,
+    //     DEG_POINT,
+    //     DEG_SEGMENT
+
+    // };
 
     //##############################################################################
     //                         PLANE-CLASS PART
@@ -47,9 +54,9 @@ namespace GObjects {
 
     private:
           Vector rVecs_[3] {};
-		  char typeOfDegeneration_; 	// 0 is not degenerate;
-										// 1 is segment
-										// 2 is point
+		  char typeOfDegeneration_; 	// 1 is not degenerate;
+										// 2 is a point
+										// 4 is a segment
 
     public:
           Triangle ();
@@ -63,8 +70,8 @@ namespace GObjects {
           pType getAbsMaxCoord () const;
 		  pType getAbsMinCoord () const;
 
-		  void typeOfDegenerate ();
-		  char getDegenerationType () const;
+		  void typeOfDegenerate     ();
+		  char getDegenerationType  () const;
 
           bool signedDistance (const Plane &plain) const;
 
