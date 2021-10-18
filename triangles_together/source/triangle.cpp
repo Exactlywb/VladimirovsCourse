@@ -61,18 +61,23 @@ namespace GObjects {
 						  rVecs_ [2].getAbsMinCoord ()});
 	}   
 
-	void Triangle::typeOfDegenerate (){
-		if (((rVecs_[2] - rVecs_[0]) ^ (rVecs_[1] - rVecs_[0])) == Vector ({0, 0, 0})) {
-			if(!DoubleCmp(getAbsMaxCoord(), getAbsMinCoord())){
-				typeOfDegeneration_ = 2;
+	void Triangle::typeOfDegenerate () {
+
+        Vector firstV = rVecs_ [0];
+
+		if (((rVecs_[2] - firstV) ^ (rVecs_[1] - firstV)) == GetZeroVector ()) {
+			if(!DoubleCmp(getAbsMaxCoord (), getAbsMinCoord ())){
+				typeOfDegeneration_ = DEG_POINT;
 				return;
 			}
 			else{
-				typeOfDegeneration_ = 1;
+				typeOfDegeneration_ = DEG_SEGMENT;
 				return;
 			}
 		}
-		typeOfDegeneration_ = 0;
+
+		typeOfDegeneration_ = NONE_DEG;
+
 	}
 
 	char Triangle::getDegenerationType () const {
@@ -80,6 +85,7 @@ namespace GObjects {
 	}
 
 	bool Triangle::signedDistance (const Plane &plain) const {
+
 		pType dists[3]{};
 
 		for (int i = 0; i < 3; ++i)
@@ -94,9 +100,11 @@ namespace GObjects {
 	}
 
 	void Triangle::calcNormal (Vector &normalVector) const {
+        
+        Vector firstV = rVecs_ [0];
 
-		Vector firstSide 	= rVecs_ [0] - rVecs_ [1];
-		Vector secondSide 	= rVecs_ [0] - rVecs_ [2];
+		Vector firstSide 	= firstV - rVecs_ [1];
+		Vector secondSide 	= firstV - rVecs_ [2];
 
 		normalVector = firstSide ^ secondSide;
 
@@ -132,11 +140,14 @@ namespace GObjects {
 		triangle.setVec(vec3, 2);
 
 		return in;
+
 	}
 
 	std::ostream &operator << (std::ostream &out, const Triangle &triangle) {
+
 		out << "{ " << triangle.getVec(0) << " ;\n " << triangle.getVec(1) << " ;\n " << triangle.getVec(2) << " }\n";
 		return out;
+
 	}
 
     //##############################################################################
@@ -158,6 +169,7 @@ namespace GObjects {
         pType bCoef = (firstD  * nScalarProduct - secondD * n1SqLength) / commonDenominator;
         
         commonP = aCoef * firstNormalVec + bCoef * secondNormalVec;
+
     
     }
     
@@ -434,7 +446,7 @@ namespace GObjects {
 		return tr.pointInTriangle(point);
 	}
 
-	bool IntersectDegenerates (const Triangle &tr, const Segment &segment) {	//TODO
+	bool IntersectDegenerates (const Triangle &tr, const Segment &segment) {
 		Vector norm{};
 		pType coefD = 0;
 		tr.calcNormal (norm);
@@ -444,7 +456,11 @@ namespace GObjects {
 		pType endDist = CalcDist (norm, coefD, segment.begin_ + segment.direct_);
 
 		if (DoubleCmp (beginDist, 0) == 0 && DoubleCmp(endDist, 0) == 0) {
+			for (int i = 0; i < 3; ++i)
+				if(IntersectSegments (segment.begin_, segment.direct_, tr.getVec(i), tr.getVec((i + 1) % 3) - tr.getVec(i)))
+					return true;
 			
+			return false;
 		}
 
 		if (DoubleCmp (beginDist, 0) == 0)
@@ -458,17 +474,49 @@ namespace GObjects {
 		if (beginDist * endDist > 0)
 			return false;
 
+		pType param = (-coefD - segment.begin_ * norm) / (norm.getCoord(0) + norm.getCoord(1) + norm.getCoord(2));
 		
+		Vector intersectionPoint {};
+		for (int i = 0; i < 3; ++i) {
+			intersectionPoint.setCoord(i, segment.begin_.getCoord(i) + param * segment.direct_.getCoord(i));
+		}
+
+		return tr.pointInTriangle (intersectionPoint);
 	}
 
-	bool IntersectDegenerates (const Segment &segment1, const Segment &segment2) {	//TODO
+	bool IntersectDegenerates (const Segment &segment1, const Segment &segment2) {
+
+        Vector firstBeginVec  = segment1.begin_;
+        Vector secondBeginVec = segment2.begin_;
+
+        Vector connectingVec  = firstBeginVec - secondBeginVec;
+
+        double mixedProduct   = firstBeginVec * (secondBeginVec ^ connectingVec);
+
+        if (DoubleCmp (mixedProduct, 0.0) == 0)
+            return true;
+
+        return false;
 
 	}
 
-	bool IntersectDegenerates (const Segment &segment, const Vector &point) {  //TODO
-		Vector vec = point - segment.begin_;
+	bool IntersectDegenerates (const Segment &segment, const Vector &point) {
 
-		// ((vec * segment.direct_) / (std::sqrt(vec.squareLength()) * std::sqrt(segment.direct_.squareLength())))
+        //here we using ((x - x_0) / a_x = (y - y_0) / a_y = (z - z_0) / a_z);
+
+        Vector beginVec     = segment.begin_;
+        Vector directVec    = segment.direct_;
+
+        double firstFrac    = (point.getCoord (0) - beginVec.getCoord (0)) / (directVec.getCoord (0));
+        double secondFrac   = (point.getCoord (1) - beginVec.getCoord (1)) / (directVec.getCoord (1));
+        double thirdFrac    = (point.getCoord (2) - beginVec.getCoord (2)) / (directVec.getCoord (2));
+
+        if (DoubleCmp (firstFrac, secondFrac) == 0 &&
+            DoubleCmp (secondFrac, thirdFrac) == 0)
+            return true;
+        
+        return false;
+
 	}
 
 	bool IntersectDegenerates (const Vector &point1, const Vector &point2) {
@@ -476,4 +524,12 @@ namespace GObjects {
 			return true;
 		return false;
 	}
+
+    const Vector GetZeroVector () {
+
+        static Vector zeroVector {0, 0, 0};
+        return zeroVector;
+
+    }
+
 }

@@ -12,10 +12,18 @@
 #include "common.hpp"
 
 namespace GObjects {
+
+    enum DegenerateType {
+
+        NONE_DEG,
+        DEG_POINT,
+        DEG_SEGMENT
+
+    };
+
     //##############################################################################
     //                         PLANE-CLASS PART
     //##############################################################################
-
     class Plane {
           Vector nVec_;
           pType d_;
