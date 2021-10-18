@@ -10,15 +10,15 @@ int main()
 
 //	tree.fillTree(countTriangles);
 
-    GObjects::Triangle tr1 {{0,0,1}, {-1,0,-1}, {1,0,-1}};
-    std::cout << tr1 << std::endl;
+    GObjects::Triangle tr1 {};
+    GObjects::Triangle tr2 {};
+    std::cin >> tr1 >> tr2;
+    assert (std::cin.good());
 
-    GObjects::Triangle tr2 {{0,0,1}, {0,0,1}, {0,0,1}};
-    std::cout << tr2 << std::endl;
-
-	GObjects::Vector point {0.5,0,-0.5};
-
-    bool test = tr1.pointInTriangle(point);
+    std::cout << tr1;
+    std::cout << tr2;
+    
+    bool test = GObjects::Intersect3DTriangles (tr1, tr2);
     if (test)
         std::cout << "Intersect" << std::endl;
     else

@@ -36,10 +36,18 @@ namespace GObjects {
     }
 
 	Triangle::Triangle (): 
-		rVecs_ {} {}
+		rVecs_ {} {
+
+        typeOfDegeneration_ = 1; //Point
+        
+    }
 
 	Triangle::Triangle (const Vector &vec1, const Vector &vec2, const Vector &vec3) :
-		rVecs_{vec1, vec2, vec3} {}
+		rVecs_{vec1, vec2, vec3} {
+        
+        typeOfDegenerate ();    //Set type of triangle degenerate
+
+    }
 
 	void Triangle::setVec (Vector &vec, int num) { 
 		rVecs_[num] = vec;
@@ -67,16 +75,16 @@ namespace GObjects {
 
 		if (((rVecs_[2] - firstV) ^ (rVecs_[1] - firstV)) == GetZeroVector ()) {
 			if(!DoubleCmp(getAbsMaxCoord (), getAbsMinCoord ())){
-				typeOfDegeneration_ = DEG_POINT;
+				typeOfDegeneration_ = (1 << 1);        //point
 				return;
 			}
 			else{
-				typeOfDegeneration_ = DEG_SEGMENT;
+				typeOfDegeneration_ = (1 << 2); //segment
 				return;
 			}
 		}
 
-		typeOfDegeneration_ = NONE_DEG;
+		typeOfDegeneration_ = 1;    //none degenerated
 
 	}
 
@@ -91,12 +99,11 @@ namespace GObjects {
 		for (int i = 0; i < 3; ++i)
 			dists[i] = rVecs_ [i] * plain.getVec () + plain.getD ();
 
-		// long long firstPSide = dists [0];
-		return ((( (long long) (dists[0]) & (long long) (dists[1]) & (long long) (dists[2])) | 
-				~(((long long) (dists[0]) | (long long) (dists[1]) 
-				|  (long long) (dists[2])))) //it was Vlad. Blame it on him :))))))))) 
-								>> (sizeof(pType) * 8 - 1));
-	
+        if (dists[0] * dists[1] > 0)
+            if (dists[0] * dists[2] > 0)
+                return true;
+
+        return false;	
 	}
 
 	void Triangle::calcNormal (Vector &normalVector) const {
@@ -238,16 +245,74 @@ namespace GObjects {
 		}
     }
 
+    //TODO reconstruct file
+    static bool HandleDegeneratedCases (const Triangle& tr1, const Triangle& tr2, const char degFlag) {
+
+        //There is a reason to ask why flag :   not degenerated (tr)    = 1 (0b1)
+        //                                      point                   = 2 (0b10)
+        //                                      segment                 = 4 (0b100)
+        //
+        //To clarify this let's build the table for the degFlag = tr1.getDegenerationType () | tr2.getDegenerationType ();
+        //                  |   (0b1) tr    |   (0b10) point    | (0b100) segment
+        // (0b1)   tr       |      0b10     |       0b11        |       0b101
+        // (0b10)  point    |      0b11     |       0b100       |       0b110
+        // (0b100) segment  |      0b101    |       0b110       |       0b1000
+        //
+        //As we can see, there's the only one value for every combination (up to permutation). 
+
+        switch (degFlag) {
+
+            case 0b11: {
+
+                if (tr1.getDegenerationType () == 0b10) //tr1 is a point
+                    return IntersectDegenerates (tr2, tr1.getVec (0));
+                else
+                    return IntersectDegenerates (tr1, tr2.getVec (0));
+                
+            }
+            case 0b100:
+                return IntersectDegenerates (tr1.getVec (0), tr2.getVec (0));
+            case 0b101: {
+
+                if (tr1.getDegenerationType () == 0b100) //tr1 is a segment
+                    return IntersectDegenerates (tr2, Segment (tr1));
+                else 
+                    return IntersectDegenerates (tr1, Segment (tr2));
+
+            }
+            case 0b110: {
+
+                if (tr1.getDegenerationType () == 0b10) //tr1 is a point
+                    return IntersectDegenerates (Segment (tr2), tr1.getVec (0));
+                else
+                    return IntersectDegenerates (Segment (tr1), tr2.getVec (0));
+
+            }
+            case 0b1000:
+                return IntersectDegenerates (Segment (tr1), Segment (tr2));
+            default:
+                std::cout << "Unexpected bitmask in function " << __func__ << std::endl;
+                return false;
+
+        }
+
+    }
+
     bool Intersect3DTriangles (const Triangle& tr1, const Triangle& tr2) {
-		if(tr1.getDegenerationType() + tr2.getDegenerationType() != 0) { //TODO
+
+        //Handling for the degenerated triangles
+        char degFlag = tr1.getDegenerationType () | tr2.getDegenerationType ();
+		if(degFlag != (1 << 1)) {
+
+            return HandleDegeneratedCases (tr1, tr2, degFlag);
 
 		}
-
 
 		//Normal vector for the first plane
         Vector firstNormalVec;
         tr1.calcNormal (firstNormalVec);
-        
+
+        std::cout << "Here!\n";
         //Coef D for the first plane
         pType firstD = 0;
         tr1.calcCoefD (firstNormalVec, firstD);
@@ -262,7 +327,8 @@ namespace GObjects {
         tr2.calcCoefD (secondNormalVec, secondD);
 
 		if ((firstNormalVec ^ secondNormalVec) == 0) {
-
+            
+            std::cout << "Oh, pain!\n";
 			if (DoubleCmp(firstD, secondD))
 				return false;
 			printf("2D called\n");
@@ -270,10 +336,16 @@ namespace GObjects {
 		}
 
 		if (tr1.signedDistance ({secondNormalVec, secondD}))
+        {
+            std::cout << "wefwfwfwfef";
 			return false;
+        }
 		
-		if (tr2.signedDistance ({firstNormalVec, firstD}))
+		if (tr2.signedDistance ({firstNormalVec, firstD})) 
+        {
+            std::cout << " fwfwefwefwefwefwefewfwe\n";
 			return false;
+        }
 
         //leading vector for the common lane
         Vector leadVec = firstNormalVec ^ secondNormalVec;
@@ -306,6 +378,7 @@ namespace GObjects {
         }
 
         return IsIntersectedTIntervals (firstTParams, secondTParams);
+        
     }
 
 	//##############################################################################
@@ -379,7 +452,7 @@ namespace GObjects {
     }
 
     bool IntersectSegments (const Vector& begin_1, const Vector& segment_1, const Vector& begin_2, const Vector& segment_2) {        
-		Vector cross  = segment_1 ^ segment_2;
+		Vector cross  = segment_1 ^ segment_2; //TODO ask Vlad why it's not just a mixed product
         Vector difVec = begin_2 - begin_1;
 
         if (cross == Vector {}) {
@@ -442,6 +515,9 @@ namespace GObjects {
         return false;
     }
 
+    //##############################################################################
+    //                          DEGENERATE INTERSECTION
+    //##############################################################################
 	bool IntersectDegenerates (const Triangle &tr, const Vector &point) {
 		return tr.pointInTriangle(point);
 	}
