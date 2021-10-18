@@ -384,27 +384,36 @@ namespace GObjects {
     //##############################################################################
     //                         TRIANGLE-2D INTERSECTION (Belov)
     //##############################################################################
+    
+    static bool CheckPointInSegment (const Vector& beginPVec, const Vector& directVec) {
+
+        double vecLen = beginPVec.squareLength ();
+
+        double directLen = directVec.squareLength ();
+        
+        pType dir = ((beginPVec * directVec) / (std::sqrt(vecLen) * std::sqrt(directLen)));
+
+        if (DoubleCmp (dir, 1.0) == 0 && DoubleCmp (directLen, vecLen) >= 0)
+            return true;
+        
+        return false;
+
+    }
 
     bool Triangle::pointInTriangle (const Vector &point) const{
         Vector side = rVecs_[2] - rVecs_[1];
 
-        Vector vec = point - rVecs_[0];
+        Vector beginPVec = point - rVecs_[0];
 
-        if(vec == 0)
+        if(beginPVec == 0)
             return true;
 
-        Vector cross = side ^ vec;
+        Vector cross = side ^ beginPVec;
 
-        Vector vectorPsOfTwoLines     = IntersectionPointOfTwoLines (rVecs_[1], side, vec, cross, rVecs_[0] - rVecs_[1]) - rVecs_[0];
-        double vectorPsOfTwoLinesLen  = vectorPsOfTwoLines.squareLength ();
+        Vector vectorPsOfTwoLines = IntersectionPointOfTwoLines (rVecs_[1], side, beginPVec, cross, rVecs_[0] - rVecs_[1]) - rVecs_[0];
+        
+        return CheckPointInSegment (beginPVec, vectorPsOfTwoLines);
 
-        double vecLen = vec.squareLength ();
-        pType dir = ((vec * vectorPsOfTwoLines) / (std::sqrt(vecLen) * std::sqrt(vectorPsOfTwoLinesLen)));
-
-        if (DoubleCmp (dir, 1.0) == 0 && DoubleCmp (vectorPsOfTwoLinesLen, vecLen) >= 0)
-            return true;
-
-        return false;
     } 
 
     bool Intersect2DTriangles (const Triangle &tr1, const Triangle &tr2) {	
@@ -452,7 +461,11 @@ namespace GObjects {
     }
 
     bool IntersectSegments (const Vector& begin_1, const Vector& segment_1, const Vector& begin_2, const Vector& segment_2) {        
+<<<<<<< HEAD
         Vector cross  = segment_1 ^ segment_2; //TODO ask Vlad why it's not just a mixed product
+=======
+        Vector cross  = segment_1 ^ segment_2;
+>>>>>>> d286a22b1e831b3c19104950a93e52b1dca00d1d
         Vector difVec = begin_2 - begin_1;
 
         if (cross == Vector {}) {
@@ -518,6 +531,7 @@ namespace GObjects {
     //##############################################################################
     //                          DEGENERATE INTERSECTION
     //##############################################################################
+<<<<<<< HEAD
     bool IntersectDegenerates (const Triangle &tr, const Vector &point) {
         return tr.pointInTriangle(point);
     }
@@ -561,6 +575,51 @@ namespace GObjects {
     }
 
     bool IntersectDegenerates (const Segment &segment1, const Segment &segment2) {
+=======
+    bool IntersectDegenerates (const Triangle &tr, const Vector &point) {
+        return tr.pointInTriangle(point);
+    }
+
+    bool IntersectDegenerates (const Triangle &tr, const Segment &segment) {
+        Vector norm{};
+        pType coefD = 0;
+        tr.calcNormal (norm);
+        tr.calcCoefD (norm, coefD);
+
+        pType beginDist = CalcDist (norm, coefD, segment.begin_);
+        pType endDist = CalcDist (norm, coefD, segment.begin_ + segment.direct_);
+
+        if (DoubleCmp (beginDist, 0) == 0 && DoubleCmp(endDist, 0) == 0) {
+            for (int i = 0; i < 3; ++i)
+                if(IntersectSegments (segment.begin_, segment.direct_, tr.getVec(i), tr.getVec((i + 1) % 3) - tr.getVec(i)))
+                    return true;
+            
+            return false;
+        }
+
+        if (DoubleCmp (beginDist, 0) == 0)
+            if (tr.pointInTriangle (segment.begin_)) //TODO remove from class Triangle
+                return true;
+
+        if (DoubleCmp(endDist, 0) == 0)
+            if (tr.pointInTriangle (segment.begin_ + segment.direct_))
+                return true;
+
+        if (beginDist * endDist > 0)
+            return false;
+
+        pType param = (-coefD - segment.begin_ * norm) / (norm.getCoord(0) + norm.getCoord(1) + norm.getCoord(2));
+        
+        Vector intersectionPoint {};
+        for (int i = 0; i < 3; ++i) {
+            intersectionPoint.setCoord(i, segment.begin_.getCoord(i) + param * segment.direct_.getCoord(i));
+        }
+
+        return tr.pointInTriangle (intersectionPoint);
+    }
+
+    bool IntersectDegenerates (const Segment &segment1, const Segment &segment2) {
+>>>>>>> d286a22b1e831b3c19104950a93e52b1dca00d1d
 
         Vector firstBeginVec  = segment1.begin_;
         Vector secondBeginVec = segment2.begin_;
@@ -570,7 +629,8 @@ namespace GObjects {
         double mixedProduct   = firstBeginVec * (secondBeginVec ^ connectingVec);
 
         if (DoubleCmp (mixedProduct, 0.0) == 0)
-            return true;
+            return IntersectSegments    (segment1.begin_, segment1.direct_, 
+                                         segment2.begin_, segment2.direct_); //TODO maybe it's better to rewrite InsersectSegments
 
         return false;
 
@@ -583,14 +643,12 @@ namespace GObjects {
         Vector beginVec     = segment.begin_;
         Vector directVec    = segment.direct_;
 
-        double firstFrac    = (point.getCoord (0) - beginVec.getCoord (0)) / (directVec.getCoord (0));
-        double secondFrac   = (point.getCoord (1) - beginVec.getCoord (1)) / (directVec.getCoord (1));
-        double thirdFrac    = (point.getCoord (2) - beginVec.getCoord (2)) / (directVec.getCoord (2));
+        Vector pBeginVec    = beginVec - point;
 
-        if (DoubleCmp (firstFrac, secondFrac) == 0 &&
-            DoubleCmp (secondFrac, thirdFrac) == 0)
-            return true;
-        
+        Vector crossProduct = pBeginVec ^ directVec;
+        if (crossProduct == GetZeroVector ())
+            return CheckPointInSegment (pBeginVec, directVec);
+
         return false;
 
     }
