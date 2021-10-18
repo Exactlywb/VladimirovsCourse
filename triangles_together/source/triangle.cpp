@@ -198,7 +198,7 @@ namespace GObjects {
                         normalV.getCoord (1) * point.getCoord (1) +
                         normalV.getCoord (2) * point.getCoord (2) + dCoef;
 
-        return dist; 
+        return dist;
     
     }
 
@@ -227,6 +227,11 @@ namespace GObjects {
     }
 
     bool Intersect3DTriangles (const Triangle& tr1, const Triangle& tr2) {
+		if(tr1.getDegenerationType() + tr2.getDegenerationType() != 0) { //TODO
+
+		}
+
+
 		//Normal vector for the first plane
         Vector firstNormalVec;
         tr1.calcNormal (firstNormalVec);
@@ -424,5 +429,28 @@ namespace GObjects {
         if (counter == 6) return true;       
         return false;
     }
-}
 
+	bool IntersectDegenerates (const Triangle &tr, const Vector &point) {
+		return tr.pointInTriangle(point);
+	}
+
+	bool IntersectDegenerates (const Triangle &tr, const Segment &segment) {	//TODO
+
+	}
+
+	bool IntersectDegenerates (const Segment &segment1, const Segment &segment2) {	//TODO
+
+	}
+
+	bool IntersectDegenerates (const Segment &segment, const Vector &point) {  //TODO
+		Vector vec = point - segment.begin_;
+
+		// ((vec * segment.direct_) / (std::sqrt(vec.squareLength()) * std::sqrt(segment.direct_.squareLength())))
+	}
+
+	bool IntersectDegenerates (const Vector &point1, const Vector &point2) {
+		if (point1 == point2)
+			return true;
+		return false;
+	}
+}

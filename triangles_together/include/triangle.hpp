@@ -126,6 +126,7 @@ namespace GObjects {
 
 	bool IntersectDegenerates (const Triangle &tr, const Vector &point);
 	bool IntersectDegenerates (const Triangle &tr, const Segment &segment);
+	bool IntersectDegenerates (const Segment &segment1, const Segment &segment2);
 	bool IntersectDegenerates (const Segment &segment, const Vector &point);
 	bool IntersectDegenerates (const Vector &point1, const Vector &point2);
 
