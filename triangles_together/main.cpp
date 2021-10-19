@@ -9,8 +9,7 @@ int TestIntersectionFunction ();
 
 int main()
 {
-
-    std::cout << GetTriangles () << std::endl;
+    GetTriangles ();
 
     return 0;
 }
@@ -19,7 +18,6 @@ int TestIntersectionFunction () {
 
     const char* nameTests[numTests] = {"tests/trXtr/test1.txt", "tests/trXtr/test2.txt", "tests/trXtr/test3.txt", "tests/trXtr/test4.txt", "tests/trXtr/test5.txt",
                                        "tests/trXtr/test6.txt", "tests/trXtr/test7.txt"};
-
 
     for (int i = 0; i < numTests; ++i) {
 

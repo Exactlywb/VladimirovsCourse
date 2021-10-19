@@ -51,10 +51,11 @@ namespace GObjects {
     class Triangle {
 
     private:
-          Vector rVecs_[3] {};
-            char typeOfDegeneration_;   // 1 is not degenerate;
-                                        // 2 is a point
-                                        // 4 is a segment
+        Vector rVecs_[3] {};
+        char typeOfDegeneration_;   // 1 is not degenerate;
+                                    // 2 is a point
+                                    // 4 is a segment
+        int number_;
 
     public:
         Triangle ();
@@ -62,8 +63,9 @@ namespace GObjects {
         Triangle (const Vector &vec1, const Vector &vec2, const Vector &vec3);
 
         void setVec (Vector &vec, int num);
-
         Vector getVec (int num) const;
+        int getNumber () const;
+        void setNumber (const int number);
 
         pType getAbsMaxCoord () const;
         pType getAbsMinCoord () const;
@@ -87,7 +89,7 @@ namespace GObjects {
     std::ostream &operator << (std::ostream &out, const Triangle &triangle);
 
     //##############################################################################
-    //                         TRIANGLE-3D INTERSECTION (Frolov)
+    //                         TRIANGLE-3D INTERSECTION
     //##############################################################################
 
     void CountCommonP  (pType firstD, pType secondD, Vector& firstNormalVec,
@@ -124,11 +126,6 @@ namespace GObjects {
             double scalarProduct = (side1 * side2);
 
             double denominator = std::sqrt(side1.squareLength()) * std::sqrt(side2.squareLength());
-
-            // std::cout << "scalarProduct = " << scalarProduct << std::endl;
-            // std::cout << "denomin = " << denominator << std::endl;
-
-            // std::cout << "How I hate it" << scalarProduct / denominator << std::endl;
 
             if (DoubleCmp((scalarProduct / denominator), -1.0) == 0) {
 
