@@ -1,4 +1,4 @@
-#include "../include/octree.hpp"
+#include "octree.hpp"
 
 namespace Tree {
     int Octree::whatChapter (GObjects::Vector &leftBorder, GObjects::Vector &rightBorder, const GObjects::Triangle &tr) {

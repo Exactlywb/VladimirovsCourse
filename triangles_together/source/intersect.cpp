@@ -1,4 +1,4 @@
-#include "../include/octree.hpp"
+#include "octree.hpp"
 #include <vector>
 
 static int IntersectionCounter (Tree::Octree *octree, bool *intersectTriangleFlagArray);

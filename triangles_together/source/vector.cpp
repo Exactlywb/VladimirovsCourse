@@ -1,4 +1,4 @@
-#include "../include/vector.hpp"
+#include "vector.hpp"
 
 namespace GObjects {
     Vector::Vector (pType x, pType y, pType z):

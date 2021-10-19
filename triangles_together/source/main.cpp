@@ -1,5 +1,5 @@
 #include <iostream>
-#include "include/octree.hpp"
+#include "octree.hpp"
 
 const int numTests = 7;
 
