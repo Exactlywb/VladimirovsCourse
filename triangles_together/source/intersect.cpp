@@ -1,8 +1,9 @@
 #include "../include/octree.hpp"
+#include <vector>
 
-static int IntersectionCounter (Tree::Octree *octree);
+static int IntersectionCounter (Tree::Octree *octree, bool *intersectTriangleFlagArray);
 
-void checkUnder (Tree::Octree *octree, GObjects::Triangle &tr, int &underCounter) {
+void checkUnder (Tree::Octree *octree, GObjects::Triangle &tr, bool *intersectTriangleFlagArray, int &underCounter) {
 
     for (int i  = 0; i < 8; ++i) {
         if (!octree->child_[i])
@@ -11,16 +12,22 @@ void checkUnder (Tree::Octree *octree, GObjects::Triangle &tr, int &underCounter
         std::list < GObjects::Triangle > List = octree->child_[i]->listOfTriangles_;
         
         for (Tree::Octree::ListIt It = List.begin(); It != List.end(); ++It) {
-            underCounter += GObjects::Intersect3DTriangles (tr, *It);
+            bool addUnderCounter = GObjects::Intersect3DTriangles (tr, *It);
+            underCounter += addUnderCounter;
+
+            if(addUnderCounter) {
+                intersectTriangleFlagArray[It->getNumber()] = true;
+                intersectTriangleFlagArray[tr.getNumber()] = true;
+            }
         }
 
-        checkUnder (octree->child_[i], tr, underCounter);
+        checkUnder (octree->child_[i], tr, intersectTriangleFlagArray, underCounter);
 
     }
 
 }
 
-static int IntersectionCounter (Tree::Octree *octree) {
+static int IntersectionCounter (Tree::Octree *octree, bool *intersectTriangleFlagArray) {
 
     int counter = 0;
 
@@ -33,10 +40,17 @@ static int IntersectionCounter (Tree::Octree *octree) {
 
         Tree::Octree::ListIt curIt = ItSlow;
         ++curIt;
-        for (Tree::Octree::ListIt ItFast = curIt; ItFast != List.end(); ++ItFast)
-            counter += GObjects::Intersect3DTriangles (*ItSlow, *ItFast);
+        for (Tree::Octree::ListIt ItFast = curIt; ItFast != List.end(); ++ItFast) {
+            bool addCounter = GObjects::Intersect3DTriangles (*ItSlow, *ItFast);
+            counter += addCounter;
 
-        checkUnder (octree, *ItSlow, counter);
+            if(addCounter) {
+                intersectTriangleFlagArray[ItFast->getNumber()] = true;
+                intersectTriangleFlagArray[ItSlow->getNumber()] = true;
+            }
+        }
+
+        checkUnder (octree, *ItSlow, intersectTriangleFlagArray, counter);
         
     }
 
@@ -45,7 +59,7 @@ static int IntersectionCounter (Tree::Octree *octree) {
         if (!octree->child_ [i])
             continue;
 
-        counter += IntersectionCounter (octree->child_ [i]);
+        counter += IntersectionCounter (octree->child_ [i], intersectTriangleFlagArray);
 
         return counter;
 
@@ -62,8 +76,18 @@ int GetTriangles () {
     assert(std::cin.good());
 
     Tree::Octree octree{};
-    octree.fillTree(countTriangles); 
+    octree.fillTree(countTriangles);
 
-    return IntersectionCounter (&octree);
+    bool *intersectTriangleFlagArray = new bool [countTriangles];
 
-}   
+    int countIntersection = IntersectionCounter (&octree, intersectTriangleFlagArray);
+
+    for (int i = 0; i < countTriangles; ++i) {
+        if (intersectTriangleFlagArray[i])
+            std::cout << i + 1 << std::endl;
+    }
+    
+    delete [] intersectTriangleFlagArray;
+
+    return countIntersection;
+}

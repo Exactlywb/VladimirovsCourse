@@ -49,23 +49,31 @@ namespace GObjects {
 
     }
 
-	void Triangle::setVec (Vector &vec, int num) { 
-		rVecs_[num] = vec;
+    void Triangle::setVec (Vector &vec, int num) { 
+        rVecs_[num] = vec;
         typeOfDegenerate();
-	}
+    }
 
     Vector Triangle::getVec (int num) const { 
         return rVecs_[num];
     }
 
+    int Triangle::getNumber () const{
+        return number_;
+    }
+
+    void Triangle::setNumber (const int number) {
+        number_ = number;
+    }
+
     pType Triangle::getAbsMaxCoord () const {
-        return std::max ({rVecs_ [0].getAbsMaxCoord (), 
+        return std::max   ({rVecs_ [0].getAbsMaxCoord (), 
                             rVecs_ [1].getAbsMaxCoord (), 
                             rVecs_ [2].getAbsMaxCoord ()});
     }
 
     pType Triangle::getAbsMinCoord () const {
-        return std::min ({rVecs_ [0].getAbsMinCoord (), 
+        return std::min   ({rVecs_ [0].getAbsMinCoord (), 
                             rVecs_ [1].getAbsMinCoord (), 
                             rVecs_ [2].getAbsMinCoord ()});
     }   
@@ -84,9 +92,7 @@ namespace GObjects {
                 return;
             }
         }
-
         typeOfDegeneration_ = 1;    //none degenerated
-
     }
 
     char Triangle::getDegenerationType () const {
@@ -318,11 +324,8 @@ namespace GObjects {
         //Handling for the degenerated triangles
 
         char degFlag = tr1.getDegenerationType () + tr2.getDegenerationType ();
-        if(degFlag != (1 << 1)) {
-
+        if(degFlag != (1 << 1)) 
             return HandleDegeneratedCases (tr1, tr2, degFlag);
-
-        }
 
         //Normal vector for the first plane
         Vector firstNormalVec;

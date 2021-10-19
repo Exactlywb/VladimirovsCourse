@@ -110,8 +110,9 @@ namespace Tree {
         for (int i = 0; i < countTriangles; ++i) {
             std::cin >> tmp;
 
-            tmp.typeOfDegenerate();
-            
+            tmp.typeOfDegenerate ();
+            tmp.setNumber (i);
+
             listOfTriangles_.push_front(tmp);
 
             maxInTriangle = tmp.getAbsMaxCoord();
