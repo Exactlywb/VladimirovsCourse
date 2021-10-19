@@ -282,10 +282,14 @@ namespace GObjects {
                 return IntersectDegenerates (tr1.getVec (0), tr2.getVec (0));
             case 0b101: {
 
-                if (tr1.getDegenerationType () == 0b100) //tr1 is a segment
-                    return IntersectDegenerates (tr2, Segment (tr1));
-                else 
-                    return IntersectDegenerates (tr1, Segment (tr2));
+                if (tr1.getDegenerationType () == 0b100) { //tr1 is a segment
+                    Segment tr1Seg (tr1);
+                    return IntersectDegenerates (tr2, tr1Seg);
+                }
+                else {
+                    Segment tr2Seg (tr2);
+                    return IntersectDegenerates (tr1, tr2Seg);
+                }
 
             }
             case 0b110: {
@@ -293,7 +297,6 @@ namespace GObjects {
                 if (tr1.getDegenerationType () == 0b10) //tr1 is a point 
                 {
                     Segment tr2seg(tr2);
-                
                     return IntersectDegenerates (tr2seg, tr1.getVec (0));
                 }
                 else
@@ -308,7 +311,7 @@ namespace GObjects {
                 Segment tr1Seg (tr1);
                 Segment tr2Seg (tr2);
 
-                return IntersectDegenerates (Segment (tr1), Segment (tr2));
+                return IntersectDegenerates (tr1Seg, tr2Seg);
 
             }
             default:
