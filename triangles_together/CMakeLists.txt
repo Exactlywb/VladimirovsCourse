@@ -32,7 +32,7 @@ set( SOURCES
   )
 
 
-set (COMPILER_SETTINGS -Wall -Wextra -O3)       # COMPILER SETTINGS
+set (COMPILER_SETTINGS -Wall -Wextra -O2)       # COMPILER SETTINGS
 
 target_sources( ${EXEC_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/source/main.cpp" )
 
