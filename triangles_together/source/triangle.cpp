@@ -200,16 +200,17 @@ namespace GObjects {
 
     bool IsIntersectedTIntervals (pType firstTParams [2], pType secondTParams [2]) {
 
-        if (firstTParams [0] > firstTParams [1])
+        if ((DoubleCmp (firstTParams [0], firstTParams [1]) > 0))
             std::swap (firstTParams [0], firstTParams [1]);
-        if (secondTParams [0] > secondTParams [1])
+        if ((DoubleCmp (secondTParams [0], secondTParams [1]) > 0))
             std::swap (secondTParams [0], secondTParams [1]);
 
         for (int i = 0; i < 2; i++) {
             
-            if (firstTParams [0] <= secondTParams [i] && firstTParams [1] >= secondTParams [i])
+            if ((DoubleCmp (firstTParams [0], secondTParams [i]) <= 0) && (DoubleCmp (firstTParams [1], secondTParams [i]) >= 0))
                 return 1;
-            if (secondTParams[0] <= firstTParams[i] && secondTParams[1] >= firstTParams[i])
+            
+            if ((DoubleCmp (secondTParams [0], firstTParams [i]) <= 0) && (DoubleCmp (secondTParams [1], firstTParams [i]) >= 0))
                 return 1;
 
         }
@@ -376,7 +377,7 @@ namespace GObjects {
         //now let's compute t_{0,i} params. Better watch GCT 578 page 
         pType firstTParams [2] = {};
         CalcTParams (firstTParams, firstProj, secondNormalVec, secondD, tr1);
-        
+
         pType secondTParams [2] = {};
         CalcTParams (secondTParams, secondProj, firstNormalVec, firstD, tr2);
 

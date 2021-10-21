@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+const double EPSILON = 10E-5;
+
 int DoubleCmp (const double firstDouble, const double secondDouble); 
 
 #endif
