@@ -2,21 +2,6 @@
 
 namespace GObjects {
 
-    Plane::Plane (const Vector &vec, const pType d) :
-            nVec_(vec),
-            d_(d) {}
-
-    Plane::Plane ():
-        nVec_ {},
-        d_  {} {} //nicely
-
-    Vector Plane::getVec () const {
-        return nVec_;
-    }
-    pType Plane::getD () const {
-        return d_;
-    }
-
     pType Plane::dist (Vector &vec) const {
         pType dist{};
 
@@ -33,37 +18,6 @@ namespace GObjects {
         out << "D = " << plane.getD() << std::endl; 
 
         return out;
-    }
-
-    Triangle::Triangle (): 
-        rVecs_ {} {
-
-        typeOfDegeneration_ = 2; //Point
-        
-    }
-
-    Triangle::Triangle (const Vector &vec1, const Vector &vec2, const Vector &vec3) :
-        rVecs_{vec1, vec2, vec3} {
-        
-        typeOfDegenerate ();    //Set type of triangle degenerate
-
-    }
-
-    void Triangle::setVec (Vector &vec, int num) { 
-        rVecs_[num] = vec;
-        typeOfDegenerate();
-    }
-
-    Vector Triangle::getVec (int num) const { 
-        return rVecs_[num];
-    }
-
-    int Triangle::getNumber () const{
-        return number_;
-    }
-
-    void Triangle::setNumber (const int number) {
-        number_ = number;
     }
 
     pType Triangle::getAbsMaxCoord () const {
@@ -93,10 +47,6 @@ namespace GObjects {
             }
         }
         typeOfDegeneration_ = 1;    //none degenerated
-    }
-
-    char Triangle::getDegenerationType () const {
-        return typeOfDegeneration_;
     }
 
     bool Triangle::signedDistance (const Plane &plain) const {
@@ -200,16 +150,17 @@ namespace GObjects {
 
     bool IsIntersectedTIntervals (pType firstTParams [2], pType secondTParams [2]) {
 
-        if (firstTParams [0] > firstTParams [1])
+        if ((DoubleCmp (firstTParams [0], firstTParams [1]) > 0))
             std::swap (firstTParams [0], firstTParams [1]);
-        if (secondTParams [0] > secondTParams [1])
+        if ((DoubleCmp (secondTParams [0], secondTParams [1]) > 0))
             std::swap (secondTParams [0], secondTParams [1]);
 
         for (int i = 0; i < 2; i++) {
             
-            if (firstTParams [0] <= secondTParams [i] && firstTParams [1] >= secondTParams [i])
+            if ((DoubleCmp (firstTParams [0], secondTParams [i]) <= 0) && (DoubleCmp (firstTParams [1], secondTParams [i]) >= 0))
                 return 1;
-            if (secondTParams[0] <= firstTParams[i] && secondTParams[1] >= firstTParams[i])
+            
+            if ((DoubleCmp (secondTParams [0], firstTParams [i]) <= 0) && (DoubleCmp (secondTParams [1], firstTParams [i]) >= 0))
                 return 1;
 
         }
@@ -252,7 +203,6 @@ namespace GObjects {
         }
     }
 
-    //TODO reconstruct file
     static bool HandleDegeneratedCases (const Triangle& tr1, const Triangle& tr2, const char degFlag) {
 
         //There is a reason to ask why flag :   not degenerated (tr)    = 1 (0b1)
@@ -282,10 +232,14 @@ namespace GObjects {
                 return IntersectDegenerates (tr1.getVec (0), tr2.getVec (0));
             case 0b101: {
 
-                if (tr1.getDegenerationType () == 0b100) //tr1 is a segment
-                    return IntersectDegenerates (tr2, Segment (tr1));
-                else 
-                    return IntersectDegenerates (tr1, Segment (tr2));
+                if (tr1.getDegenerationType () == 0b100) { //tr1 is a segment
+                    Segment tr1Seg (tr1);
+                    return IntersectDegenerates (tr2, tr1Seg);
+                }
+                else {
+                    Segment tr2Seg (tr2);
+                    return IntersectDegenerates (tr1, tr2Seg);
+                }
 
             }
             case 0b110: {
@@ -293,7 +247,6 @@ namespace GObjects {
                 if (tr1.getDegenerationType () == 0b10) //tr1 is a point 
                 {
                     Segment tr2seg(tr2);
-                
                     return IntersectDegenerates (tr2seg, tr1.getVec (0));
                 }
                 else
@@ -308,7 +261,7 @@ namespace GObjects {
                 Segment tr1Seg (tr1);
                 Segment tr2Seg (tr2);
 
-                return IntersectDegenerates (Segment (tr1), Segment (tr2));
+                return IntersectDegenerates (tr1Seg, tr2Seg);
 
             }
             default:
@@ -322,7 +275,6 @@ namespace GObjects {
     bool Intersect3DTriangles (const Triangle& tr1, const Triangle& tr2) {
         
         //Handling for the degenerated triangles
-
         char degFlag = tr1.getDegenerationType () + tr2.getDegenerationType ();
         if(degFlag != (1 << 1)) 
             return HandleDegeneratedCases (tr1, tr2, degFlag);
@@ -372,7 +324,7 @@ namespace GObjects {
         //now let's compute t_{0,i} params. Better watch GCT 578 page 
         pType firstTParams [2] = {};
         CalcTParams (firstTParams, firstProj, secondNormalVec, secondD, tr1);
-        
+
         pType secondTParams [2] = {};
         CalcTParams (secondTParams, secondProj, firstNormalVec, firstD, tr2);
 
@@ -463,9 +415,9 @@ namespace GObjects {
         Vector cross  = segment_1 ^ segment_2;
         Vector difVec = begin_2 - begin_1;
 
-        if (cross == GetZeroVector ()) {
+        if (cross == Vector::getZeroVector ()) {
 
-            if (!(((begin_2 - begin_1) ^ segment_1) == GetZeroVector ()))
+            if (!(((begin_2 - begin_1) ^ segment_1) == Vector::getZeroVector ()))
                 return false;
 
             char counter = 0;
@@ -545,7 +497,7 @@ namespace GObjects {
         pType endDist = CalcDist (norm, coefD, end);
 
         if (DoubleCmp (beginDist, 0) == 0) {
-            if (tr.pointInTriangle (segment.begin_)) //TODO remove from class Triangle
+            if (tr.pointInTriangle (segment.begin_))
                 return true;
 
         }
@@ -604,7 +556,7 @@ namespace GObjects {
         Vector pBeginVec    = point - beginVec;
 
         Vector crossProduct = pBeginVec ^ directVec;
-        if (crossProduct == GetZeroVector ())
+        if (crossProduct == Vector::getZeroVector ())
             return CheckPointInSegment (pBeginVec, directVec);
 
         return false;
@@ -615,13 +567,6 @@ namespace GObjects {
         if (point1 == point2)
             return true;
         return false;
-    }
-
-    const Vector GetZeroVector () {
-
-        static Vector zeroVector {0, 0, 0};
-        return zeroVector;
-
     }
 
 }

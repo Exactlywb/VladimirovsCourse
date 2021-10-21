@@ -78,13 +78,13 @@ int GetTriangles () {
     Tree::Octree octree{};
     octree.fillTree(countTriangles);
 
-    bool *intersectTriangleFlagArray = new bool [countTriangles];
+    bool *intersectTriangleFlagArray = new bool [countTriangles] {};
 
     int countIntersection = IntersectionCounter (&octree, intersectTriangleFlagArray);
 
     for (int i = 0; i < countTriangles; ++i) {
         if (intersectTriangleFlagArray[i])
-            std::cout << i + 1 << std::endl;
+            std::cout << i << std::endl;
     }
     
     delete [] intersectTriangleFlagArray;

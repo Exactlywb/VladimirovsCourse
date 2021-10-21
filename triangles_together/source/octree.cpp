@@ -83,14 +83,6 @@ namespace Tree {
 
     //-----------------------------------------------------------------------------------------------------
 
-    Octree::Octree (GObjects::Vector right, GObjects::Vector left) :
-        rightBorder_ (right),
-        leftBorder_ (left),
-        child_ {} {
-    }
-
-    //-----------------------------------------------------------------------------------------------------
-
     Octree::~Octree () {
         for(int i = 0; i < 8; ++i) {
             if(!child_[i])

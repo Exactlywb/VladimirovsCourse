@@ -28,7 +28,10 @@ namespace Tree {
 
         std::list < GObjects::Triangle > listOfTriangles_;
 
-        Octree (GObjects::Vector right = 0, GObjects::Vector left = 0);
+        Octree (GObjects::Vector right = 0, GObjects::Vector left = 0):
+                rightBorder_ (right),
+                leftBorder_ (left),
+                child_ {} {}
         ~Octree ();
 
         void fillTree(int countTriangles);

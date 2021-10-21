@@ -27,3 +27,11 @@ target_sources( ${EXEC_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/source/main.cpp" )
 foreach( FILE IN LISTS SOURCES)
     target_sources( ${EXEC_NAME} PRIVATE "${EXECSOURCES}/${FILE}" )
 endforeach()
+
+set( DEBUG_DEFINE_NAME "DEBUG" )
+set( DEBUG_FLAGS -D${DEBUG_DEFINE_NAME}=1 -O0 -g -Wall -Wextra -Wpedantic  )
+set( RELEASE_FLAGS -D${DEBUG_DEFINE_NAME}=0 -O2 )
+
+target_compile_options( ${EXEC_NAME} PRIVATE ${DEBUG_FLAGS} )
+target_compile_options( ${EXEC_NAME} PRIVATE ${RELEASE_FLAGS} )
+target_compile_options( ${EXEC_NAME} PRIVATE ${COMPILER_SETTINGS})
