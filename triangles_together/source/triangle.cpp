@@ -334,7 +334,6 @@ namespace GObjects {
         pType firstD = 0;
         tr1.calcCoefD (firstNormalVec, firstD);
 
-
         //Normal vector for the second plane
         Vector secondNormalVec;
         tr2.calcNormal (secondNormalVec);

@@ -128,7 +128,6 @@ namespace GObjects {
             double denominator = std::sqrt(side1.squareLength()) * std::sqrt(side2.squareLength());
 
             if (DoubleCmp((scalarProduct / denominator), -1.0) == 0) {
-
                 begin_ = tr.getVec(0);
                 direct_ = tr.getVec(2) - tr.getVec(0);
             }

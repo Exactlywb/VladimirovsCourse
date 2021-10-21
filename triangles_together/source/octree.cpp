@@ -7,7 +7,7 @@ namespace Tree {
         for (int vertexNum = 0; vertexNum < 3; ++vertexNum) {
             GObjects::Vector tmp = tr.getVec(vertexNum);
 
-            for (int coordNum = 0; coordNum < 3; ++coordNum) {		// 1 is positive
+            for (int coordNum = 0; coordNum < 3; ++coordNum) {      // 1 is positive
                 pType mid = ((leftBorder + rightBorder) / 2.0).getCoord(coordNum);
 
                 if(tmp.getCoord(coordNum) > mid)
