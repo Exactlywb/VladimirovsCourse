@@ -2,21 +2,6 @@
 
 namespace GObjects {
 
-    Plane::Plane (const Vector &vec, const pType d) :
-            nVec_(vec),
-            d_(d) {}
-
-    Plane::Plane ():
-        nVec_ {},
-        d_  {} {} //nicely
-
-    Vector Plane::getVec () const {
-        return nVec_;
-    }
-    pType Plane::getD () const {
-        return d_;
-    }
-
     pType Plane::dist (Vector &vec) const {
         pType dist{};
 
@@ -33,37 +18,6 @@ namespace GObjects {
         out << "D = " << plane.getD() << std::endl; 
 
         return out;
-    }
-
-    Triangle::Triangle (): 
-        rVecs_ {} {
-
-        typeOfDegeneration_ = 2; //Point
-        
-    }
-
-    Triangle::Triangle (const Vector &vec1, const Vector &vec2, const Vector &vec3) :
-        rVecs_{vec1, vec2, vec3} {
-        
-        typeOfDegenerate ();    //Set type of triangle degenerate
-
-    }
-
-    void Triangle::setVec (Vector &vec, int num) { 
-        rVecs_[num] = vec;
-        typeOfDegenerate();
-    }
-
-    Vector Triangle::getVec (int num) const { 
-        return rVecs_[num];
-    }
-
-    int Triangle::getNumber () const{
-        return number_;
-    }
-
-    void Triangle::setNumber (const int number) {
-        number_ = number;
     }
 
     pType Triangle::getAbsMaxCoord () const {
@@ -93,10 +47,6 @@ namespace GObjects {
             }
         }
         typeOfDegeneration_ = 1;    //none degenerated
-    }
-
-    char Triangle::getDegenerationType () const {
-        return typeOfDegeneration_;
     }
 
     bool Triangle::signedDistance (const Plane &plain) const {
@@ -253,7 +203,6 @@ namespace GObjects {
         }
     }
 
-    //TODO reconstruct file
     static bool HandleDegeneratedCases (const Triangle& tr1, const Triangle& tr2, const char degFlag) {
 
         //There is a reason to ask why flag :   not degenerated (tr)    = 1 (0b1)
@@ -326,7 +275,6 @@ namespace GObjects {
     bool Intersect3DTriangles (const Triangle& tr1, const Triangle& tr2) {
         
         //Handling for the degenerated triangles
-
         char degFlag = tr1.getDegenerationType () + tr2.getDegenerationType ();
         if(degFlag != (1 << 1)) 
             return HandleDegeneratedCases (tr1, tr2, degFlag);
@@ -468,9 +416,9 @@ namespace GObjects {
         Vector cross  = segment_1 ^ segment_2;
         Vector difVec = begin_2 - begin_1;
 
-        if (cross == GetZeroVector ()) {
+        if (cross == Vector::getZeroVector ()) {
 
-            if (!(((begin_2 - begin_1) ^ segment_1) == GetZeroVector ()))
+            if (!(((begin_2 - begin_1) ^ segment_1) == Vector::getZeroVector ()))
                 return false;
 
             char counter = 0;
@@ -550,7 +498,7 @@ namespace GObjects {
         pType endDist = CalcDist (norm, coefD, end);
 
         if (DoubleCmp (beginDist, 0) == 0) {
-            if (tr.pointInTriangle (segment.begin_)) //TODO remove from class Triangle
+            if (tr.pointInTriangle (segment.begin_))
                 return true;
 
         }
@@ -609,7 +557,7 @@ namespace GObjects {
         Vector pBeginVec    = point - beginVec;
 
         Vector crossProduct = pBeginVec ^ directVec;
-        if (crossProduct == GetZeroVector ())
+        if (crossProduct == Vector::getZeroVector ())
             return CheckPointInSegment (pBeginVec, directVec);
 
         return false;
@@ -620,13 +568,6 @@ namespace GObjects {
         if (point1 == point2)
             return true;
         return false;
-    }
-
-    const Vector GetZeroVector () {
-
-        static Vector zeroVector {0, 0, 0};
-        return zeroVector;
-
     }
 
 }

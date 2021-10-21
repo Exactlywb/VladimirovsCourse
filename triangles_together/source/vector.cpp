@@ -1,16 +1,6 @@
 #include "vector.hpp"
 
 namespace GObjects {
-    Vector::Vector (pType x, pType y, pType z):
-                coordinates_ {x, y, z} {}
-
-    pType Vector::getCoord (int coordNum) const {
-        if (coordNum > 2) {
-            return 0;
-        }
-
-        return coordinates_ [coordNum];
-    }
 
     pType Vector::getAbsMaxCoord () const {
         return std::max ({std::abs (coordinates_ [0]), 
@@ -22,10 +12,6 @@ namespace GObjects {
         return std::min ({std::abs (coordinates_ [0]), 
                           std::abs (coordinates_ [1]), 
                           std::abs (coordinates_ [2])});
-    }
-
-    void Vector::setCoord (const int coordNum, pType coord) {
-        coordinates_ [coordNum] = coord;
     }
 
     pType Vector::squareLength () const {

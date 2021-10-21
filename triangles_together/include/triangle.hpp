@@ -34,12 +34,21 @@ namespace GObjects {
           pType d_;
 
   	public:
-        Plane (const Vector &vec, const pType d);
+        Plane (const Vector &vec, const pType d): 
+               nVec_ (vec),
+               d_ {} {}
 
-        Plane ();
+        Plane ():
+                nVec_ {},
+                d_ {} {}
 
-        Vector getVec () const;
-        pType getD () const;
+        Vector getVec () const {
+            return nVec_;
+        }
+
+        pType getD () const {
+            return d_;
+        }
 
         pType dist (Vector &vec) const;
     };
@@ -58,20 +67,41 @@ namespace GObjects {
         int number_;
 
     public:
-        Triangle ();
+        Triangle ():
+            rVecs_ {} {
+            typeOfDegeneration_ = 2;
+        }
 
-        Triangle (const Vector &vec1, const Vector &vec2, const Vector &vec3);
+        Triangle    (const Vector &vec1, const Vector &vec2, 
+                    const Vector &vec3):
+                    rVecs_ {vec1, vec2, vec3} {
+            typeOfDegenerate ();
+        }
 
-        void setVec (Vector &vec, int num);
-        Vector getVec (int num) const;
-        int getNumber () const;
-        void setNumber (const int number);
+        void setVec (Vector &vec, int num) {
+            rVecs_ [num] = vec;
+            typeOfDegenerate ();
+        }
+
+        Vector getVec (int num) const {
+            return rVecs_ [num];
+        }
+
+        int getNumber () const {
+            return number_;
+        }
+
+        void setNumber (const int number) {
+            number_ = number;
+        }
 
         pType getAbsMaxCoord () const;
         pType getAbsMinCoord () const;
 
         void typeOfDegenerate     ();
-        char getDegenerationType  () const;
+        char getDegenerationType  () const {
+            return typeOfDegeneration_;
+        }
 
         bool signedDistance (const Plane &plain) const;
 
@@ -134,7 +164,7 @@ namespace GObjects {
             }
             else {
                 begin_ = tr.getVec(1);
-                if (side1.squareLength() > side2.squareLength())
+                if (DoubleCmp(side1.squareLength(), side2.squareLength()) > 0)
                     direct_ = side1;
                 else 
                     direct_ = side2;
