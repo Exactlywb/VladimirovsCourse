@@ -36,7 +36,7 @@ namespace GObjects {
   	public:
         Plane (const Vector &vec, const pType d): 
                nVec_ (vec),
-               d_ {} {}
+               d_ {d} {}
 
         Plane ():
                 nVec_ {},

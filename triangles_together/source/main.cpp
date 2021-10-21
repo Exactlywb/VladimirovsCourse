@@ -9,6 +9,7 @@ int TestIntersectionFunction ();
 
 int main()
 {
+    
     GetTriangles ();
 
     // if (TestIntersectionFunction ())
