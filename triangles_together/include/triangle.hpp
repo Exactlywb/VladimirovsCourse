@@ -152,7 +152,7 @@ namespace GObjects {
     struct Segment {
         Vector begin_, direct_;
 
-        Segment (const Vector &begin = 0, const Vector &direct = 0) :
+        Segment (const Vector begin = 0, const Vector direct = 0) :
             begin_ {begin},
             direct_ {direct} {}
 

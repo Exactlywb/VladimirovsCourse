@@ -1,38 +1,31 @@
 #include <iostream>
 #include "octree.hpp"
 
-const int numTests = 8;
-
 int GetTriangles ();
 int TestIntersectionFunction ();
-
 
 int main()
 {
     
+#ifdef DEBUG
+    if (TestIntersectionFunction ())
+        std::cout << "Problems with file" << std::endl;
+#else
     GetTriangles ();
-
-    // if (TestIntersectionFunction ())
-    //     std::cout << "Problems with file" << std::endl;
-    // GObjects::Vector vec11 = {1,0,0};
-    // GObjects::Vector vec12 = {0,1,0};
-    // GObjects::Vector vec13 = {0,0,1};
-    // GObjects::Vector vec21 = {5,5,5};
-    // GObjects::Vector vec22 = {0,0,0};
-    // GObjects::Vector vec23 = {5,0,0};
-    // GObjects::Triangle tr1 {vec11, vec12, vec13};
-    // GObjects::Triangle tr2 {vec21, vec22, vec23};
-
-    // std::cout << GObjects::Intersect3DTriangles(tr1, tr2) << std::endl;
-
+#endif
     return 0;
 }
 
 int TestIntersectionFunction () {
 
+    const int numTests = 26;
     const char* nameTests[numTests] = {"../tests/trXtr/test1.txt", "../tests/trXtr/test2.txt", "../tests/trXtr/test3.txt", "../tests/trXtr/test4.txt", 
-                                       "../tests/trXtr/test5.txt", "../tests/trXtr/test6.txt", "../tests/trXtr/test7.txt", "../tests/trXtr/test8.txt"};
-    // const char* nameTests[numTests] = {"../tests/trXtr/test8.txt"};
+                                       "../tests/trXtr/test5.txt", "../tests/trXtr/test6.txt", "../tests/trXtr/test7.txt", "../tests/trXtr/test8.txt", 
+                                       "../tests/trXseg/test1.txt", "../tests/trXseg/test2.txt", "../tests/trXseg/test3.txt", "../tests/trXseg/test4.txt", 
+                                       "../tests/trXseg/test5.txt", "../tests/trXseg/test6.txt", "../tests/trXseg/test7.txt", "../tests/trXseg/test8.txt",
+                                       "../tests/trXseg/test9.txt", "../tests/trXseg/test10.txt", "../tests/segXseg/test1.txt", "../tests/segXseg/test2.txt", 
+                                       "../tests/segXseg/test3.txt", "../tests/segXseg/test4.txt", "../tests/segXseg/test5.txt", "../tests/segXseg/test6.txt", 
+                                       "../tests/segXseg/test7.txt", "../tests/segXseg/test8.txt"};
 
     for (int i = 0; i < numTests; ++i) {
 
@@ -63,6 +56,9 @@ int TestIntersectionFunction () {
         fclose (ftest);
     }
 
+    
+
     return 0;   
 
 }
+
