@@ -513,7 +513,7 @@ namespace GObjects {
         if (DoubleCmp (mixedProduct, 0.0) == 0)
         {
 
-            return IntersectSegments    (segment1, segment2); //TODO maybe it's better to rewrite InsersectSegments
+            return IntersectSegments    (segment1, segment2); 
         }
 
         return false;
