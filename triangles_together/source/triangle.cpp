@@ -376,8 +376,8 @@ namespace GObjects {
                 
                 Vector tr1CurVec = tr1.getVec (firstTriangleCounter);
                 Vector tr2CurVec = tr2.getVec (secondTriangleCounter);
-                if (IntersectSegments  (tr1CurVec, -tr1CurVec + tr1.getVec((firstTriangleCounter  + 1) % 3), 
-                                        tr2CurVec, -tr2CurVec + tr2.getVec((secondTriangleCounter + 1) % 3)))
+                if (IntersectSegments  (Segment(tr1CurVec, -tr1CurVec + tr1.getVec((firstTriangleCounter  + 1) % 3)), 
+                                        Segment(tr2CurVec, -tr2CurVec + tr2.getVec((secondTriangleCounter + 1) % 3))))
                     return true;
             }
         }
@@ -410,71 +410,44 @@ namespace GObjects {
 
     }
 
-    bool IntersectSegments (const Vector& begin_1, const Vector& segment_1, const Vector& begin_2, const Vector& segment_2) { 
+    static int checkIntersection (const Segment &curSeg, const Vector &point) {
+        
+        char counter = 0;
+        for (int coordNum = 0; coordNum < 3; ++coordNum) {
+                pType curBeginCoord = curSeg.begin_.getCoord (coordNum);
+                CheckCurCoords (curBeginCoord, 
+                                curBeginCoord + curSeg.direct_.getCoord (coordNum),
+                                point.getCoord (coordNum),
+                                counter);
+        }
 
-        Vector cross  = segment_1 ^ segment_2;
+        return counter;
+    }
+
+    bool IntersectSegments (const Segment& segment_1, const Segment& segment_2) { 
+        Vector begin_1 = segment_1.begin_;
+        Vector direct_1 = segment_1.direct_;
+
+        Vector begin_2 = segment_2.begin_;
+        Vector direct_2 = segment_2.direct_;
+
+        Vector cross  = direct_1 ^ direct_2;
         Vector difVec = begin_2 - begin_1;
 
         if (cross == Vector::getZeroVector ()) {
 
-            if (!(((begin_2 - begin_1) ^ segment_1) == Vector::getZeroVector ()))
+            if (!(((begin_2 - begin_1) ^ direct_1) == Vector::getZeroVector ()))
                 return false;
 
-            char counter = 0;
+            if (checkIntersection (segment_1, begin_2) == 3) return true;
 
-            for (int coordNum = 0; coordNum < 3; ++coordNum) {
-        
-                pType curBeginCoord = begin_1.getCoord (coordNum);
-                CheckCurCoords (curBeginCoord, 
-                                curBeginCoord + segment_1.getCoord (coordNum),
-                                begin_2.getCoord (coordNum),
-                                counter);
-
-            }
-
-            if (counter == 3) return true;
-
-            counter = 0;
-
-            for (int coordNum = 0; coordNum < 3; ++coordNum) {
-
-                pType curBeginCoord = begin_1.getCoord (coordNum);
-                CheckCurCoords (curBeginCoord,
-                                curBeginCoord + segment_1.getCoord (coordNum),
-                                begin_2.getCoord (coordNum) + segment_2.getCoord (coordNum),
-                                counter);
-
-            }
-
-            if (counter == 3) return true;
+            if (checkIntersection (segment_1, begin_2 + direct_2) == 3) return true;
             return false;
         }
 
-        Vector interPoint = IntersectionPointOfTwoLines(begin_1, segment_1, segment_2, cross, difVec);
+        Vector interPoint = IntersectionPointOfTwoLines(begin_1, direct_1, direct_2, cross, difVec);
 
-        char counter = 0;
-
-        for (int coordNum = 0; coordNum < 3; ++coordNum) {
-        
-            pType curBeginCoord = begin_1.getCoord (coordNum);
-            CheckCurCoords (curBeginCoord,
-                            curBeginCoord + segment_1.getCoord (coordNum),
-                            interPoint.getCoord (coordNum),
-                            counter);
-
-        }
-
-        for (int coordNum = 0; coordNum < 3; ++coordNum) {
-
-            pType curBeginCoord = begin_2.getCoord (coordNum);
-            CheckCurCoords (curBeginCoord,
-                            curBeginCoord + segment_2.getCoord (coordNum),
-                            interPoint.getCoord (coordNum),
-                            counter);
-
-        }
-
-        if (counter == 6) return true;       
+        if (checkIntersection (segment_1, interPoint) + checkIntersection (segment_2, interPoint) == 6) return true;       
         return false;
     }
 
@@ -509,7 +482,7 @@ namespace GObjects {
 
         if (DoubleCmp (beginDist, 0) == 0 && DoubleCmp(endDist, 0) == 0) {
             for (int i = 0; i < 3; ++i)
-                if(IntersectSegments (segment.begin_, segment.direct_, tr.getVec(i), tr.getVec((i + 1) % 3) - tr.getVec(i)))
+                if(IntersectSegments (segment, Segment(tr.getVec(i), tr.getVec((i + 1) % 3) - tr.getVec(i))))
                     return true;
             
             return false;
@@ -540,8 +513,7 @@ namespace GObjects {
         if (DoubleCmp (mixedProduct, 0.0) == 0)
         {
 
-            return IntersectSegments    (segment1.begin_, segment1.direct_, 
-                                         segment2.begin_, segment2.direct_); //TODO maybe it's better to rewrite InsersectSegments
+            return IntersectSegments    (segment1, segment2); //TODO maybe it's better to rewrite InsersectSegments
         }
 
         return false;

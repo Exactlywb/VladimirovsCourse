@@ -29,6 +29,9 @@ namespace GObjects {
 //##############################################################################
 //                         PLANE-CLASS PART
 //##############################################################################
+    struct Segment;
+    
+    
     class Plane {
           Vector nVec_;
           pType d_;
@@ -136,7 +139,7 @@ namespace GObjects {
                       const Vector& normalV, const pType dCoef, const Triangle& tr);
 
     bool Intersect3DTriangles (const Triangle& tr1, const Triangle& tr2);
-    bool IntersectSegments    (const Vector& begin_1, const Vector& segment_1, const Vector& begin_2, const Vector& segment_2);
+    bool IntersectSegments (const Segment& segment_1, const Segment& segment_2);
 
     bool Intersect2DTriangles (const Triangle &tr1, const Triangle &tr2);
     Vector IntersectionPointOfTwoLines (const Vector &begin_1, const Vector &segment_1, 
@@ -148,6 +151,10 @@ namespace GObjects {
 
     struct Segment {
         Vector begin_, direct_;
+
+        Segment (const Vector &begin = 0, const Vector &direct = 0) :
+            begin_ {begin},
+            direct_ {direct} {}
 
         Segment (const Triangle &tr) {
             Vector side1 = tr.getVec(0) - tr.getVec(1);
