@@ -32,7 +32,11 @@ namespace Tree {
                 rightBorder_ (right),
                 leftBorder_ (left),
                 child_ {} {}
-        ~Octree ();
+
+        ~Octree () {
+            for(int i = 0; i < 8; ++i)
+                delete child_[i];
+        }
 
         void fillTree(int countTriangles);
 

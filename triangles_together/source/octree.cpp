@@ -83,17 +83,6 @@ namespace Tree {
 
     //-----------------------------------------------------------------------------------------------------
 
-    Octree::~Octree () {
-        for(int i = 0; i < 8; ++i) {
-            if(!child_[i])
-                continue;
-
-            delete child_[i];
-        }
-    }
-
-    ///-----------------------------------------------------------------------------------------------------
-
     void Octree::fillTree(int countTriangles) {			
         pType 	maxInTriangle 	= 0, 
                 maxInTree 		= 0;
