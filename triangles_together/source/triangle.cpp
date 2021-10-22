@@ -117,7 +117,116 @@ namespace GObjects {
     //##############################################################################
     //                         TRIANGLE-3D INTERSECTION (Frolov)
     //##############################################################################
+    namespace {
+        bool HandleDegeneratedCases (const Triangle& tr1, const Triangle& tr2, const char degFlag) {
 
+            //There is a reason to ask why flag :   not degenerated (tr)    = 1 (0b1)
+            //                                      point                   = 2 (0b10)
+            //                                      segment                 = 4 (0b100)
+            //
+            //To clarify this let's build the table for the degFlag = tr1.getDegenerationType () | tr2.getDegenerationType ();
+            //                  |   (0b1) tr    |   (0b10) point    | (0b100) segment
+            // (0b1)   tr       |      0b10     |       0b11        |       0b101
+            // (0b10)  point    |      0b11     |       0b100       |       0b110
+            // (0b100) segment  |      0b101    |       0b110       |       0b1000
+            //
+            //As we can see, there's the only one value for every combination (up to permutation). 
+
+            switch (degFlag) {
+
+                
+                case 0b11: {
+
+                    if (tr1.getDegenerationType () == 0b10) //tr1 is a point
+                        return IntersectDegenerates (tr2, tr1.getVec (0));
+                    else
+                        return IntersectDegenerates (tr1, tr2.getVec (0));
+                    
+                }
+                case 0b100:
+                    return IntersectDegenerates (tr1.getVec (0), tr2.getVec (0));
+                case 0b101: {
+
+                    if (tr1.getDegenerationType () == 0b100) { //tr1 is a segment
+                        Segment tr1Seg (tr1);
+                        return IntersectDegenerates (tr2, tr1Seg);
+                    }
+                    else {
+                        Segment tr2Seg (tr2);
+                        return IntersectDegenerates (tr1, tr2Seg);
+                    }
+
+                }
+                case 0b110: {
+
+                    if (tr1.getDegenerationType () == 0b10) //tr1 is a point 
+                    {
+                        Segment tr2seg(tr2);
+                        return IntersectDegenerates (tr2seg, tr1.getVec (0));
+                    }
+                    else
+                    {
+                        Segment tr1seg(tr1);
+                        return IntersectDegenerates (tr1seg, tr2.getVec (0));
+                    }
+
+                }
+                case 0b1000: {
+
+                    Segment tr1Seg (tr1);
+                    Segment tr2Seg (tr2);
+
+                    return IntersectDegenerates (tr1Seg, tr2Seg);
+
+                }
+                default:
+                    std::cout << "Unexpected bitmask in function " << (int) degFlag << " " << __func__ << std::endl;
+                    return false;
+
+            }
+        }
+
+    
+        bool CheckPointInSegment (const Vector& beginPVec, const Vector& directVec) {
+            
+            double vecLen = beginPVec.squareLength ();
+
+            double directLen = directVec.squareLength ();
+            pType dir = ((beginPVec * directVec) / (std::sqrt(vecLen) * std::sqrt(directLen)));
+
+            if (DoubleCmp (dir, 1.0) == 0 && DoubleCmp (directLen, vecLen) >= 0)
+                return true;
+        
+            return false;
+
+        }
+
+        void CheckCurCoords (const pType first, const pType second, const pType toCmp, char& counter) {
+            
+            pType minCoord = std::min (first, second);
+            pType maxCoord = std::max (first, second);
+
+            if (DoubleCmp (minCoord, toCmp) <= 0 &&
+                DoubleCmp (maxCoord, toCmp) >= 0)
+                ++counter;
+
+        }
+
+        int checkIntersection (const Segment &curSeg, const Vector &point) {
+            
+            char counter = 0;
+            for (int coordNum = 0; coordNum < 3; ++coordNum) {
+                    pType curBeginCoord = curSeg.begin_.getCoord (coordNum);
+                    CheckCurCoords (curBeginCoord, 
+                                    curBeginCoord + curSeg.direct_.getCoord (coordNum),
+                                    point.getCoord (coordNum),
+                                    counter);
+            }
+
+            return counter;
+        }
+    }
+    
     void CountCommonP  (pType firstD, pType secondD, Vector& firstNormalVec, 
                         Vector& secondNormalVec, Vector& commonP) {
 
@@ -203,75 +312,6 @@ namespace GObjects {
         }
     }
 
-    static bool HandleDegeneratedCases (const Triangle& tr1, const Triangle& tr2, const char degFlag) {
-
-        //There is a reason to ask why flag :   not degenerated (tr)    = 1 (0b1)
-        //                                      point                   = 2 (0b10)
-        //                                      segment                 = 4 (0b100)
-        //
-        //To clarify this let's build the table for the degFlag = tr1.getDegenerationType () | tr2.getDegenerationType ();
-        //                  |   (0b1) tr    |   (0b10) point    | (0b100) segment
-        // (0b1)   tr       |      0b10     |       0b11        |       0b101
-        // (0b10)  point    |      0b11     |       0b100       |       0b110
-        // (0b100) segment  |      0b101    |       0b110       |       0b1000
-        //
-        //As we can see, there's the only one value for every combination (up to permutation). 
-
-        switch (degFlag) {
-
-            
-            case 0b11: {
-
-                if (tr1.getDegenerationType () == 0b10) //tr1 is a point
-                    return IntersectDegenerates (tr2, tr1.getVec (0));
-                else
-                    return IntersectDegenerates (tr1, tr2.getVec (0));
-                
-            }
-            case 0b100:
-                return IntersectDegenerates (tr1.getVec (0), tr2.getVec (0));
-            case 0b101: {
-
-                if (tr1.getDegenerationType () == 0b100) { //tr1 is a segment
-                    Segment tr1Seg (tr1);
-                    return IntersectDegenerates (tr2, tr1Seg);
-                }
-                else {
-                    Segment tr2Seg (tr2);
-                    return IntersectDegenerates (tr1, tr2Seg);
-                }
-
-            }
-            case 0b110: {
-
-                if (tr1.getDegenerationType () == 0b10) //tr1 is a point 
-                {
-                    Segment tr2seg(tr2);
-                    return IntersectDegenerates (tr2seg, tr1.getVec (0));
-                }
-                else
-                {
-                    Segment tr1seg(tr1);
-                    return IntersectDegenerates (tr1seg, tr2.getVec (0));
-                }
-
-            }
-            case 0b1000: {
-
-                Segment tr1Seg (tr1);
-                Segment tr2Seg (tr2);
-
-                return IntersectDegenerates (tr1Seg, tr2Seg);
-
-            }
-            default:
-                std::cout << "Unexpected bitmask in function " << (int) degFlag << " " << __func__ << std::endl;
-                return false;
-
-        }
-
-    }
-
     bool Intersect3DTriangles (const Triangle& tr1, const Triangle& tr2) {
         
         //Handling for the degenerated triangles
@@ -336,19 +376,7 @@ namespace GObjects {
     //                         TRIANGLE-2D INTERSECTION (Belov)
     //##############################################################################
     
-    static bool CheckPointInSegment (const Vector& beginPVec, const Vector& directVec) {
-        
-        double vecLen = beginPVec.squareLength ();
-
-        double directLen = directVec.squareLength ();
-        pType dir = ((beginPVec * directVec) / (std::sqrt(vecLen) * std::sqrt(directLen)));
-
-        if (DoubleCmp (dir, 1.0) == 0 && DoubleCmp (directLen, vecLen) >= 0)
-            return true;
     
-        return false;
-
-    }
 
     bool Triangle::pointInTriangle (const Vector &point) const{
         Vector side = rVecs_[2] - rVecs_[1];
@@ -399,30 +427,7 @@ namespace GObjects {
         return {xVec, yVec, zVec};
     }
 
-    static void CheckCurCoords (const pType first, const pType second, const pType toCmp, char& counter) {
-        
-        pType minCoord = std::min (first, second);
-        pType maxCoord = std::max (first, second);
-
-        if (DoubleCmp (minCoord, toCmp) <= 0 &&
-            DoubleCmp (maxCoord, toCmp) >= 0)
-            ++counter;
-
-    }
-
-    static int checkIntersection (const Segment &curSeg, const Vector &point) {
-        
-        char counter = 0;
-        for (int coordNum = 0; coordNum < 3; ++coordNum) {
-                pType curBeginCoord = curSeg.begin_.getCoord (coordNum);
-                CheckCurCoords (curBeginCoord, 
-                                curBeginCoord + curSeg.direct_.getCoord (coordNum),
-                                point.getCoord (coordNum),
-                                counter);
-        }
-
-        return counter;
-    }
+    
 
     bool IntersectSegments (const Segment& segment_1, const Segment& segment_2) { 
         Vector begin_1 = segment_1.begin_;
