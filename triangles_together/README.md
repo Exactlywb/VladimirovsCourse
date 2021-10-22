@@ -35,7 +35,7 @@
 ---
 ---
 ## 9216 almost uniform distributed triangles (it's wrong assumption, but ok :)): 
-![Screenshot](pics/normaltest.png)
+![Screenshot](pics/bigtest.png)
 ---
 ---
 ## All in all, it is better than the naive implementation
