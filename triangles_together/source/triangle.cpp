@@ -211,6 +211,10 @@ namespace GObjects {
             
             double vecLen = beginPVec.squareLength ();
 
+            if (DoubleCmp (vecLen, 0) == 0) 
+                return true;
+
+
             double directLen = directVec.squareLength ();
             pType dir = ((beginPVec * directVec) / (std::sqrt(vecLen) * std::sqrt(directLen)));
 
@@ -345,6 +349,7 @@ namespace GObjects {
 
         Vector intersectCommonLineWithTrSide = IntersectionPointOfTwoLines (commonP, leadVec, secondSide, 
                                                                             cross, -difVec);
+        
 
         Segment segToCheckIntersect (intersectCommonLineWithTrSide, tr1.getVec (checkIntersectDeg % 3) - intersectCommonLineWithTrSide);
 
@@ -390,7 +395,7 @@ namespace GObjects {
         Vector commonP;
         CountCommonP (firstD, secondD, firstNormalVec, secondNormalVec, commonP);
         //result: now we have common point and direction vector for the common lane
-
+        
         char checkIntersectDeg1 = tr1.signedDistance ({secondNormalVec, secondD}, tr2);
         char checkIntersectDeg2 = tr2.signedDistance ({firstNormalVec, firstD}, tr1);
 
@@ -433,8 +438,6 @@ namespace GObjects {
     //                         TRIANGLE-2D INTERSECTION (Belov)
     //##############################################################################
     
-    
-
     bool Triangle::pointInTriangle (const Vector &point) const{
 
         for (int i = 0; i < 3; ++i) {
@@ -447,11 +450,13 @@ namespace GObjects {
                 return true;
 
             Vector cross = side ^ beginPVec;            
+            if (cross == 0)
+                return CheckPointInSegment (side, beginPVec);
 
             double mixedProduct   = side * (beginPVec ^ (beginPVec - side));
 
             if (DoubleCmp (mixedProduct, 0.0) == 0) {
-
+                
                 Vector vectorPsOfTwoLines = IntersectionPointOfTwoLines (rVecs_[(i + 1) % 3], side, beginPVec, cross, rVecs_[i] - rVecs_[(i + 1) % 3]) - rVecs_[i];
 
                 if (!CheckPointInSegment (beginPVec, vectorPsOfTwoLines)) 
@@ -567,6 +572,7 @@ namespace GObjects {
             for (int i = 0; i < 3; ++i)
                 if(IntersectSegments (segment, Segment(tr.getVec(i), tr.getVec((i + 1) % 3) - tr.getVec(i))))
                     return true;
+                
             
             return false;
         }
@@ -593,11 +599,9 @@ namespace GObjects {
 
         double mixedProduct   = firstBeginVec * (secondBeginVec ^ connectingVec);
 
-        if (DoubleCmp (mixedProduct, 0.0) == 0) {
-
-            printf ("wefhwefhejfn\n");
+        if (DoubleCmp (mixedProduct, 0.0) == 0) 
             return IntersectSegments    (segment1, segment2); 
-        }
+        
         
         return false;
 
