@@ -22,12 +22,22 @@ namespace TreeImpl {
         Node ()         = default; //
         ~Node ()        = default; //!TODO discuss about it with Ivan and Vlad
 
+        void disactiveChild (const Node* child) {
+
+            if (left_ == child)
+                left_ = nullptr;
+            else if (right_ == child)
+                right_ = nullptr;
+
+        }
+
     };
 
     struct Tree {
     
     private:
         Node* root = nullptr;
+
     public:
 
         Tree () = default;

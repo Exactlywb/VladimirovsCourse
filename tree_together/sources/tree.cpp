@@ -1,12 +1,10 @@
 #include "tree.hpp"
 
 TreeImpl::Tree::~Tree () {
-
-    //!TODO this destructor is bad cause he deletes not only subtree
-    //but the whole tree.
-
-    Node* curNode   = root;
-    Node* toDelete  = nullptr;
+    
+    Node* highestNode   = root;
+    Node* curNode       = root;
+    Node* toDelete      = nullptr;
 
     while (curNode) {
 
@@ -14,20 +12,22 @@ TreeImpl::Tree::~Tree () {
             curNode = curNode->left_;   //here we go down by our tree
         else if (curNode->right_)       //
             curNode = curNode->right_;  //
-        else if (curNode->parent_) {    //if we have papa
+        else if (curNode->parent_ && curNode != highestNode) {      //if we have papa && 
+                                                                    //we are not in the highest point
 
             toDelete    = curNode;
             curNode     = curNode->parent_;
 
-            if (curNode->left_ == toDelete)
-                curNode->left_ = nullptr;
-            else if (curNode->right_ == toDelete)
-                curNode->right_ = nullptr;
+            curNode->disactiveChild (toDelete);
             
             delete toDelete;
 
         } else {
-            
+
+            Node* parent = curNode->parent_;
+            if (parent)
+                parent->disactiveChild (curNode);
+                
             delete curNode;
             break;
 
