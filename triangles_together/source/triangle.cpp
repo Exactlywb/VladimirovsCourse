@@ -55,7 +55,7 @@ namespace GObjects {
 
         for (int i = 0; i < 3; ++i)
             dists[i] = rVecs_ [i] * plain.getVec () + plain.getD ();
-            
+
         if (DoubleCmp ((dists[0] * dists[1]), 0) > 0)
             if (DoubleCmp ((dists[0] * dists[2]), 0) > 0)
                 return 0;
@@ -510,6 +510,7 @@ namespace GObjects {
 
         if (cross == Vector::getZeroVector ()) {
             
+            
             if ((((begin_2 - begin_1) ^ direct_1) == Vector::getZeroVector ()))
             {
 
@@ -524,10 +525,6 @@ namespace GObjects {
                 
                 return false;
             }
-
-            if (checkIntersection (segment_1, begin_2) == 3) return true;
-
-            if (checkIntersection (segment_1, begin_2 + direct_2) == 3) return true;
             return false;
         }
 
@@ -596,10 +593,12 @@ namespace GObjects {
 
         double mixedProduct   = firstBeginVec * (secondBeginVec ^ connectingVec);
 
-        if (DoubleCmp (mixedProduct, 0.0) == 0)
-            return IntersectSegments    (segment1, segment2); 
-        
+        if (DoubleCmp (mixedProduct, 0.0) == 0) {
 
+            printf ("wefhwefhejfn\n");
+            return IntersectSegments    (segment1, segment2); 
+        }
+        
         return false;
 
     }
