@@ -12,7 +12,7 @@ namespace {
             for (Tree::Octree::ListIt It = List.begin(); It != List.end(); ++It) {
                 bool addUnderCounter = GObjects::Intersect3DTriangles (tr, *It);
                 underCounter += addUnderCounter;
-
+                
                 if(addUnderCounter) {
                     intersectTriangleFlagArray[It->getNumber()] = true;
                     intersectTriangleFlagArray[tr.getNumber()] = true;
@@ -54,12 +54,10 @@ namespace {
 
         for (int i = 0; i < 8; ++i) {
 
-            if (!octree->child_ [i])
+            if (!(octree->child_ [i]))
                 continue;
 
             counter += IntersectionCounter (octree->child_ [i], intersectTriangleFlagArray);
-
-            return counter;
 
         }
 

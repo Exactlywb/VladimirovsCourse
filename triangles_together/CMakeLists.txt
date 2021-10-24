@@ -36,7 +36,7 @@ endforeach()
         set (COMPILER_SETTINGS -Wall -Wextra -O0 -g -D DEBUG)
         
     else ()
-        set (COMPILER_SETTINGS -Wall -Wextra -O2 )
+        set (COMPILER_SETTINGS -Wall -Wextra -O2 -Wfloat-equal -Wdiv-by-zero)
         cmake_print_variables(CMAKE_BUILD_TYPE)
 
     endif ()

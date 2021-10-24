@@ -49,18 +49,36 @@ namespace GObjects {
         typeOfDegeneration_ = 1;    //none degenerated
     }
 
-    bool Triangle::signedDistance (const Plane &plain) const {
+    char Triangle::signedDistance (const Plane &plain, const Triangle &tr) const {
 
         pType dists[3]{};
 
         for (int i = 0; i < 3; ++i)
             dists[i] = rVecs_ [i] * plain.getVec () + plain.getD ();
+            
+        if (DoubleCmp ((dists[0] * dists[1]), 0) > 0)
+            if (DoubleCmp ((dists[0] * dists[2]), 0) > 0)
+                return 0;
 
-        if (dists[0] * dists[1] > 0)
-            if (dists[0] * dists[2] > 0)
-                return true;
+        for (int i = 0; i < 3; ++i) {
 
-        return false;	
+            if( DoubleCmp (dists[i], 0) == 0) {
+                if (DoubleCmp ((dists[(i+1) % 3]) * (dists[(i+2) % 3]), 0) > 0) {
+                    return IntersectDegenerates (tr, rVecs_[i]); //one point in plane and another is from one side
+                } else if (DoubleCmp (dists[(i+1) % 3], 0) == 0) {
+                    Segment seg(rVecs_[i], rVecs_[(i+1) % 3] - rVecs_[i]);
+
+                    return IntersectDegenerates (tr, seg);
+                } else if (DoubleCmp (dists[(i+2) % 3], 0) == 0) {
+                    Segment seg(rVecs_[i], rVecs_[(i+2) % 3] - rVecs_[i]);
+
+                    return IntersectDegenerates (tr, seg);
+                } else 
+                    return 3 + i; 
+            }
+        }
+
+        return 2;	
     }
 
     void Triangle::calcNormal (Vector &normalVector) const {
@@ -109,7 +127,7 @@ namespace GObjects {
 
     std::ostream &operator << (std::ostream &out, const Triangle &triangle) {
 
-        out << "{ " << triangle.getVec(0) << " ;\n " << triangle.getVec(1) << " ;\n " << triangle.getVec(2) << " }\n";
+        out << "{ " << triangle.getVec(0) << " ; " << triangle.getVec(1) << " ; " << triangle.getVec(2) << " } ";
         return out;
 
     }
@@ -119,6 +137,8 @@ namespace GObjects {
     //##############################################################################
     namespace {
         bool HandleDegeneratedCases (const Triangle& tr1, const Triangle& tr2, const char degFlag) {
+
+            // // printf ("DEGENERATE %d\n", degFlag);
 
             //There is a reason to ask why flag :   not degenerated (tr)    = 1 (0b1)
             //                                      point                   = 2 (0b10)
@@ -230,13 +250,12 @@ namespace GObjects {
     void CountCommonP  (pType firstD, pType secondD, Vector& firstNormalVec, 
                         Vector& secondNormalVec, Vector& commonP) {
 
-        //here we calc pointer(P) on common lane
-        //\vec{P} = a \cdot \vec{n_1} + b \cdot \vec{n_2}
+
         pType nScalarProduct    = firstNormalVec * secondNormalVec;
         pType n1SqLength        = firstNormalVec.squareLength ();
         pType n2SqLength        = secondNormalVec.squareLength ();
 
-        pType commonDenominator = nScalarProduct * nScalarProduct - n1SqLength * n2SqLength;
+        pType commonDenominator = -nScalarProduct * nScalarProduct + n1SqLength * n2SqLength; 
 
         pType aCoef = (secondD * nScalarProduct - firstD  * n2SqLength) / commonDenominator;
         pType bCoef = (firstD  * nScalarProduct - secondD * n1SqLength) / commonDenominator;
@@ -291,14 +310,19 @@ namespace GObjects {
     void CalcTParams (pType tParams [2], const pType projection [3], 
                         const Vector& normalV, const pType dCoef, const Triangle& tr) {
                             
-        int outlaw;
+        int outlaw = 0;
 
-        if (CalcDist (normalV, dCoef, tr.getVec (0)) * CalcDist (normalV, dCoef, tr.getVec (1)) > 0) 
+        double firstCalcDist    = CalcDist (normalV, dCoef, tr.getVec (0));
+        double secondCalcDist   = CalcDist (normalV, dCoef, tr.getVec (1));
+        double thirdCalcDist    = CalcDist (normalV, dCoef, tr.getVec (2));
+        
+        if (DoubleCmp (firstCalcDist * secondCalcDist, 0) > 0) 
             outlaw = 2;
-        else if(CalcDist (normalV, dCoef, tr.getVec (0)) * CalcDist (normalV, dCoef, tr.getVec (2)) > 0)
+        else if(DoubleCmp (firstCalcDist * thirdCalcDist, 0)  > 0)
             outlaw = 1;
-        else outlaw = 0;
-
+        else 
+            outlaw = 0;
+    
         pType distThirdVert = CalcDist (normalV, dCoef, tr.getVec (outlaw));
 
         int curTParamInd = 0;
@@ -306,19 +330,37 @@ namespace GObjects {
             if(i == outlaw)
                 continue;
             pType vertexDist = CalcDist (normalV, dCoef, tr.getVec (i));
+
             pType distFrac = vertexDist / (vertexDist - distThirdVert);
 
             tParams [curTParamInd++] = projection [i] + (projection [outlaw] - projection [i]) * distFrac;
         }
     }
 
+    bool checkIntersectionTrwithPointinPlane (const Triangle& tr1, const Triangle& tr2, Vector &commonP, Vector &leadVec, char checkIntersectDeg) {
+
+        Vector secondSide = tr1.getVec ((checkIntersectDeg + 1) % 3) - tr1.getVec ((checkIntersectDeg + 2) % 3);
+        Vector cross = leadVec ^ secondSide;
+        Vector difVec = commonP - tr1.getVec ((checkIntersectDeg + 2) % 3);
+
+        Vector intersectCommonLineWithTrSide = IntersectionPointOfTwoLines (commonP, leadVec, secondSide, 
+                                                                            cross, -difVec);
+
+        Segment segToCheckIntersect (intersectCommonLineWithTrSide, tr1.getVec (checkIntersectDeg % 3) - intersectCommonLineWithTrSide);
+
+        return IntersectDegenerates (tr2, segToCheckIntersect);
+            
+    }
+
     bool Intersect3DTriangles (const Triangle& tr1, const Triangle& tr2) {
         
         //Handling for the degenerated triangles
+        
         char degFlag = tr1.getDegenerationType () + tr2.getDegenerationType ();
         if(degFlag != (1 << 1)) 
             return HandleDegeneratedCases (tr1, tr2, degFlag);
 
+        
         //Normal vector for the first plane
         Vector firstNormalVec;
         tr1.calcNormal (firstNormalVec);
@@ -335,18 +377,12 @@ namespace GObjects {
         tr2.calcCoefD (secondNormalVec, secondD);
 
         if ((firstNormalVec ^ secondNormalVec) == 0) {
-            if (DoubleCmp(firstD, secondD))
+
+            if (DoubleCmp(firstD, secondD) != 0)                
                 return false;
             
             return Intersect2DTriangles(tr1, tr2);
         }
-
-        if (tr1.signedDistance ({secondNormalVec, secondD}))
-            return false;
-    
-        if (tr2.signedDistance ({firstNormalVec, firstD})) 
-            return false;
-        
 
         //leading vector for the common lane
         Vector leadVec = firstNormalVec ^ secondNormalVec;
@@ -354,6 +390,27 @@ namespace GObjects {
         Vector commonP;
         CountCommonP (firstD, secondD, firstNormalVec, secondNormalVec, commonP);
         //result: now we have common point and direction vector for the common lane
+
+        char checkIntersectDeg1 = tr1.signedDistance ({secondNormalVec, secondD}, tr2);
+        char checkIntersectDeg2 = tr2.signedDistance ({firstNormalVec, firstD}, tr1);
+
+        if (checkIntersectDeg1 * checkIntersectDeg2 == 0)
+            return false;
+        
+        if (checkIntersectDeg1 < 2)
+            return checkIntersectDeg1;
+
+        if (checkIntersectDeg1 >= 3) 
+            return checkIntersectionTrwithPointinPlane (tr1, tr2, commonP, leadVec, checkIntersectDeg1);
+
+        if (checkIntersectDeg2 < 2)
+            return checkIntersectDeg2;
+
+        if (checkIntersectDeg2 >= 3) 
+            return checkIntersectionTrwithPointinPlane (tr2, tr1, commonP, leadVec, checkIntersectDeg2);
+        
+
+        
 
         //project triangle's vertices
         pType firstProj [3] = {};
@@ -379,18 +436,30 @@ namespace GObjects {
     
 
     bool Triangle::pointInTriangle (const Vector &point) const{
-        Vector side = rVecs_[2] - rVecs_[1];
 
-        Vector beginPVec = point - rVecs_[0];
+        for (int i = 0; i < 3; ++i) {
 
-        if(beginPVec == 0)
-            return true;
+            Vector side = rVecs_[(i + 1) % 3] - rVecs_[(i + 2) % 3];
 
-        Vector cross = side ^ beginPVec;
+            Vector beginPVec = point - rVecs_[i];
 
-        Vector vectorPsOfTwoLines = IntersectionPointOfTwoLines (rVecs_[1], side, beginPVec, cross, rVecs_[0] - rVecs_[1]) - rVecs_[0];
-        
-        return CheckPointInSegment (beginPVec, vectorPsOfTwoLines);
+            if(beginPVec == Vector::getZeroVector ())
+                return true;
+
+            Vector cross = side ^ beginPVec;            
+
+            double mixedProduct   = side * (beginPVec ^ (beginPVec - side));
+
+            if (DoubleCmp (mixedProduct, 0.0) == 0) {
+
+                Vector vectorPsOfTwoLines = IntersectionPointOfTwoLines (rVecs_[(i + 1) % 3], side, beginPVec, cross, rVecs_[i] - rVecs_[(i + 1) % 3]) - rVecs_[i];
+
+                if (!CheckPointInSegment (beginPVec, vectorPsOfTwoLines)) 
+                    return false;
+            }
+            else return false;
+        }
+        return true;
 
     } 
 
@@ -440,9 +509,21 @@ namespace GObjects {
         Vector difVec = begin_2 - begin_1;
 
         if (cross == Vector::getZeroVector ()) {
+            
+            if ((((begin_2 - begin_1) ^ direct_1) == Vector::getZeroVector ()))
+            {
 
-            if (!(((begin_2 - begin_1) ^ direct_1) == Vector::getZeroVector ()))
+                if (IntersectDegenerates (segment_1, begin_2))
+                    return true;
+                if (IntersectDegenerates (segment_1, begin_2 + direct_2))
+                    return true;
+                if (IntersectDegenerates (segment_2, begin_1))
+                    return true;
+                if (IntersectDegenerates (segment_2, begin_1 + direct_1))
+                    return true;
+                
                 return false;
+            }
 
             if (checkIntersection (segment_1, begin_2) == 3) return true;
 
@@ -451,7 +532,7 @@ namespace GObjects {
         }
 
         Vector interPoint = IntersectionPointOfTwoLines(begin_1, direct_1, direct_2, cross, difVec);
-
+        
         if (checkIntersection (segment_1, interPoint) + checkIntersection (segment_2, interPoint) == 6) return true;       
         return false;
     }
@@ -475,9 +556,9 @@ namespace GObjects {
         pType endDist = CalcDist (norm, coefD, end);
 
         if (DoubleCmp (beginDist, 0) == 0) {
+
             if (tr.pointInTriangle (segment.begin_))
                 return true;
-
         }
 
         if (DoubleCmp(endDist, 0) == 0) {
@@ -493,7 +574,7 @@ namespace GObjects {
             return false;
         }
 
-        if (beginDist * endDist > 0)
+        if (DoubleCmp (beginDist * endDist, 0 ) > 0)
             return false;
 
         pType param = (-coefD - segment.begin_ * norm) / (norm * segment.direct_);
@@ -516,10 +597,8 @@ namespace GObjects {
         double mixedProduct   = firstBeginVec * (secondBeginVec ^ connectingVec);
 
         if (DoubleCmp (mixedProduct, 0.0) == 0)
-        {
-
             return IntersectSegments    (segment1, segment2); 
-        }
+        
 
         return false;
 

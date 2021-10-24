@@ -106,7 +106,7 @@ namespace GObjects {
             return typeOfDegeneration_;
         }
 
-        bool signedDistance (const Plane &plain) const;
+        char signedDistance (const Plane &plain, const Triangle &tr) const;
 
         void calcNormal (Vector &normalVector) const;
         void calcCoefD (Vector &normalV, pType &ourCoefD) const;

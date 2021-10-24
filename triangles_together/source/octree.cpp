@@ -10,9 +10,9 @@ namespace Tree {
             for (int coordNum = 0; coordNum < 3; ++coordNum) {      // 1 is positive
                 pType mid = ((leftBorder + rightBorder) / 2.0).getCoord(coordNum);
 
-                if(tmp.getCoord(coordNum) > mid)
+                if( DoubleCmp (tmp.getCoord(coordNum), mid) > 0)
                     chapter[vertexNum] |= 1 << coordNum;
-                else if(tmp.getCoord(coordNum) == mid)
+                else if(DoubleCmp (tmp.getCoord(coordNum), mid) == 0)
                     return -1;
             }
 
@@ -104,6 +104,7 @@ namespace Tree {
         leftBorder_ = - rightBorder_;
 
         siftTree (*this);
+        // dumpTree (*this);
     }
 
     //-----------------------------------------------------------------------------------------------------
