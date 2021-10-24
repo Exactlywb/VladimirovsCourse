@@ -2,6 +2,8 @@
 
 int main () {
 
+    TreeImpl::Tree mainTree {};
+
     return 0;
 
 }
