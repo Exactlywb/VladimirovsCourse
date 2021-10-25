@@ -24,7 +24,7 @@ namespace Tree {
         return chapter[0];
     }
 
-    //-----------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------
 
     void Octree::createNewNode (Octree &curRoot, int chapter) {
         curRoot.child_[chapter] = new Octree {};
@@ -45,7 +45,7 @@ namespace Tree {
         }
     }
 
-    //-----------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------
 
     void Octree::siftTree(Octree &curRoot) {
         if (curRoot.listOfTriangles_.size() <= 2 || (curRoot.rightBorder_ - curRoot.leftBorder_).squareLength() < LittleSpace)
@@ -81,7 +81,7 @@ namespace Tree {
         }
     }
 
-    //-----------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------
 
     void Octree::fillTree(int countTriangles) {			
         pType 	maxInTriangle 	= 0, 
@@ -104,10 +104,9 @@ namespace Tree {
         leftBorder_ = - rightBorder_;
 
         siftTree (*this);
-        // dumpTree (*this);
     }
 
-    //-----------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------
 
     void Octree::dumpTree (Octree &curRoot) {
         std::cout << "left = " << curRoot.leftBorder_ << "; right = " << curRoot.rightBorder_ << std::endl;

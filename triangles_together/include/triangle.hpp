@@ -25,39 +25,10 @@ namespace GObjects {
 //     DEG_SEGMENT
 
 // };
-
-//##############################################################################
-//                         PLANE-CLASS PART
-//##############################################################################
+    class Triangle;
+    class Plane;
     struct Segment;
     
-    
-    class Plane {
-          Vector nVec_;
-          pType d_;
-
-  	public:
-        Plane (const Vector &vec, const pType d): 
-               nVec_ (vec),
-               d_ {d} {}
-
-        Plane ():
-                nVec_ {},
-                d_ {} {}
-
-        Vector getVec () const {
-            return nVec_;
-        }
-
-        pType getD () const {
-            return d_;
-        }
-
-        pType dist (Vector &vec) const;
-    };
-
-    std::ostream &operator << (std::ostream &out, const Plane &plane);
-
 //=====================================================================================================
 
     class Triangle {
@@ -75,36 +46,51 @@ namespace GObjects {
             typeOfDegeneration_ = 2;
         }
 
-        Triangle    (const Vector &vec1, const Vector &vec2, 
-                    const Vector &vec3):
+//-----------------------------------------------------------------------------------------------------
+
+        Triangle    (const Vector &vec1, const Vector &vec2, const Vector &vec3):
                     rVecs_ {vec1, vec2, vec3} {
             typeOfDegenerate ();
         }
+
+//-----------------------------------------------------------------------------------------------------
 
         void setVec (Vector &vec, int num) {
             rVecs_ [num] = vec;
             typeOfDegenerate ();
         }
 
+//-----------------------------------------------------------------------------------------------------
+
         Vector getVec (int num) const {
             return rVecs_ [num];
         }
+
+//-----------------------------------------------------------------------------------------------------
 
         int getNumber () const {
             return number_;
         }
 
+//-----------------------------------------------------------------------------------------------------
+
         void setNumber (const int number) {
             number_ = number;
         }
 
+//-----------------------------------------------------------------------------------------------------
+
         pType getAbsMaxCoord () const;
         pType getAbsMinCoord () const;
+
+//-----------------------------------------------------------------------------------------------------
 
         void typeOfDegenerate     ();
         char getDegenerationType  () const {
             return typeOfDegeneration_;
         }
+
+//-----------------------------------------------------------------------------------------------------
 
         char signedDistance (const Plane &plain, const Triangle &tr) const;
 
@@ -114,37 +100,59 @@ namespace GObjects {
         bool pointInTriangle (const Vector &point) const;
     };
 
-    //##############################################################################
-    //                         TRIANGLE-OVERLOAD PART
-    //##############################################################################
+//-----------------------------------------------------------------------------------------------------
 
     std::istream &operator >> (std::istream &in, Triangle &triangle);
     std::ostream &operator << (std::ostream &out, const Triangle &triangle);
 
-    //##############################################################################
-    //                         TRIANGLE-3D INTERSECTION
-    //##############################################################################
-
-    void CountCommonP  (pType firstD, pType secondD, Vector& firstNormalVec,
-                        Vector& secondNormalVec, Vector& commonP);
-
-    void ProjectEdges  (pType projection [3], const Triangle& tr,
-                        const Vector& leadVec, const Vector& commonP);
-
-    bool IsIntersectedTIntervals (pType firstTParams [2], pType secondTParams [2]);
-
-    pType   CalcDist    (const Vector& normalV, const pType dCoef, const Vector& point);
-
-    void CalcTParams (pType tParams [2], const pType projection [3],
-                      const Vector& normalV, const pType dCoef, const Triangle& tr);
+//-----------------------------------------------------------------------------------------------------
 
     bool Intersect3DTriangles (const Triangle& tr1, const Triangle& tr2);
-    bool IntersectSegments (const Segment& segment_1, const Segment& segment_2);
 
-    bool Intersect2DTriangles (const Triangle &tr1, const Triangle &tr2);
-    Vector IntersectionPointOfTwoLines (const Vector &begin_1, const Vector &segment_1, 
-                                        const Vector &segment_2, const Vector &segment_3, 
-                                        const Vector &difVec);
+//##############################################################################
+//                         PLANE-CLASS PART
+//##############################################################################
+
+    class Plane {
+          Vector nVec_;
+          pType d_;
+
+    public:
+        Plane ():
+            nVec_ {},
+            d_ {} {}
+
+//-----------------------------------------------------------------------------------------------------
+
+        Plane (const Vector &vec, const pType d): 
+               nVec_ (vec),
+               d_ {d} {}
+
+//-----------------------------------------------------------------------------------------------------
+
+        Plane (const Triangle &tr) {
+            tr.calcNormal(nVec_);
+            tr.calcCoefD(nVec_, d_);
+        }
+
+//-----------------------------------------------------------------------------------------------------
+
+        Vector getVec () const {
+            return nVec_;
+        }
+
+//-----------------------------------------------------------------------------------------------------
+
+        pType getD () const {
+            return d_;
+        }
+
+//-----------------------------------------------------------------------------------------------------
+
+        pType dist (Vector &vec) const;
+    };
+
+    std::ostream &operator << (std::ostream &out, const Plane &plane);
 
 
 //=====================================================================================================
@@ -152,9 +160,13 @@ namespace GObjects {
     struct Segment {
         Vector begin_, direct_;
 
+//-----------------------------------------------------------------------------------------------------
+
         Segment (const Vector begin = 0, const Vector direct = 0) :
             begin_ {begin},
             direct_ {direct} {}
+
+//-----------------------------------------------------------------------------------------------------
 
         Segment (const Triangle &tr) {
             Vector side1 = tr.getVec(0) - tr.getVec(1);
@@ -177,14 +189,6 @@ namespace GObjects {
             }
         }
     };
-
-//=====================================================================================================
-
-    bool IntersectDegenerates (const Triangle &tr, const Vector &point);
-    bool IntersectDegenerates (const Triangle &tr, const Segment &segment);
-    bool IntersectDegenerates (const Segment &segment1, const Segment &segment2);
-    bool IntersectDegenerates (const Segment &segment, const Vector &point);
-    bool IntersectDegenerates (const Vector &point1, const Vector &point2);
 
 }
 #endif

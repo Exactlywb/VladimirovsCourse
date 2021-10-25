@@ -1,12 +1,14 @@
 #include "vector.hpp"
 
 namespace GObjects {
-
+    
     pType Vector::getAbsMaxCoord () const {
         return std::max ({std::abs (coordinates_ [0]), 
                           std::abs (coordinates_ [1]), 
                           std::abs (coordinates_ [2])});
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     pType Vector::getAbsMinCoord () const {
         return std::min ({std::abs (coordinates_ [0]), 
@@ -14,10 +16,14 @@ namespace GObjects {
                           std::abs (coordinates_ [2])});
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     pType Vector::squareLength () const {
         const Vector* thisRef = this;
         return (*thisRef) * (*thisRef);
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     Vector operator - (const Vector &v) {
 
@@ -26,6 +32,8 @@ namespace GObjects {
                         -v.getCoord (2));
 
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     Vector operator + (const Vector &firstV, const Vector &secondV) {
 
@@ -37,6 +45,8 @@ namespace GObjects {
 
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     Vector operator - (const Vector &firstV, const Vector &secondV) {
 
         Vector newVector   (firstV.getCoord (0) - secondV.getCoord (0),
@@ -47,6 +57,8 @@ namespace GObjects {
 
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     Vector operator * (pType mulN, const Vector &v) {
 
         Vector newVector   (mulN * v.getCoord (0),
@@ -56,7 +68,9 @@ namespace GObjects {
         return newVector;
         
     }
-    
+
+//-----------------------------------------------------------------------------------------------------
+
     Vector operator / (const Vector &v, pType divN) {
 
         Vector newVector (v.getCoord (0) / divN,
@@ -67,6 +81,8 @@ namespace GObjects {
         
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     pType operator * (const Vector &firstV, const Vector &secondV) {
 
         pType resScal = firstV.getCoord (0) * secondV.getCoord (0) +
@@ -76,7 +92,9 @@ namespace GObjects {
         return resScal;
         
     }
-    
+
+//-----------------------------------------------------------------------------------------------------
+
     Vector operator ^ (const Vector &firstV, const Vector &secondV) {
         
         Vector newVector   (firstV.getCoord (1) * secondV.getCoord (2) - firstV.getCoord (2) * secondV.getCoord (1),
@@ -87,7 +105,8 @@ namespace GObjects {
 
     }
 
-    
+//-----------------------------------------------------------------------------------------------------
+
     std::ostream& operator << (std::ostream &out, const Vector &thou) {
 
         out << "(" << thou.getCoord (0) << ", " << thou.getCoord (1) << ", " << thou.getCoord (2) << ")";
@@ -95,8 +114,8 @@ namespace GObjects {
 
     }
 
+//-----------------------------------------------------------------------------------------------------
 
-    
     std::istream& operator >> (std::istream &in, Vector &thou) {
 
         pType newX;
@@ -113,7 +132,8 @@ namespace GObjects {
 
     }
 
-    
+//-----------------------------------------------------------------------------------------------------
+
     bool operator == (const Vector &firstV, const Vector &secondV) {
 
         if (!DoubleCmp(firstV.getCoord (0), secondV.getCoord (0)) &&
@@ -124,6 +144,8 @@ namespace GObjects {
         return 0;
 
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     double determinant (const Vector &first, const Vector &second, const Vector &third) {
 

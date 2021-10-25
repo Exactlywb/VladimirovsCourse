@@ -16,6 +16,8 @@ namespace GObjects {
         Vector (pType x = 0, pType y = 0, pType z = 0):
                 coordinates_ {x, y, z} {}
 
+//-----------------------------------------------------------------------------------------------------
+
         pType getCoord (int coordNum) const {
             if (coordNum > 2 || coordNum < 0)
                 return 0;
@@ -23,8 +25,12 @@ namespace GObjects {
             return coordinates_ [coordNum];
         }
 
+//-----------------------------------------------------------------------------------------------------
+
         pType getAbsMaxCoord () const;
         pType getAbsMinCoord () const;
+
+//-----------------------------------------------------------------------------------------------------
 
         void setCoord (const int coordNum, pType coord) {
             if (coordNum > 2 || coordNum < 0)
@@ -33,7 +39,11 @@ namespace GObjects {
             coordinates_ [coordNum] = coord;
         }
 
+//-----------------------------------------------------------------------------------------------------
+
         pType squareLength () const;
+
+//-----------------------------------------------------------------------------------------------------
 
         static const Vector getZeroVector () {
             const static Vector zeroVec {};
@@ -59,9 +69,6 @@ namespace GObjects {
     
     double determinant                  (const Vector &first, const Vector &second,
                                          const Vector &third);
-    Vector IntersectionPointOfTwoLines  (const Vector &begin_1, const Vector &segment_1, 
-                                         const Vector &segment_2, const Vector &segment_3, 
-                                         const Vector &difVec);
 }
 
 

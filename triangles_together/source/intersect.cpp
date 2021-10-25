@@ -1,6 +1,7 @@
 #include "octree.hpp"
 
 namespace {
+
     void checkUnder (Tree::Octree *octree, GObjects::Triangle &tr, bool *intersectTriangleFlagArray, int &underCounter) {
 
         for (int i  = 0; i < 8; ++i) {
@@ -24,6 +25,8 @@ namespace {
         }
 
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     int IntersectionCounter (Tree::Octree *octree, bool *intersectTriangleFlagArray) {
 
@@ -65,6 +68,8 @@ namespace {
 
     }
 }
+
+//=====================================================================================================
 
 int GetTriangles () {
 

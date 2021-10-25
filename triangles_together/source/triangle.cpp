@@ -2,141 +2,275 @@
 
 namespace GObjects {
 
-    pType Plane::dist (Vector &vec) const {
-        pType dist{};
-
-        for (int index = 0; index < 3; ++index) {
-
-            dist += vec.getCoord(index) * nVec_.getCoord(index);
-        }
-
-        return (dist + d_);
-    }
-
-    std::ostream &operator << (std::ostream &out, const Plane &plane) {    
-        out << plane.getVec(); 
-        out << "D = " << plane.getD() << std::endl; 
-
-        return out;
-    }
-
-    pType Triangle::getAbsMaxCoord () const {
-        return std::max   ({rVecs_ [0].getAbsMaxCoord (), 
-                            rVecs_ [1].getAbsMaxCoord (), 
-                            rVecs_ [2].getAbsMaxCoord ()});
-    }
-
-    pType Triangle::getAbsMinCoord () const {
-        return std::min   ({rVecs_ [0].getAbsMinCoord (), 
-                            rVecs_ [1].getAbsMinCoord (), 
-                            rVecs_ [2].getAbsMinCoord ()});
-    }   
-
-    void Triangle::typeOfDegenerate () {
-
-        Vector firstV = rVecs_ [0];
-
-        if ((((rVecs_[2] - firstV) ^ (rVecs_[1] - firstV))) == Vector (0, 0, 0)) {
-            if(DoubleCmp(getAbsMaxCoord (), getAbsMinCoord ()) == 0){
-                typeOfDegeneration_ = (1 << 1);        //point
-                return;
-            }
-            else{
-                typeOfDegeneration_ = (1 << 2);         //segment
-                return;
-            }
-        }
-        typeOfDegeneration_ = 1;    //none degenerated
-    }
-
-    char Triangle::signedDistance (const Plane &plain, const Triangle &tr) const {
-
-        pType dists[3]{};
-
-        for (int i = 0; i < 3; ++i)
-            dists[i] = rVecs_ [i] * plain.getVec () + plain.getD ();
-
-        if (DoubleCmp ((dists[0] * dists[1]), 0) > 0)
-            if (DoubleCmp ((dists[0] * dists[2]), 0) > 0)
-                return 0;
-
-        for (int i = 0; i < 3; ++i) {
-
-            if( DoubleCmp (dists[i], 0) == 0) {
-                if (DoubleCmp ((dists[(i+1) % 3]) * (dists[(i+2) % 3]), 0) > 0) {
-                    return IntersectDegenerates (tr, rVecs_[i]); //one point in plane and another is from one side
-                } else if (DoubleCmp (dists[(i+1) % 3], 0) == 0) {
-                    Segment seg(rVecs_[i], rVecs_[(i+1) % 3] - rVecs_[i]);
-
-                    return IntersectDegenerates (tr, seg);
-                } else if (DoubleCmp (dists[(i+2) % 3], 0) == 0) {
-                    Segment seg(rVecs_[i], rVecs_[(i+2) % 3] - rVecs_[i]);
-
-                    return IntersectDegenerates (tr, seg);
-                } else 
-                    return 3 + i; 
-            }
-        }
-
-        return 2;	
-    }
-
-    void Triangle::calcNormal (Vector &normalVector) const {
-        
-        Vector firstV = rVecs_ [0];
-
-        Vector firstSide 	= firstV - rVecs_ [1];
-        Vector secondSide 	= firstV - rVecs_ [2];
-
-        normalVector = firstSide ^ secondSide;
-
-        normalVector = normalVector / sqrt (normalVector.squareLength ());
-
-    }
-
-    void Triangle::calcCoefD (Vector &normalV, pType &ourCoefD) const {
-
-        ourCoefD = 0;
-
-        for (int i = 0; i < 3; ++i)
-            ourCoefD += normalV.getCoord (i) * rVecs_ [0].getCoord (i);
-
-        ourCoefD = -ourCoefD;
-
-    }
-
-    //##############################################################################
-    //                         TRIANGLE-OVERLOAD PART
-    //##############################################################################
-
-    std::istream &operator >> (std::istream &in, Triangle &triangle) {
-
-        Vector vec1;
-        Vector vec2;
-        Vector vec3;
-
-        in >> vec1 >> vec2 >> vec3;
-
-        triangle.setVec(vec1, 0); 
-        triangle.setVec(vec2, 1); 
-        triangle.setVec(vec3, 2);
-
-        return in;
-
-    }
-
-    std::ostream &operator << (std::ostream &out, const Triangle &triangle) {
-
-        out << "{ " << triangle.getVec(0) << " ; " << triangle.getVec(1) << " ; " << triangle.getVec(2) << " } ";
-        return out;
-
-    }
-
-    //##############################################################################
-    //                         TRIANGLE-3D INTERSECTION (Frolov)
-    //##############################################################################
     namespace {
-        bool HandleDegeneratedCases (const Triangle& tr1, const Triangle& tr2, const char degFlag) {
+        
+        bool CheckPointInSegment (const Vector &beginPVec, const Vector &directVec) {
+            
+            double vecLen = beginPVec.squareLength ();
+
+            if (DoubleCmp (vecLen, 0) == 0) 
+                return true;
+
+
+            double directLen = directVec.squareLength ();
+            pType dir = ((beginPVec * directVec) / (std::sqrt(vecLen) * std::sqrt(directLen)));
+
+            if (DoubleCmp (dir, 1.0) == 0 && DoubleCmp (directLen, vecLen) >= 0)
+                return true;
+        
+            return false;
+
+        }
+
+//-----------------------------------------------------------------------------------------------------
+
+        void CheckCurCoords (const pType first, const pType second, const pType toCmp, char &counter) {
+            
+            pType minCoord = std::min (first, second);
+            pType maxCoord = std::max (first, second);
+
+            if (DoubleCmp (minCoord, toCmp) <= 0 &&
+                DoubleCmp (maxCoord, toCmp) >= 0)
+                ++counter;
+
+        }
+
+//-----------------------------------------------------------------------------------------------------
+
+        int checkIntersection (const Segment &curSeg, const Vector &point) {
+            
+            char counter = 0;
+            for (int coordNum = 0; coordNum < 3; ++coordNum) {
+                    pType curBeginCoord = curSeg.begin_.getCoord (coordNum);
+                    CheckCurCoords (curBeginCoord, 
+                                    curBeginCoord + curSeg.direct_.getCoord (coordNum),
+                                    point.getCoord (coordNum),
+                                    counter);
+            }
+
+            return counter;
+        }
+
+//-----------------------------------------------------------------------------------------------------
+
+        void CountCommonP  (const pType firstD, const pType secondD, const Vector &firstNormalVec, 
+                        const Vector &secondNormalVec, Vector &commonP) {
+
+
+        pType nScalarProduct    = firstNormalVec * secondNormalVec;
+        pType n1SqLength        = firstNormalVec.squareLength ();
+        pType n2SqLength        = secondNormalVec.squareLength ();
+
+        pType commonDenominator = -nScalarProduct * nScalarProduct + n1SqLength * n2SqLength; 
+
+        pType aCoef = (secondD * nScalarProduct - firstD  * n2SqLength) / commonDenominator;
+        pType bCoef = (firstD  * nScalarProduct - secondD * n1SqLength) / commonDenominator;
+        
+        commonP = aCoef * firstNormalVec + bCoef * secondNormalVec;
+    }
+
+//-----------------------------------------------------------------------------------------------------
+
+        void ProjectEdges  (pType projection [3], const Triangle &tr, 
+                            const Vector &leadVec, const Vector &commonP) {
+
+            for (int i = 0; i < 3; i++) {
+            
+                projection [i] = (tr.getVec (i) - commonP) * leadVec;
+            
+            }
+
+        }
+
+//-----------------------------------------------------------------------------------------------------
+
+        bool IsIntersectedTIntervals (pType firstTParams [2], pType secondTParams [2]) {
+
+            if ((DoubleCmp (firstTParams [0], firstTParams [1]) > 0))
+                std::swap (firstTParams [0], firstTParams [1]);
+            if ((DoubleCmp (secondTParams [0], secondTParams [1]) > 0))
+                std::swap (secondTParams [0], secondTParams [1]);
+
+            for (int i = 0; i < 2; i++) {
+                
+                if ((DoubleCmp (firstTParams [0], secondTParams [i]) <= 0) && (DoubleCmp (firstTParams [1], secondTParams [i]) >= 0))
+                    return 1;
+                
+                if ((DoubleCmp (secondTParams [0], firstTParams [i]) <= 0) && (DoubleCmp (secondTParams [1], firstTParams [i]) >= 0))
+                    return 1;
+
+            }
+
+            return 0;
+
+        }
+
+//-----------------------------------------------------------------------------------------------------
+
+        Vector IntersectionPointOfTwoLines (const Vector &begin_1, const Vector &segment_1, const Vector &segment_2, const Vector &segment_3, const Vector &difVec) {
+
+            pType det_0 = determinant (segment_1, segment_2, segment_3);
+
+            pType detX = determinant (difVec, segment_2, segment_3);
+
+            pType x     = detX / det_0;
+
+            pType xVec = begin_1.getCoord(0) + x * segment_1.getCoord(0);
+            pType yVec = begin_1.getCoord(1) + x * segment_1.getCoord(1);
+            pType zVec = begin_1.getCoord(2) + x * segment_1.getCoord(2);
+
+            return {xVec, yVec, zVec};
+        }
+
+//-----------------------------------------------------------------------------------------------------
+
+        pType CalcDist (const Vector &normalV, const pType dCoef, const Vector &point) {
+
+            pType dist =    normalV.getCoord (0) * point.getCoord (0) + 
+                            normalV.getCoord (1) * point.getCoord (1) +
+                            normalV.getCoord (2) * point.getCoord (2) + dCoef;
+
+            return dist;
+
+        }
+
+//-----------------------------------------------------------------------------------------------------
+
+        void CalcTParams (pType tParams [2], const pType projection [3], 
+                            const Vector &normalV, const pType dCoef, const Triangle &tr) {
+                                
+            int outlaw = 0;
+
+            double firstCalcDist    = CalcDist (normalV, dCoef, tr.getVec (0));
+            double secondCalcDist   = CalcDist (normalV, dCoef, tr.getVec (1));
+            double thirdCalcDist    = CalcDist (normalV, dCoef, tr.getVec (2));
+            
+            if (DoubleCmp (firstCalcDist * secondCalcDist, 0) > 0) 
+                outlaw = 2;
+            else if(DoubleCmp (firstCalcDist * thirdCalcDist, 0)  > 0)
+                outlaw = 1;
+            else 
+                outlaw = 0;
+        
+            pType distThirdVert = CalcDist (normalV, dCoef, tr.getVec (outlaw));
+
+            int curTParamInd = 0;
+            for (int i = 0; i < 3; i++) {
+                if(i == outlaw)
+                    continue;
+                pType vertexDist = CalcDist (normalV, dCoef, tr.getVec (i));
+
+                pType distFrac = vertexDist / (vertexDist - distThirdVert);
+
+                tParams [curTParamInd++] = projection [i] + (projection [outlaw] - projection [i]) * distFrac;
+            }
+        }
+
+//#####################################################################################################
+//                          DEGENERATE INTERSECTION
+//#####################################################################################################
+
+        bool IntersectSegments (const Segment &segment_1, const Segment &segment_2);
+
+//=====================================================================================================
+
+        bool IntersectDegenerates (const Triangle &tr, const Vector &point) {
+            return tr.pointInTriangle(point);
+        }
+
+//-----------------------------------------------------------------------------------------------------
+
+        bool IntersectDegenerates (const Triangle &tr, const Segment &segment) {
+
+            Vector norm{};
+            pType coefD = 0;
+            tr.calcNormal (norm);
+            tr.calcCoefD (norm, coefD);
+
+            Vector end = segment.begin_ + segment.direct_;
+            pType beginDist = CalcDist (norm, coefD, segment.begin_);
+            pType endDist = CalcDist (norm, coefD, end);
+
+            if (DoubleCmp (beginDist, 0) == 0) {
+
+                if (tr.pointInTriangle (segment.begin_))
+                    return true;
+            }
+
+            if (DoubleCmp(endDist, 0) == 0) {
+                if (tr.pointInTriangle (end))
+                    return true;
+            }
+
+            if (DoubleCmp (beginDist, 0) == 0 && DoubleCmp(endDist, 0) == 0) {
+                for (int i = 0; i < 3; ++i)
+                    if(IntersectSegments (segment, Segment(tr.getVec(i), tr.getVec((i + 1) % 3) - tr.getVec(i))))
+                        return true;
+                    
+                
+                return false;
+            }
+
+            if (DoubleCmp (beginDist * endDist, 0 ) > 0)
+                return false;
+
+            pType param = (-coefD - segment.begin_ * norm) / (norm * segment.direct_);
+            
+            Vector intersectionPoint {};
+            for (int i = 0; i < 3; ++i) {
+                intersectionPoint.setCoord(i, segment.begin_.getCoord(i) + param * segment.direct_.getCoord(i));
+            }
+
+            return tr.pointInTriangle (intersectionPoint);
+        }
+
+//-----------------------------------------------------------------------------------------------------
+
+        bool IntersectDegenerates (const Segment &segment1, const Segment &segment2) {
+            
+            Vector firstBeginVec  = segment1.begin_;
+            Vector secondBeginVec = segment2.begin_;
+
+            Vector connectingVec  = secondBeginVec - firstBeginVec;
+
+            double mixedProduct   = firstBeginVec * (secondBeginVec ^ connectingVec);
+
+            if (DoubleCmp (mixedProduct, 0.0) == 0) 
+                return IntersectSegments    (segment1, segment2); 
+            
+            
+            return false;
+
+        }
+
+//-----------------------------------------------------------------------------------------------------
+
+        bool IntersectDegenerates (const Segment &segment, const Vector &point) {
+
+            Vector beginVec     = segment.begin_;
+            Vector directVec    = segment.direct_;
+
+            Vector pBeginVec    = point - beginVec;
+
+            Vector crossProduct = pBeginVec ^ directVec;
+            if (crossProduct == Vector::getZeroVector ())
+                return CheckPointInSegment (pBeginVec, directVec);
+
+            return false;
+
+        }
+
+//-----------------------------------------------------------------------------------------------------
+
+        bool IntersectDegenerates (const Vector &point1, const Vector &point2) {
+            if (point1 == point2)
+                return true;
+            return false;
+        }
+
+//-----------------------------------------------------------------------------------------------------
+
+        bool HandleDegeneratedCases (const Triangle &tr1, const Triangle &tr2, const char degFlag) {
 
             // // printf ("DEGENERATE %d\n", degFlag);
 
@@ -202,202 +336,125 @@ namespace GObjects {
                 default:
                     std::cout << "Unexpected bitmask in function " << (int) degFlag << " " << __func__ << std::endl;
                     return false;
-
             }
         }
 
-    
-        bool CheckPointInSegment (const Vector& beginPVec, const Vector& directVec) {
+//-----------------------------------------------------------------------------------------------------
+
+        bool IntersectSegments (const Segment &segment_1, const Segment &segment_2) { 
+            Vector begin_1 = segment_1.begin_;
+            Vector direct_1 = segment_1.direct_;
+
+            Vector begin_2 = segment_2.begin_;
+            Vector direct_2 = segment_2.direct_;
+
+            Vector cross  = direct_1 ^ direct_2;
+            Vector difVec = begin_2 - begin_1;
+
+            if (cross == Vector::getZeroVector ()) {
+                
+                
+                if ((((begin_2 - begin_1) ^ direct_1) == Vector::getZeroVector ()))
+                {
+
+                    if (IntersectDegenerates (segment_1, begin_2))
+                        return true;
+                    if (IntersectDegenerates (segment_1, begin_2 + direct_2))
+                        return true;
+                    if (IntersectDegenerates (segment_2, begin_1))
+                        return true;
+                    if (IntersectDegenerates (segment_2, begin_1 + direct_1))
+                        return true;
+                    
+                    return false;
+                }
+                return false;
+            }
+
+            Vector interPoint = IntersectionPointOfTwoLines(begin_1, direct_1, direct_2, cross, difVec);
             
-            double vecLen = beginPVec.squareLength ();
-
-            if (DoubleCmp (vecLen, 0) == 0) 
-                return true;
-
-
-            double directLen = directVec.squareLength ();
-            pType dir = ((beginPVec * directVec) / (std::sqrt(vecLen) * std::sqrt(directLen)));
-
-            if (DoubleCmp (dir, 1.0) == 0 && DoubleCmp (directLen, vecLen) >= 0)
-                return true;
-        
+            if (checkIntersection (segment_1, interPoint) + checkIntersection (segment_2, interPoint) == 6) return true;       
             return false;
-
         }
 
-        void CheckCurCoords (const pType first, const pType second, const pType toCmp, char& counter) {
-            
-            pType minCoord = std::min (first, second);
-            pType maxCoord = std::max (first, second);
+//-----------------------------------------------------------------------------------------------------
 
-            if (DoubleCmp (minCoord, toCmp) <= 0 &&
-                DoubleCmp (maxCoord, toCmp) >= 0)
-                ++counter;
+        bool Intersect2DTriangles (const Triangle &tr1, const Triangle &tr2) {	
+            if(tr2.pointInTriangle(tr1.getVec(0)) || tr1.pointInTriangle(tr2.getVec(0)))
+                return true;
 
-        }
+            for (int firstTriangleCounter = 0; firstTriangleCounter < 3; ++firstTriangleCounter) {
 
-        int checkIntersection (const Segment &curSeg, const Vector &point) {
-            
-            char counter = 0;
-            for (int coordNum = 0; coordNum < 3; ++coordNum) {
-                    pType curBeginCoord = curSeg.begin_.getCoord (coordNum);
-                    CheckCurCoords (curBeginCoord, 
-                                    curBeginCoord + curSeg.direct_.getCoord (coordNum),
-                                    point.getCoord (coordNum),
-                                    counter);
+                for (int secondTriangleCounter = 0; secondTriangleCounter < 3; ++secondTriangleCounter) {
+                    
+                    Vector tr1CurVec = tr1.getVec (firstTriangleCounter);
+                    Vector tr2CurVec = tr2.getVec (secondTriangleCounter);
+                    if (IntersectSegments  (Segment(tr1CurVec, -tr1CurVec + tr1.getVec((firstTriangleCounter  + 1) % 3)), 
+                                            Segment(tr2CurVec, -tr2CurVec + tr2.getVec((secondTriangleCounter + 1) % 3))))
+                        return true;
+                }
             }
-
-            return counter;
-        }
-    }
-    
-    void CountCommonP  (pType firstD, pType secondD, Vector& firstNormalVec, 
-                        Vector& secondNormalVec, Vector& commonP) {
-
-
-        pType nScalarProduct    = firstNormalVec * secondNormalVec;
-        pType n1SqLength        = firstNormalVec.squareLength ();
-        pType n2SqLength        = secondNormalVec.squareLength ();
-
-        pType commonDenominator = -nScalarProduct * nScalarProduct + n1SqLength * n2SqLength; 
-
-        pType aCoef = (secondD * nScalarProduct - firstD  * n2SqLength) / commonDenominator;
-        pType bCoef = (firstD  * nScalarProduct - secondD * n1SqLength) / commonDenominator;
-        
-        commonP = aCoef * firstNormalVec + bCoef * secondNormalVec;
-
-
-    }
-
-    void ProjectEdges  (pType projection [3], const Triangle& tr, 
-                        const Vector& leadVec, const Vector& commonP) {
-
-        for (int i = 0; i < 3; i++) {
-        
-            projection [i] = (tr.getVec (i) - commonP) * leadVec;
-        
+            return false;
         }
 
-    }
+//-----------------------------------------------------------------------------------------------------
 
-    bool IsIntersectedTIntervals (pType firstTParams [2], pType secondTParams [2]) {
+        bool checkIntersectionTrwithPointInPlane (const Triangle &tr1, const Triangle &tr2, Vector &commonP, Vector &leadVec, char checkIntersectDeg) {
 
-        if ((DoubleCmp (firstTParams [0], firstTParams [1]) > 0))
-            std::swap (firstTParams [0], firstTParams [1]);
-        if ((DoubleCmp (secondTParams [0], secondTParams [1]) > 0))
-            std::swap (secondTParams [0], secondTParams [1]);
+            Vector secondSide = tr1.getVec ((checkIntersectDeg + 1) % 3) - tr1.getVec ((checkIntersectDeg + 2) % 3);
+            Vector cross = leadVec ^ secondSide;
+            Vector difVec = commonP - tr1.getVec ((checkIntersectDeg + 2) % 3);
 
-        for (int i = 0; i < 2; i++) {
+            Vector intersectCommonLineWithTrSide = IntersectionPointOfTwoLines (commonP, leadVec, secondSide, 
+                                                                                cross, -difVec);
             
-            if ((DoubleCmp (firstTParams [0], secondTParams [i]) <= 0) && (DoubleCmp (firstTParams [1], secondTParams [i]) >= 0))
-                return 1;
-            
-            if ((DoubleCmp (secondTParams [0], firstTParams [i]) <= 0) && (DoubleCmp (secondTParams [1], firstTParams [i]) >= 0))
-                return 1;
 
-        }
+            Segment segToCheckIntersect (intersectCommonLineWithTrSide, tr1.getVec (checkIntersectDeg % 3) - intersectCommonLineWithTrSide);
 
-        return 0;
-
-    }
-
-    pType CalcDist (const Vector& normalV, const pType dCoef, const Vector& point) {
-
-        pType dist =    normalV.getCoord (0) * point.getCoord (0) + 
-                        normalV.getCoord (1) * point.getCoord (1) +
-                        normalV.getCoord (2) * point.getCoord (2) + dCoef;
-
-        return dist;
-
-    }
-
-    void CalcTParams (pType tParams [2], const pType projection [3], 
-                        const Vector& normalV, const pType dCoef, const Triangle& tr) {
-                            
-        int outlaw = 0;
-
-        double firstCalcDist    = CalcDist (normalV, dCoef, tr.getVec (0));
-        double secondCalcDist   = CalcDist (normalV, dCoef, tr.getVec (1));
-        double thirdCalcDist    = CalcDist (normalV, dCoef, tr.getVec (2));
-        
-        if (DoubleCmp (firstCalcDist * secondCalcDist, 0) > 0) 
-            outlaw = 2;
-        else if(DoubleCmp (firstCalcDist * thirdCalcDist, 0)  > 0)
-            outlaw = 1;
-        else 
-            outlaw = 0;
-    
-        pType distThirdVert = CalcDist (normalV, dCoef, tr.getVec (outlaw));
-
-        int curTParamInd = 0;
-        for (int i = 0; i < 3; i++) {
-            if(i == outlaw)
-                continue;
-            pType vertexDist = CalcDist (normalV, dCoef, tr.getVec (i));
-
-            pType distFrac = vertexDist / (vertexDist - distThirdVert);
-
-            tParams [curTParamInd++] = projection [i] + (projection [outlaw] - projection [i]) * distFrac;
+            return IntersectDegenerates (tr2, segToCheckIntersect);
+                
         }
     }
 
-    bool checkIntersectionTrwithPointinPlane (const Triangle& tr1, const Triangle& tr2, Vector &commonP, Vector &leadVec, char checkIntersectDeg) {
+//=====================================================================================================
 
-        Vector secondSide = tr1.getVec ((checkIntersectDeg + 1) % 3) - tr1.getVec ((checkIntersectDeg + 2) % 3);
-        Vector cross = leadVec ^ secondSide;
-        Vector difVec = commonP - tr1.getVec ((checkIntersectDeg + 2) % 3);
-
-        Vector intersectCommonLineWithTrSide = IntersectionPointOfTwoLines (commonP, leadVec, secondSide, 
-                                                                            cross, -difVec);
-        
-
-        Segment segToCheckIntersect (intersectCommonLineWithTrSide, tr1.getVec (checkIntersectDeg % 3) - intersectCommonLineWithTrSide);
-
-        return IntersectDegenerates (tr2, segToCheckIntersect);
-            
-    }
-
-    bool Intersect3DTriangles (const Triangle& tr1, const Triangle& tr2) {
+    bool Intersect3DTriangles (const Triangle &tr1, const Triangle &tr2) {
         
         //Handling for the degenerated triangles
-        
         char degFlag = tr1.getDegenerationType () + tr2.getDegenerationType ();
         if(degFlag != (1 << 1)) 
             return HandleDegeneratedCases (tr1, tr2, degFlag);
 
-        
-        //Normal vector for the first plane
-        Vector firstNormalVec;
-        tr1.calcNormal (firstNormalVec);
-        //Coef D for the first plane
-        pType firstD = 0;
-        tr1.calcCoefD (firstNormalVec, firstD);
+        Plane firstPlane {tr1};
+        // Vector firstNormalVec;
+        // tr1.calcNormal (firstNormalVec);
+        // pType firstD = 0;
+        // tr1.calcCoefD (firstNormalVec, firstD);
 
-        //Normal vector for the second plane
-        Vector secondNormalVec;
-        tr2.calcNormal (secondNormalVec);
-        
-        //Coef D for the second plane
-        pType secondD = 0;
-        tr2.calcCoefD (secondNormalVec, secondD);
+        Plane secondPlane {tr2};
+        // Vector secondNormalVec;
+        // tr2.calcNormal (secondNormalVec);
 
-        if ((firstNormalVec ^ secondNormalVec) == 0) {
+        // pType secondD = 0;
+        // tr2.calcCoefD (secondNormalVec, secondD);
 
-            if (DoubleCmp(firstD, secondD) != 0)                
+        if ((firstPlane.getVec() ^ secondPlane.getVec()) == 0) {
+
+            if (DoubleCmp(firstPlane.getD(), secondPlane.getD()) != 0)
                 return false;
             
             return Intersect2DTriangles(tr1, tr2);
         }
 
         //leading vector for the common lane
-        Vector leadVec = firstNormalVec ^ secondNormalVec;
+        Vector leadVec = firstPlane.getVec() ^ secondPlane.getVec();
         
         Vector commonP;
-        CountCommonP (firstD, secondD, firstNormalVec, secondNormalVec, commonP);
+        CountCommonP (firstPlane.getD(), secondPlane.getD(), firstPlane.getVec(), secondPlane.getVec(), commonP);
         //result: now we have common point and direction vector for the common lane
         
-        char checkIntersectDeg1 = tr1.signedDistance ({secondNormalVec, secondD}, tr2);
-        char checkIntersectDeg2 = tr2.signedDistance ({firstNormalVec, firstD}, tr1);
+        char checkIntersectDeg1 = tr1.signedDistance (secondPlane, tr2);
+        char checkIntersectDeg2 = tr2.signedDistance (firstPlane, tr1);
 
         if (checkIntersectDeg1 * checkIntersectDeg2 == 0)
             return false;
@@ -406,17 +463,14 @@ namespace GObjects {
             return checkIntersectDeg1;
 
         if (checkIntersectDeg1 >= 3) 
-            return checkIntersectionTrwithPointinPlane (tr1, tr2, commonP, leadVec, checkIntersectDeg1);
+            return checkIntersectionTrwithPointInPlane (tr1, tr2, commonP, leadVec, checkIntersectDeg1);
 
         if (checkIntersectDeg2 < 2)
             return checkIntersectDeg2;
 
         if (checkIntersectDeg2 >= 3) 
-            return checkIntersectionTrwithPointinPlane (tr2, tr1, commonP, leadVec, checkIntersectDeg2);
+            return checkIntersectionTrwithPointInPlane (tr2, tr1, commonP, leadVec, checkIntersectDeg2);
         
-
-        
-
         //project triangle's vertices
         pType firstProj [3] = {};
         ProjectEdges (firstProj, tr1, leadVec, commonP);
@@ -425,19 +479,115 @@ namespace GObjects {
 
         //now let's compute t_{0,i} params. Better watch GCT 578 page 
         pType firstTParams [2] = {};
-        CalcTParams (firstTParams, firstProj, secondNormalVec, secondD, tr1);
+        CalcTParams (firstTParams, firstProj, secondPlane.getVec(), secondPlane.getD(), tr1);
 
         pType secondTParams [2] = {};
-        CalcTParams (secondTParams, secondProj, firstNormalVec, firstD, tr2);
+        CalcTParams (secondTParams, secondProj, firstPlane.getVec(), firstPlane.getD(), tr2);
 
         return IsIntersectedTIntervals (firstTParams, secondTParams);
-        
     }
 
-    //##############################################################################
-    //                         TRIANGLE-2D INTERSECTION (Belov)
-    //##############################################################################
-    
+//#####################################################################################################
+//                         TRIANGLE CLASS PART
+//#####################################################################################################
+
+    pType Triangle::getAbsMaxCoord () const {
+        return std::max   ({rVecs_ [0].getAbsMaxCoord (), 
+                            rVecs_ [1].getAbsMaxCoord (), 
+                            rVecs_ [2].getAbsMaxCoord ()});
+    }
+
+//-----------------------------------------------------------------------------------------------------
+
+    pType Triangle::getAbsMinCoord () const {
+        return std::min   ({rVecs_ [0].getAbsMinCoord (), 
+                            rVecs_ [1].getAbsMinCoord (), 
+                            rVecs_ [2].getAbsMinCoord ()});
+    }   
+
+//-----------------------------------------------------------------------------------------------------
+
+    void Triangle::typeOfDegenerate () {
+
+        Vector firstV = rVecs_ [0];
+
+        if ((((rVecs_[2] - firstV) ^ (rVecs_[1] - firstV))) == Vector (0, 0, 0)) {
+            if(DoubleCmp(getAbsMaxCoord (), getAbsMinCoord ()) == 0){
+                typeOfDegeneration_ = (1 << 1);        //point
+                return;
+            }
+            else{
+                typeOfDegeneration_ = (1 << 2);         //segment
+                return;
+            }
+        }
+        typeOfDegeneration_ = 1;    //none degenerated
+    }
+
+//-----------------------------------------------------------------------------------------------------
+
+    char Triangle::signedDistance (const Plane &plain, const Triangle &tr) const {
+
+        pType dists[3]{};
+
+        for (int i = 0; i < 3; ++i)
+            dists[i] = rVecs_ [i] * plain.getVec () + plain.getD ();
+
+        if (DoubleCmp ((dists[0] * dists[1]), 0) > 0)
+            if (DoubleCmp ((dists[0] * dists[2]), 0) > 0)
+                return 0;
+
+        for (int i = 0; i < 3; ++i) {
+
+            if( DoubleCmp (dists[i], 0) == 0) {
+                if (DoubleCmp ((dists[(i+1) % 3]) * (dists[(i+2) % 3]), 0) > 0) {
+                    return IntersectDegenerates (tr, rVecs_[i]); //one point in plane and another is from one side
+                } else if (DoubleCmp (dists[(i+1) % 3], 0) == 0) {
+                    Segment seg(rVecs_[i], rVecs_[(i+1) % 3] - rVecs_[i]);
+
+                    return IntersectDegenerates (tr, seg);
+                } else if (DoubleCmp (dists[(i+2) % 3], 0) == 0) {
+                    Segment seg(rVecs_[i], rVecs_[(i+2) % 3] - rVecs_[i]);
+
+                    return IntersectDegenerates (tr, seg);
+                } else 
+                    return 3 + i; 
+            }
+        }
+
+        return 2;	
+    }
+
+//-----------------------------------------------------------------------------------------------------
+
+    void Triangle::calcNormal (Vector &normalVector) const {
+        
+        Vector firstV = rVecs_ [0];
+
+        Vector firstSide 	= firstV - rVecs_ [1];
+        Vector secondSide 	= firstV - rVecs_ [2];
+
+        normalVector = firstSide ^ secondSide;
+
+        normalVector = normalVector / sqrt (normalVector.squareLength ());
+
+    }
+
+//-----------------------------------------------------------------------------------------------------
+
+    void Triangle::calcCoefD (Vector &normalV, pType &ourCoefD) const {
+
+        ourCoefD = 0;
+
+        for (int i = 0; i < 3; ++i)
+            ourCoefD += normalV.getCoord (i) * rVecs_ [0].getCoord (i);
+
+        ourCoefD = -ourCoefD;
+
+    }
+
+//-----------------------------------------------------------------------------------------------------
+
     bool Triangle::pointInTriangle (const Vector &point) const{
 
         for (int i = 0; i < 3; ++i) {
@@ -468,164 +618,57 @@ namespace GObjects {
 
     } 
 
-    bool Intersect2DTriangles (const Triangle &tr1, const Triangle &tr2) {	
-        if(tr2.pointInTriangle(tr1.getVec(0)) || tr1.pointInTriangle(tr2.getVec(0)))
-            return true;
+//#####################################################################################################
+//                         TRIANGLE-OVERLOAD PART
+//#####################################################################################################
 
-        for (int firstTriangleCounter = 0; firstTriangleCounter < 3; ++firstTriangleCounter) {
+    std::istream &operator >> (std::istream &in, Triangle &triangle) {
 
-            for (int secondTriangleCounter = 0; secondTriangleCounter < 3; ++secondTriangleCounter) {
-                
-                Vector tr1CurVec = tr1.getVec (firstTriangleCounter);
-                Vector tr2CurVec = tr2.getVec (secondTriangleCounter);
-                if (IntersectSegments  (Segment(tr1CurVec, -tr1CurVec + tr1.getVec((firstTriangleCounter  + 1) % 3)), 
-                                        Segment(tr2CurVec, -tr2CurVec + tr2.getVec((secondTriangleCounter + 1) % 3))))
-                    return true;
-            }
-        }
-        return false;
+        Vector vec1;
+        Vector vec2;
+        Vector vec3;
+
+        in >> vec1 >> vec2 >> vec3;
+
+        triangle.setVec(vec1, 0); 
+        triangle.setVec(vec2, 1); 
+        triangle.setVec(vec3, 2);
+
+        return in;
+
     }
 
-    Vector IntersectionPointOfTwoLines (const Vector &begin_1, const Vector &segment_1, const Vector &segment_2, const Vector &segment_3, const Vector &difVec) {
+//-----------------------------------------------------------------------------------------------------
 
-        pType det_0 = determinant (segment_1, segment_2, segment_3);
+    std::ostream &operator << (std::ostream &out, const Triangle &triangle) {
 
-        pType detX = determinant (difVec, segment_2, segment_3);
+        out << "{ " << triangle.getVec(0) << " ; " << triangle.getVec(1) << " ; " << triangle.getVec(2) << " } ";
+        return out;
 
-        pType x     = detX / det_0;
-
-        pType xVec = begin_1.getCoord(0) + x * segment_1.getCoord(0);
-        pType yVec = begin_1.getCoord(1) + x * segment_1.getCoord(1);
-        pType zVec = begin_1.getCoord(2) + x * segment_1.getCoord(2);
-
-        return {xVec, yVec, zVec};
     }
 
-    
+//#####################################################################################################
+//                         PLANE CLASS PART
+//#####################################################################################################
 
-    bool IntersectSegments (const Segment& segment_1, const Segment& segment_2) { 
-        Vector begin_1 = segment_1.begin_;
-        Vector direct_1 = segment_1.direct_;
+    pType Plane::dist (Vector &vec) const {
+        pType dist{};
 
-        Vector begin_2 = segment_2.begin_;
-        Vector direct_2 = segment_2.direct_;
+        for (int index = 0; index < 3; ++index) {
 
-        Vector cross  = direct_1 ^ direct_2;
-        Vector difVec = begin_2 - begin_1;
-
-        if (cross == Vector::getZeroVector ()) {
-            
-            
-            if ((((begin_2 - begin_1) ^ direct_1) == Vector::getZeroVector ()))
-            {
-
-                if (IntersectDegenerates (segment_1, begin_2))
-                    return true;
-                if (IntersectDegenerates (segment_1, begin_2 + direct_2))
-                    return true;
-                if (IntersectDegenerates (segment_2, begin_1))
-                    return true;
-                if (IntersectDegenerates (segment_2, begin_1 + direct_1))
-                    return true;
-                
-                return false;
-            }
-            return false;
+            dist += vec.getCoord(index) * nVec_.getCoord(index);
         }
 
-        Vector interPoint = IntersectionPointOfTwoLines(begin_1, direct_1, direct_2, cross, difVec);
-        
-        if (checkIntersection (segment_1, interPoint) + checkIntersection (segment_2, interPoint) == 6) return true;       
-        return false;
+        return (dist + d_);
     }
 
-    //##############################################################################
-    //                          DEGENERATE INTERSECTION
-    //##############################################################################
-    bool IntersectDegenerates (const Triangle &tr, const Vector &point) {
-        return tr.pointInTriangle(point);
-    }
+//-----------------------------------------------------------------------------------------------------
 
-    bool IntersectDegenerates (const Triangle &tr, const Segment &segment) {
+    std::ostream &operator << (std::ostream &out, const Plane &plane) {    
+        out << plane.getVec(); 
+        out << "D = " << plane.getD() << std::endl; 
 
-        Vector norm{};
-        pType coefD = 0;
-        tr.calcNormal (norm);
-        tr.calcCoefD (norm, coefD);
-
-        Vector end = segment.begin_ + segment.direct_;
-        pType beginDist = CalcDist (norm, coefD, segment.begin_);
-        pType endDist = CalcDist (norm, coefD, end);
-
-        if (DoubleCmp (beginDist, 0) == 0) {
-
-            if (tr.pointInTriangle (segment.begin_))
-                return true;
-        }
-
-        if (DoubleCmp(endDist, 0) == 0) {
-            if (tr.pointInTriangle (end))
-                return true;
-        }
-
-        if (DoubleCmp (beginDist, 0) == 0 && DoubleCmp(endDist, 0) == 0) {
-            for (int i = 0; i < 3; ++i)
-                if(IntersectSegments (segment, Segment(tr.getVec(i), tr.getVec((i + 1) % 3) - tr.getVec(i))))
-                    return true;
-                
-            
-            return false;
-        }
-
-        if (DoubleCmp (beginDist * endDist, 0 ) > 0)
-            return false;
-
-        pType param = (-coefD - segment.begin_ * norm) / (norm * segment.direct_);
-        
-        Vector intersectionPoint {};
-        for (int i = 0; i < 3; ++i) {
-            intersectionPoint.setCoord(i, segment.begin_.getCoord(i) + param * segment.direct_.getCoord(i));
-        }
-
-        return tr.pointInTriangle (intersectionPoint);
-    }
-
-    bool IntersectDegenerates (const Segment &segment1, const Segment &segment2) {
-        
-        Vector firstBeginVec  = segment1.begin_;
-        Vector secondBeginVec = segment2.begin_;
-
-        Vector connectingVec  = secondBeginVec - firstBeginVec;
-
-        double mixedProduct   = firstBeginVec * (secondBeginVec ^ connectingVec);
-
-        if (DoubleCmp (mixedProduct, 0.0) == 0) 
-            return IntersectSegments    (segment1, segment2); 
-        
-        
-        return false;
-
-    }
-
-    bool IntersectDegenerates (const Segment &segment, const Vector &point) {
-
-        Vector beginVec     = segment.begin_;
-        Vector directVec    = segment.direct_;
-
-        Vector pBeginVec    = point - beginVec;
-
-        Vector crossProduct = pBeginVec ^ directVec;
-        if (crossProduct == Vector::getZeroVector ())
-            return CheckPointInSegment (pBeginVec, directVec);
-
-        return false;
-
-    }
-
-    bool IntersectDegenerates (const Vector &point1, const Vector &point2) {
-        if (point1 == point2)
-            return true;
-        return false;
+        return out;
     }
 
 }

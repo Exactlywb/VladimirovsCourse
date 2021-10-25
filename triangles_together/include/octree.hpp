@@ -24,22 +24,27 @@ namespace Tree {
 
     public:
         using ListIt = typename std::list < GObjects::Triangle > ::iterator;
+        
         Octree *child_[8] {};
-
         std::list < GObjects::Triangle > listOfTriangles_;
+
+//-----------------------------------------------------------------------------------------------------
 
         Octree (GObjects::Vector right = 0, GObjects::Vector left = 0):
                 rightBorder_ (right),
                 leftBorder_ (left),
                 child_ {} {}
 
+//-----------------------------------------------------------------------------------------------------
+
         ~Octree () {
             for(int i = 0; i < 8; ++i)
                 delete child_[i];
         }
 
-        void fillTree(int countTriangles);
+//-----------------------------------------------------------------------------------------------------
 
+        void fillTree(int countTriangles);
         void dumpTree (Octree &curRoot);
     };
 }
