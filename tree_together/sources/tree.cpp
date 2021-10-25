@@ -37,17 +37,36 @@ TreeImpl::Tree::~Tree () {
 
 }
 
+namespace {
+
+    void PrintNodes (std::ofstream& dumpOut, const TreeImpl::Node* curNode) {
+        if (curNode == nullptr)
+            return;
+        static int curNodeNum = 0;
+        dumpOut << curNodeNum << "[label = \"" << curNode->val_ << "\"]\n";
+
+    } 
+
+}
+
 void TreeImpl::Tree::graphDump (const char* fileName) {
 
-    //!TODO
+    std::ofstream dumpOut (fileName, dumpOut.out | dumpOut.trunc);
+
+    dumpOut << "digraph Tree {\n";
+
+    PrintNodes (dumpOut, root);
+
+    dumpOut << "}";
 
 }
 
 int TreeImpl::Tree::push (int val) {
 
-    //!TODO
+    TreeImpl::Node* newNode = new TreeImpl::Node {val};
+    root = newNode;
 
-    return -1;
+    return -1; //!TODO remake this func
 
 }
 

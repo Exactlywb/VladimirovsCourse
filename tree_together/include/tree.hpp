@@ -19,7 +19,9 @@ namespace TreeImpl {
         int leftSize    = 0;
         int rightSize   = 0;
 
-        Node ()         = default; //
+        Node    (int val = 0, Node* parent = nullptr):
+                val_ (val),
+                parent_ (parent) {}
         ~Node ()        = default; //!TODO discuss about it with Ivan and Vlad
 
         void disactiveChild (const Node* child) {
