@@ -426,17 +426,7 @@ namespace GObjects {
             return HandleDegeneratedCases (tr1, tr2, degFlag);
 
         Plane firstPlane {tr1};
-        // Vector firstNormalVec;
-        // tr1.calcNormal (firstNormalVec);
-        // pType firstD = 0;
-        // tr1.calcCoefD (firstNormalVec, firstD);
-
         Plane secondPlane {tr2};
-        // Vector secondNormalVec;
-        // tr2.calcNormal (secondNormalVec);
-
-        // pType secondD = 0;
-        // tr2.calcCoefD (secondNormalVec, secondD);
 
         if ((firstPlane.getVec() ^ secondPlane.getVec()) == 0) {
 
