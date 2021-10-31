@@ -44,14 +44,13 @@ namespace TreeImpl {
     struct Tree {
     
     private:
-
+        Node* root = nullptr;
 
         void rightRotate (Node *x);
         void leftRotate (Node *x);
         void balanceTree (Node *pushedNode);
 
     public:
-        Node* root = nullptr;
 
         Tree () = default;
 

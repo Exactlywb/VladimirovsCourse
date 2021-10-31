@@ -71,6 +71,11 @@ void TreeImpl::Tree::rightRotate (TreeImpl::Node *x) {
 
     TreeImpl::Node *y = x->left_;
 
+    y->subtreeSize = x->subtreeSize;
+    int leftSize  = (y->right_) ? y->right_->subtreeSize : 0,
+        rightSize = (x->right_) ? x->right_->subtreeSize : 0;
+    x->subtreeSize = leftSize + rightSize;
+
     x->left_ = y->right_;
 
     if (y->right_ != nullptr)
@@ -95,6 +100,11 @@ void TreeImpl::Tree::rightRotate (TreeImpl::Node *x) {
 void TreeImpl::Tree::leftRotate (TreeImpl::Node *x) {
 
     TreeImpl::Node *y = x->right_;
+
+    y->subtreeSize = x->subtreeSize;
+    int leftSize  = (y->left_) ? y->left_->subtreeSize : 0,
+        rightSize = (x->left_) ? x->left_->subtreeSize : 0;
+    x->subtreeSize = leftSize + rightSize;
 
     x->right_ = y->left_;
 
@@ -186,6 +196,8 @@ void TreeImpl::Tree::push (int val) {
     while (tmpNode != nullptr) {  //big data in right child
 
         tmpParent = tmpNode;
+        ++tmpParent->subtreeSize;
+
         if (tmpNode->val_ < val)
             tmpNode = tmpNode->right_;
         else
