@@ -1,0 +1,6 @@
+*/.vscode
+*.json
+
+build
+*.gv
+*.dot

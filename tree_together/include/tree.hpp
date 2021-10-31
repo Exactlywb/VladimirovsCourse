@@ -16,8 +16,10 @@ namespace TreeImpl {
 
         int val_        = 0;
 
-        int leftSize    = 0;
-        int rightSize   = 0;
+        bool color = 0;         //0 - black
+                                //1 - red
+
+        int subtreeSize    = 0;
 
         Node    (int val = 0, Node* parent = nullptr):
                 val_ (val),
@@ -43,13 +45,6 @@ namespace TreeImpl {
     public:
 
         Tree () = default;
-        
-        Tree (int val) {
-
-            root = new Node {};
-            root->val_ = val;
-
-        }
 
         Tree (const Node* node) = delete;   //!TODO discuss about it with Ivan and Vlad.
                                             //It doesn't look good to hand over external ptr.

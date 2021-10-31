@@ -45,8 +45,25 @@ namespace {
         static int curNodeNum = 0;
         dumpOut << curNodeNum << "[label = \"" << curNode->val_ << "\"]\n";
 
-    } 
+    }
 
+//-----------------------------------------------------------------------------------------------------
+
+    void rightRotate () {
+
+    }
+
+//-----------------------------------------------------------------------------------------------------
+
+    void leftRotate () {
+
+    }
+
+//-----------------------------------------------------------------------------------------------------
+
+    void balanceTree () {
+
+    }
 }
 
 void TreeImpl::Tree::graphDump (const char* fileName) {
@@ -64,7 +81,35 @@ void TreeImpl::Tree::graphDump (const char* fileName) {
 int TreeImpl::Tree::push (int val) {
 
     TreeImpl::Node* newNode = new TreeImpl::Node {val};
-    root = newNode;
+    TreeImpl::Node* tmpNode = root,
+                  * tmpParent = nullptr;
+
+    while (tmpNode != nullptr) {  //big data in right child
+
+        tmpParent = tmpNode;
+        if (tmpNode->val_ < val)
+            tmpNode = tmpNode->right_;
+        else
+            tmpNode = tmpNode->left_;
+    }
+
+    newNode->parent_ = tmpParent;
+    newNode->left_ = newNode->right_ = nullptr;
+
+    if (tmpParent == nullptr) {
+
+        root = newNode;
+        return 0;
+    }
+
+    if (tmpParent->val_ < val)
+        tmpParent->right_ = newNode;
+    else
+        tmpParent->left_ = newNode;
+
+    newNode->color = 1;
+
+    balanceTree();
 
     return -1; //!TODO remake this func
 
