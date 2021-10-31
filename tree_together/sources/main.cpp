@@ -4,10 +4,15 @@ int main () {
 
     TreeImpl::Tree mainTree {};
 
-    mainTree.push (12);
-    mainTree.push (13);
-    mainTree.push (9);
-    mainTree.push (-2);
+    int n;
+    std::cin >> n; 
+
+    for (int i = 0; i < n; ++i) {
+        int key;
+        std::cin >> key; 
+
+        mainTree.push (key);
+    }
 
     mainTree.graphDump ("tree.dot");
 

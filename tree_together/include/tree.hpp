@@ -7,6 +7,11 @@
 
 namespace TreeImpl {
 
+    enum color {
+        BLACK = 0,
+        RED = 1
+    };
+
     struct Node {
 
         Node* left_     = nullptr;
@@ -16,8 +21,7 @@ namespace TreeImpl {
 
         int val_        = 0;
 
-        bool color = 0;         //0 - black
-                                //1 - red
+        bool color_ = BLACK;
 
         int subtreeSize    = 0;
 
@@ -40,9 +44,14 @@ namespace TreeImpl {
     struct Tree {
     
     private:
-        Node* root = nullptr;
+
+
+        void rightRotate (Node *x);
+        void leftRotate (Node *x);
+        void balanceTree (Node *pushedNode);
 
     public:
+        Node* root = nullptr;
 
         Tree () = default;
 
@@ -52,7 +61,7 @@ namespace TreeImpl {
         ~Tree ();
 
         void    graphDump       (const char* fileName);
-        int     push            (int val);      //!TODO it has to return err I think.
+        void    push            (int val);
 
         int     getNLessThan    (int border);
 

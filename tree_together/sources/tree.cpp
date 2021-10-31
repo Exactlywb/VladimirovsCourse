@@ -37,6 +37,8 @@ TreeImpl::Tree::~Tree () {
 
 }
 
+//=====================================================================================================
+
 namespace {
 
     void PrintNodes (std::ofstream& dumpOut, const TreeImpl::Node* curNode) {
@@ -47,24 +49,9 @@ namespace {
 
     }
 
-//-----------------------------------------------------------------------------------------------------
-
-    void rightRotate () {
-
-    }
-
-//-----------------------------------------------------------------------------------------------------
-
-    void leftRotate () {
-
-    }
-
-//-----------------------------------------------------------------------------------------------------
-
-    void balanceTree () {
-
-    }
 }
+
+//=====================================================================================================
 
 void TreeImpl::Tree::graphDump (const char* fileName) {
 
@@ -78,7 +65,119 @@ void TreeImpl::Tree::graphDump (const char* fileName) {
 
 }
 
-int TreeImpl::Tree::push (int val) {
+//-----------------------------------------------------------------------------------------------------
+
+void TreeImpl::Tree::rightRotate (TreeImpl::Node *x) {
+
+    TreeImpl::Node *y = x->left_;
+
+    x->left_ = y->right_;
+
+    if (y->right_ != nullptr)
+        y->right_->parent_ = x;
+
+    y->parent_ = x->parent_;
+
+    if(y->parent_ == nullptr) 
+        root = y;
+    else if (y->parent_->left_ == x)
+        y->parent_->left_ = y;
+    else 
+        y->parent_->right_ = y;
+
+    y->right_ = x;
+    x->parent_ = y;
+
+}
+
+//-----------------------------------------------------------------------------------------------------
+
+void TreeImpl::Tree::leftRotate (TreeImpl::Node *x) {
+
+    TreeImpl::Node *y = x->right_;
+
+    x->right_ = y->left_;
+
+    if (y->left_ != nullptr)
+        y->left_->parent_ = x;
+
+    y->parent_ = x->parent_;
+
+    if(y->parent_ == nullptr) 
+        root = y;
+    else if (y->parent_->left_ == x)
+        y->parent_->left_ = y;
+    else 
+        y->parent_->right_ = y;
+
+    y->left_ = x;
+    x->parent_ = y;
+}
+
+//-----------------------------------------------------------------------------------------------------
+
+void TreeImpl::Tree::balanceTree (TreeImpl::Node *curNode) {
+
+    while (curNode->parent_ != nullptr && curNode->parent_->color_ == RED) {
+
+        TreeImpl::Node *granddad = curNode->parent_->parent_;
+
+        if (granddad->left_ == curNode->parent_) {
+
+            if (granddad->right_ != nullptr && granddad->right_->color_ == RED) {
+
+                granddad->right_->color_ = BLACK;
+                curNode->parent_->color_ = BLACK;
+                granddad->color_ = RED;
+
+                curNode = granddad;
+            }
+            else {
+                
+                if (curNode->parent_->right_ == curNode) {
+                
+                    curNode = curNode->parent_;
+                    leftRotate (curNode);
+                }
+
+                granddad->color_ = RED;
+                curNode->parent_->color_ = BLACK;
+
+                rightRotate (granddad);
+            }
+        }
+        else {
+
+            if (granddad->left_ != nullptr && granddad->left_->color_ == RED) {
+
+                granddad->left_->color_ = BLACK;
+                curNode->parent_->color_ = BLACK;
+                granddad->color_ = RED;
+
+                curNode = granddad;
+            }
+            else {
+                
+                if (curNode->parent_->left_ == curNode) {
+                
+                    curNode = curNode->parent_;
+                    rightRotate (curNode);
+                }
+
+                granddad->color_ = RED;
+                curNode->parent_->color_ = BLACK;
+
+                leftRotate (granddad);
+            }
+        }
+    }
+
+    root->color_ = BLACK;
+}
+
+//-----------------------------------------------------------------------------------------------------
+
+void TreeImpl::Tree::push (int val) {
 
     TreeImpl::Node* newNode = new TreeImpl::Node {val};
     TreeImpl::Node* tmpNode = root,
@@ -99,7 +198,7 @@ int TreeImpl::Tree::push (int val) {
     if (tmpParent == nullptr) {
 
         root = newNode;
-        return 0;
+        return;
     }
 
     if (tmpParent->val_ < val)
@@ -107,13 +206,12 @@ int TreeImpl::Tree::push (int val) {
     else
         tmpParent->left_ = newNode;
 
-    newNode->color = 1;
+    newNode->color_ = RED;
 
-    balanceTree();
-
-    return -1; //!TODO remake this func
-
+    balanceTree(newNode);
 }
+
+//-----------------------------------------------------------------------------------------------------
 
 int TreeImpl::Tree::getNLessThan (int border) {
 
