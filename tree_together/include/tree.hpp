@@ -23,7 +23,7 @@ namespace TreeImpl {
 
         bool color_ = BLACK;
 
-        int subtreeSize    = 0;
+        int subtreeSize    = 1;
 
         Node    (int val = 0, Node* parent = nullptr):
                 val_ (val),

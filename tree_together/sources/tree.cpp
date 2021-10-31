@@ -74,7 +74,7 @@ void TreeImpl::Tree::rightRotate (TreeImpl::Node *x) {
     y->subtreeSize = x->subtreeSize;
     int leftSize  = (y->right_) ? y->right_->subtreeSize : 0,
         rightSize = (x->right_) ? x->right_->subtreeSize : 0;
-    x->subtreeSize = leftSize + rightSize;
+    x->subtreeSize = leftSize + rightSize + 1;
 
     x->left_ = y->right_;
 
@@ -104,7 +104,7 @@ void TreeImpl::Tree::leftRotate (TreeImpl::Node *x) {
     y->subtreeSize = x->subtreeSize;
     int leftSize  = (y->left_) ? y->left_->subtreeSize : 0,
         rightSize = (x->left_) ? x->left_->subtreeSize : 0;
-    x->subtreeSize = leftSize + rightSize;
+    x->subtreeSize = leftSize + rightSize + 1;
 
     x->right_ = y->left_;
 
