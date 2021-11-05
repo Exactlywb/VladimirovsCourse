@@ -44,8 +44,6 @@ add_compile_options(
     -Wextra
     -Wpedantic
 
-    -Werror
-
     -Wsign-promo
     -Wsign-conversion
     -Wdouble-promotion
