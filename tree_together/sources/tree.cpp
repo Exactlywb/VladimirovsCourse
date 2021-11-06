@@ -2,19 +2,17 @@
 
 namespace TreeImpl {
 
-
     Tree::~Tree () {
 
         root->deleteSubtree ();
-
     }
 
     Tree::Tree (const Tree& other) {
 
         root = new Node;
 
-        Node* curCopy   = root;
-        Node* curOther  = other.root;
+        Node* curCopy       = root;
+        Node* curOther      = other.root;
 
         Node* copyHighest   = root;
 
@@ -48,7 +46,6 @@ namespace TreeImpl {
 
                     curCopy     = curCopy->parent_;
                     curOther    = curOther->parent_;
-
                 }
             }
         }
@@ -64,14 +61,12 @@ namespace TreeImpl {
         *this = std::move (tempTree);
 
         return *this;
-
     }
 
     Tree::Tree (Tree&& other) { //move constructor
 
         root = other.root;      //
         other.root = nullptr;   //stolen -_-
-        
     }
 
     Tree& Tree::operator= (Tree&& other) { //move assignment
@@ -84,7 +79,6 @@ namespace TreeImpl {
         other.root = nullptr;   //
 
         return *this;
-
     }
 
     // |!| WARNING: This function delete the object itself.
@@ -121,7 +115,7 @@ namespace TreeImpl {
                     parent->disactiveChild (curNode);
                     
                 delete curNode;
-                break;
+                break; //return?
 
             }
 
@@ -315,7 +309,7 @@ namespace TreeImpl {
 
         Node* newNode = new Node {val};
         Node* tmpNode = root,
-                    * tmpParent = nullptr;
+                        *tmpParent = nullptr;
 
         while (tmpNode != nullptr) {  //big data in right child
 
@@ -361,7 +355,6 @@ namespace TreeImpl {
             else  
                 rang = 1;   
 
-
             if (key == rang)
                 return curNode->val_;
 
@@ -397,7 +390,6 @@ namespace TreeImpl {
             else if (border <= curNode->val_) 
                 curNode = curNode->left_;
         }
-
         return amount;
     }
 }
