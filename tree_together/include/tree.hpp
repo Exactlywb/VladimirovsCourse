@@ -46,6 +46,8 @@ namespace TreeImpl {
 
         }
 
+        void deleteSubtree ();
+
     };
 
     struct Tree {
@@ -66,7 +68,7 @@ namespace TreeImpl {
         ~Tree ();
 
         Tree (const Tree& other);           //copy constructor
-        Tree (const Tree&& other);          //move constructor
+        Tree (Tree&& other);                //move constructor
         
         Tree& operator= (const Tree& other);    //copy assignment
         Tree& operator= (Tree&& other);         //move assignment

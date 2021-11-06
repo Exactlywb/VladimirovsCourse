@@ -1,9 +1,54 @@
 #include "tree.hpp"
 
 TreeImpl::Tree::~Tree () {
+
+    root->deleteSubtree ();
+
+}
+
+TreeImpl::Tree::Tree (const TreeImpl::Tree& other) {
+
+    //!for the future
+
+}
+
+TreeImpl::Tree& TreeImpl::Tree::operator=  (const Tree& other) {
+
+    //!TODO
+
+    return *this;
+
+}
+
+TreeImpl::Tree::Tree (TreeImpl::Tree&& other) { //move constructor
+
+    root = other.root;      //
+    other.root = nullptr;   //stolen -_-
     
-    Node* highestNode   = root;
-    Node* curNode       = root;
+}
+
+TreeImpl::Tree& TreeImpl::Tree::operator= (TreeImpl::Tree&& other) { //move assignment
+
+    if (this == &other)     //same ptr
+        return *this;
+
+    root->deleteSubtree (); //
+    root = other.root;      //stolen -_-
+    other.root = nullptr;   //
+
+    return *this;
+
+}
+
+// |!| WARNING: This function delete the object.
+void TreeImpl::Node::deleteSubtree () {
+
+    //Generally speaking, the use of the Node class may 
+    //not be in one implementation of the tree, 
+    //so it is best to leave this method in the Node class.
+
+    Node* highestNode   = this;
+    Node* curNode       = this;
     Node* toDelete      = nullptr;
 
     while (curNode) {
