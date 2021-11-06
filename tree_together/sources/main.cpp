@@ -35,6 +35,8 @@ int main () {
         std::cout << val << " ";
     std::cout << std::endl;
 
+    mainTree.graphDump ("tree.dot");
+
     return 0;
 }
   
