@@ -28,7 +28,14 @@ namespace TreeImpl {
         Node    (int val = 0, Node* parent = nullptr):
                 val_ (val),
                 parent_ (parent) {}
-        ~Node ()        = default; //!TODO discuss about it with Ivan and Vlad
+        
+        ~Node () = default;
+
+        Node (const Node& other)    = delete;               //
+        Node (Node&& other)         = delete;               //
+                                                            // We are not lazy. We've discussed about this.
+        Node& operator= (const Node& other) = delete;       //
+        Node& operator= (Node&& other)      = delete;       //
 
         void disactiveChild (const Node* child) {
 
@@ -46,18 +53,23 @@ namespace TreeImpl {
     private:
         Node* root = nullptr;
 
-        void rightRotate (Node *x);
-        void leftRotate (Node *x);
-        void balanceTree (Node *pushedNode);
+        void rightRotate    (Node *x);
+        void leftRotate     (Node *x);
+        void balanceTree    (Node *pushedNode);
 
     public:
 
         Tree () = default;
 
-        Tree (const Node* node) = delete;   //!TODO discuss about it with Ivan and Vlad.
-                                            //It doesn't look good to hand over external ptr.
-
+        Tree (const Node* node) = delete;   //It doesn't look good to hand over external ptr.
+        //!TODO rule of 5
         ~Tree ();
+
+        Tree (const Tree& other);           //copy constructor
+        Tree (const Tree&& other);          //move constructor
+        
+        Tree& operator= (const Tree& other);    //copy assignment
+        Tree& operator= (Tree&& other);         //move assignment
 
         void    graphDump       (const char* fileName);
         void    push            (int val);

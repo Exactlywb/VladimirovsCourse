@@ -49,9 +49,9 @@ namespace {
         int curInd = curNodeNum;
         
         if (curNode->color_ == TreeImpl::BLACK)
-            dumpOut << "\"box" << curNodeNum << "\" [shape = \"record\", color = \"white\" label = <<font color = \"#c2453c\">" << curNode->val_ << "</font>>]" << std::endl;
+            dumpOut << "\"box" << curNodeNum << "\" [shape = \"record\", color = \"white\" label = <<font color = \"#242424\">" << curNode->val_ << "</font>>]" << std::endl;
         else if (curNode->color_ == TreeImpl::RED)
-            dumpOut << "\"box" << curNodeNum << "\" [shape = \"record\", color=\"white\", label = <<font color = \"#242424\">" << curNode->val_ << "</font>>]" << std::endl;
+            dumpOut << "\"box" << curNodeNum << "\" [shape = \"record\", color=\"white\", label = <<font color = \"#c2453c\">" << curNode->val_ << "</font>>]" << std::endl;
         else {
 
             std::cout << "Unexpected color in function " << __func__ << std::endl;
