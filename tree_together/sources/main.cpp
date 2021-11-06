@@ -1,34 +1,42 @@
 #include "tree.hpp"
+#include <vector>
 
 int main () {
 
     TreeImpl::Tree mainTree {};
+    std::vector<int> res {};
 
-    int n{};
-    std::cin >> n; 
+    char inputSymb   = 0;
+    int numToHandle = 0;
+    while (!std::cin.eof ()) {
 
-    for (int i = 0; i <= n; ++i) {
-        // int key;
-        // std::cin >> key; 
-        if (i == 14)
-            continue;
+        std::cin >> inputSymb;
+        if (std::cin.eof ())
+            break;
+        
+        std::cin >> numToHandle;
 
-        mainTree.push (i);
+        if (inputSymb == 'k')
+            mainTree.push (numToHandle);
+        else if (inputSymb == 'm')
+            res.push_back (mainTree.KthOrderStatistic (numToHandle));
+        else if (inputSymb == 'n')
+            res.push_back (mainTree.getNLessThan (numToHandle));
+        else {
+
+            std::cout << "Wrong command " << inputSymb << std::endl;
+            break;
+            
+        }
+
     }
 
-    //for (int i = 0; i < n; ++i) {
-    
-    //    int key = 0;
-	//    std::cin >> key;
+    for (auto val:res)
+        std::cout << val << " ";
+    std::cout << std::endl;
 
-	//    mainTree.push (key);
-    
-    //}
+    mainTree.graphDump ("tree.dot");
 
-    std::cout << "5-th = " << mainTree.KthOrderStatistic (5) << std::endl;
-    std::cout << "Less than 10 " << mainTree.getNLessThan (10) << std::endl;
-
-    //mainTree.graphDump ("tree.dot");
     return 0;
 }
   
