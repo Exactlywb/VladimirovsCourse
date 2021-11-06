@@ -7,7 +7,7 @@
 
 namespace TreeImpl {
 
-    enum color {
+    enum Color {
         BLACK = 0,
         RED = 1
     };
