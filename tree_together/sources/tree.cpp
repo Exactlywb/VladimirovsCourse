@@ -8,7 +8,49 @@ TreeImpl::Tree::~Tree () {
 
 TreeImpl::Tree::Tree (const TreeImpl::Tree& other) {
 
-    //!for the future
+    root = new Node;
+
+    Node* curCopy   = root;
+    Node* curOther  = other.root;
+
+    Node* copyHighest   = root;
+
+    while (curCopy->left_ && curCopy->right_ && curCopy != copyHighest) {
+
+        if (curCopy->left_ == nullptr && curOther->left_) { //didn't concat the left node of other subtree
+
+            curCopy->left_ = new Node;
+            
+            curCopy->left_->parent_ = curCopy;
+
+            curCopy     = curCopy->left_;
+            curOther    = curOther->left_;
+
+        } else if (curCopy->right_ == nullptr && curOther->right_) { //didn't concat the right node of other subtree
+
+            curCopy->right_ = new Node;
+            
+            curCopy->right_->parent_ = curCopy;
+
+            curCopy     = curCopy->right_;
+            curOther    = curOther->right_;
+
+        } else {
+
+            curCopy->subtreeSize = curOther->subtreeSize;
+
+            curCopy->val_ = curOther->val_;
+
+            if (curCopy != copyHighest) {
+
+                curCopy     = curCopy->parent_;
+                curOther    = curOther->parent_;
+
+            }
+
+        }
+
+    }
 
 }
 
@@ -75,32 +117,6 @@ void TreeImpl::Node::deleteSubtree () {
                 
             delete curNode;
             break;
-
-        }
-
-    }
-
-}
-
-// |!| WARNING: This function copy the object itself.
-TreeImpl::Node* TreeImpl::Node::copySubtree () {
-
-    Node* highestNode   = this;
-    Node* curNode       = this;
-
-    while (curNode) {
-
-        if (curNode->left_)
-            curNode = curNode->left_;
-        else if (curNode->right_)
-            curNode = curNode->right_;
-        else if (curNode->parent_ && curNode != highestNode) {
-
-
-
-        } else {
-
-
 
         }
 
