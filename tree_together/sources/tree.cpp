@@ -40,7 +40,7 @@ TreeImpl::Tree& TreeImpl::Tree::operator= (TreeImpl::Tree&& other) { //move assi
 
 }
 
-// |!| WARNING: This function delete the object.
+// |!| WARNING: This function delete the object itself.
 void TreeImpl::Node::deleteSubtree () {
 
     //Generally speaking, the use of the Node class may 
@@ -82,6 +82,33 @@ void TreeImpl::Node::deleteSubtree () {
 
 }
 
+// |!| WARNING: This function copy the object itself.
+#if 0
+TreeImpl::Node* TreeImpl::Node::copySubtree () {
+
+    Node* highestNode   = this;
+    Node* curNode       = this;
+
+    while (curNode) {
+
+        if (curNode->left_)
+            curNode = curNode->left_;
+        else if (curNode->right_)
+            curNode = curNode->right_;
+        else if (curNode->parent_ && curNode != highestNode) {
+
+
+
+        } else {
+
+
+
+        }
+
+    }
+
+} 
+#endif
 //=====================================================================================================
 
 namespace {
@@ -93,10 +120,14 @@ namespace {
         static int curNodeNum = 0;
         int curInd = curNodeNum;
         
-        if (curNode->color_ == TreeImpl::BLACK)
-            dumpOut << "\"box" << curNodeNum << "\" [shape = \"record\", color = \"white\" label = <<font color = \"#242424\">" << curNode->val_ << "</font>>]" << std::endl;
-        else if (curNode->color_ == TreeImpl::RED)
-            dumpOut << "\"box" << curNodeNum << "\" [shape = \"record\", color=\"white\", label = <<font color = \"#c2453c\">" << curNode->val_ << "</font>>]" << std::endl;
+        if (curNode->color_ == TreeImpl::BLACK) {
+            dumpOut << "\"box"  << curNodeNum << "\" [shape = \"record\", color = \"white\" label = <<font color = \"#242424\">" 
+                                << curNode->val_ << ", sizeSubtree = " << curNode->subtreeSize << "</font>>]" << std::endl;
+        }
+        else if (curNode->color_ == TreeImpl::RED) {
+            dumpOut << "\"box" << curNodeNum << "\" [shape = \"record\", color=\"white\", label = <<font color = \"#c2453c\">" 
+                    << curNode->val_ << ", sizeSubtree = " << curNode->subtreeSize << "</font>>]" << std::endl;
+        }
         else {
 
             std::cout << "Unexpected color in function " << __func__ << std::endl;
@@ -300,12 +331,56 @@ void TreeImpl::Tree::push (int val) {
 
 //-----------------------------------------------------------------------------------------------------
 
-// Now it would be a recursive function, but soon I'll change it :)
-int TreeImpl::Tree::getNLessThan (int border) { 
+int TreeImpl::Tree::KthOrderStatistic (int key) { 
 
     //!TODO (I've started to implement it)
-
+    TreeImpl::Node* curNode = root;
+    int rang = 1;
     
+    while (curNode) {
 
-    return 0;
+        if (curNode->left_)
+            rang = curNode->left_->subtreeSize + 1;
+        else  
+            rang = 1;   
+
+
+        if (key == rang)
+            return curNode->val_;
+
+        if (key < rang) {
+
+            curNode = curNode->left_; 
+        }
+        else {
+            curNode = curNode->right_;
+            key -= rang;
+        }
+    }
+    return -666;
+}
+
+//-----------------------------------------------------------------------------------------------------
+
+int TreeImpl::Tree::getNLessThan (int border) {
+
+    TreeImpl::Node* curNode = root;
+    int amount{};
+
+    while (curNode) {
+
+        if (border > curNode->val_) {
+
+            if (curNode->left_) 
+                amount += curNode->left_->subtreeSize + 1;
+            else
+                ++amount;
+
+            curNode = curNode->right_;
+        }
+        else if (border <= curNode->val_) 
+            curNode = curNode->left_;
+    }
+
+    return amount;
 }

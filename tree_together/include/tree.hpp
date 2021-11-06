@@ -23,7 +23,7 @@ namespace TreeImpl {
 
         bool color_ = BLACK;
 
-        int subtreeSize    = 1;
+        int subtreeSize    = 1; //!TODO add it into the copy / move
 
         Node    (int val = 0, Node* parent = nullptr):
                 val_ (val),
@@ -46,7 +46,8 @@ namespace TreeImpl {
 
         }
 
-        void deleteSubtree ();
+        void    deleteSubtree   (); // |!| WARNING: This function delete the object itself.
+        Node*   copySubtree     (); // |!| WARNING: This function copy the object itself.
 
     };
 
@@ -73,11 +74,12 @@ namespace TreeImpl {
         Tree& operator= (const Tree& other);    //copy assignment
         Tree& operator= (Tree&& other);         //move assignment
 
-        void    graphDump       (const char* fileName);
-        void    push            (int val);
+        void    graphDump         (const char* fileName);
+        void    push              (int val);
 
-        int     getNLessThan    (int border);
-
+        int     getNLessThan      (int border);
+        int     KthOrderStatistic (int key) ;
+        
     };
 
 }
