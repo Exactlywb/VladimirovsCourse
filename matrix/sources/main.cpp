@@ -6,12 +6,9 @@ int main () {
     std::cin >> n;
 
     Math::Matrix<int> mainMatrix {n};
-    //std::cin >> mainMatrix [n - 1];
-    //std::cout << mainMatrix [n - 1];
-    // for (int i = 0; i < 2 * n; i++)
-    //     std::cin >> mainMatrix [n];
-    
-    // std::cout << mainMatrix.calcDet ();
+    int val = 12;
+    mainMatrix.SetElemUsingRowNumAndColNum (1, 1, val);
+    mainMatrix.MatrixDump ();
 
     return 0;
 

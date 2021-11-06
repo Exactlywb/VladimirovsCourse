@@ -1,24 +1,46 @@
+#
+# Matrix implementation
+# if you want see some more you may check github.com/Exactlywb/VladimirovsCourse
+# (c) Frolov Daniil
+#
 
-cmake_minimum_required( VERSION 3.16)
+cmake_minimum_required(VERSION 3.8)
 
-project (Matrix)
+project("Matrix")
 
-set( EXEC_NAME "matrix" )
-add_executable( ${EXEC_NAME} )
+set(EXEC_FILE "matrix")
 
-target_include_directories( ${EXEC_NAME} PRIVATE
-    "${CMAKE_SOURCE_DIR}/include"
+set(HEADERS
+
+    "include/matrix.hpp"
+
 )
 
-set( EXECSOURCES "${CMAKE_SOURCE_DIR}/sources" )
+set(SOURCES
 
-set( SOURCES
-    "main.cpp"
-    "matrix.cpp"
+    "sources/main.cpp"
+    "sources/matrix.cpp"
+
 )
 
-foreach( FILE IN LISTS SOURCES)
-    target_sources( ${EXEC_NAME} PRIVATE "${EXECSOURCES}/${FILE}" )
-endforeach()
+#executable files
+add_executable(${EXEC_FILE} ${SOURCES})
+target_include_directories(${EXEC_FILE} PRIVATE include)
 
+#compiler settings
+add_compile_options(
 
+    -Wall
+    -Wextra
+    -Wpedantic
+
+    -Wsign-promo
+    -Wsign-conversion
+    -Wdouble-promotion
+
+    -Wfloat-equal
+    -Wbool-compire
+
+    -Wdiv-by-zero
+
+)

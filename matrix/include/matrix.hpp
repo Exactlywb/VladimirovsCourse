@@ -14,6 +14,35 @@ namespace Math {
         int rowNum;
         int colNum;
 
+    private:
+        int CheckCorrectRowRequest (const int row) {
+
+            if (row >= rowNum) {
+
+                std::cout   << "Max row number is " << rowNum 
+                            << "but you requested " << row << std::endl;
+                return -1;
+
+            }
+
+            return 0;
+            
+        }
+
+        int CheckCorrectColRequest (const int col) {
+
+            if (col >= colNum) {
+
+                std::cout   << "Max col number is " << colNum 
+                            << "but you requested " << col << std::endl;
+                return -1;
+
+            }
+
+            return 0;
+            
+        }
+
     public:
         //Constructor
         Matrix (int rN, int cN): 
@@ -28,7 +57,7 @@ namespace Math {
             rowNum (n),
             colNum (n) {
 
-            data = new T [rowNum + colNum];
+            data = new T [2 * n];
 
         }
 
@@ -93,8 +122,43 @@ namespace Math {
             delete[] data;
         }
 
+        //Operators
+        T operator[] (const int ind) {
+            return data [ind];
+        }
+
+        //PseudoOperators
+        T GetElemUsingRowNumAndColNum (const int col, const int row) const {
+
+            // The motivation for creating this function is that
+            //I don't want to create proxy structures, cause it looks
+            //more cache friendly when we use T* data as a straight
+            //array. Maybe I'm wrong.
+
+            if (CheckCorrectRowRequest (row) != 0) return T {};
+            if (CheckCorrectColRequest (col) != 0) return T {};
+
+            return data [row * col + col];
+
+        }
+        void SetElemUsingRowNumAndColNum (const int col, const int row, T& elem);
+
+        void MatrixDump () const {
+
+            std::cout << std::endl;
+            for (int curRow = 0; curRow < rowNum; curRow++) {
+                
+                std::cout << "[";
+                for (int curCol = 0; curCol < colNum; curCol++)
+                    std::cout << data [curRow * colNum + curCol] << " ";
+                std::cout << "]" << std::endl;
+
+            }
+
+        }
+
     };
 
-};
+}
 
 #endif
