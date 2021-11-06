@@ -1,9 +1,54 @@
 #include "tree.hpp"
 
 TreeImpl::Tree::~Tree () {
+
+    root->deleteSubtree ();
+
+}
+
+TreeImpl::Tree::Tree (const TreeImpl::Tree& other) {
+
+    //!for the future
+
+}
+
+TreeImpl::Tree& TreeImpl::Tree::operator=  (const Tree& other) {
+
+    //!TODO
+
+    return *this;
+
+}
+
+TreeImpl::Tree::Tree (TreeImpl::Tree&& other) { //move constructor
+
+    root = other.root;      //
+    other.root = nullptr;   //stolen -_-
     
-    Node* highestNode   = root;
-    Node* curNode       = root;
+}
+
+TreeImpl::Tree& TreeImpl::Tree::operator= (TreeImpl::Tree&& other) { //move assignment
+
+    if (this == &other)     //same ptr
+        return *this;
+
+    root->deleteSubtree (); //
+    root = other.root;      //stolen -_-
+    other.root = nullptr;   //
+
+    return *this;
+
+}
+
+// |!| WARNING: This function delete the object.
+void TreeImpl::Node::deleteSubtree () {
+
+    //Generally speaking, the use of the Node class may 
+    //not be in one implementation of the tree, 
+    //so it is best to leave this method in the Node class.
+
+    Node* highestNode   = this;
+    Node* curNode       = this;
     Node* toDelete      = nullptr;
 
     while (curNode) {
@@ -49,9 +94,9 @@ namespace {
         int curInd = curNodeNum;
         
         if (curNode->color_ == TreeImpl::BLACK)
-            dumpOut << "\"box" << curNodeNum << "\" [shape = \"record\", color = \"white\" label = <<font color = \"#c2453c\">" << curNode->val_ << "</font>>]" << std::endl;
+            dumpOut << "\"box" << curNodeNum << "\" [shape = \"record\", color = \"white\" label = <<font color = \"#242424\">" << curNode->val_ << "</font>>]" << std::endl;
         else if (curNode->color_ == TreeImpl::RED)
-            dumpOut << "\"box" << curNodeNum << "\" [shape = \"record\", color=\"white\", label = <<font color = \"#242424\">" << curNode->val_ << "</font>>]" << std::endl;
+            dumpOut << "\"box" << curNodeNum << "\" [shape = \"record\", color=\"white\", label = <<font color = \"#c2453c\">" << curNode->val_ << "</font>>]" << std::endl;
         else {
 
             std::cout << "Unexpected color in function " << __func__ << std::endl;
@@ -255,10 +300,12 @@ void TreeImpl::Tree::push (int val) {
 
 //-----------------------------------------------------------------------------------------------------
 
-int TreeImpl::Tree::getNLessThan (int border) {
+// Now it would be a recursive function, but soon I'll change it :)
+int TreeImpl::Tree::getNLessThan (int border) { 
 
-    //!TODO
+    //!TODO (I've started to implement it)
+
+    
 
     return 0;
-
 }
