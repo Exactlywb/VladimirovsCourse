@@ -29,7 +29,7 @@ namespace TreeImpl {
                 val_ (val),
                 parent_ (parent) {}
         
-        ~Node () = default;
+        virtual ~Node () = default; // default != {}
 
         Node (const Node& other)    = delete;               //
         Node (Node&& other)         = delete;               //
@@ -50,7 +50,7 @@ namespace TreeImpl {
 
     };
 
-    struct Tree {
+    struct Tree final {
     
     private:
         Node* root = nullptr;
@@ -60,7 +60,6 @@ namespace TreeImpl {
         void balanceTree    (Node *pushedNode);
 
     public:
-
         Tree () = default;
 
         Tree (const Node* node) = delete;   //It doesn't look good to hand over external ptr.
