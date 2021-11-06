@@ -23,7 +23,7 @@ namespace TreeImpl {
 
         bool color_     = BLACK;
 
-        int subtreeSize    = 1; //!TODO add it into the copy / move
+        int subtreeSize    = 1;
 
         Node    (int val = 0, Node* parent = nullptr):
                 val_ (val),
@@ -64,7 +64,6 @@ namespace TreeImpl {
         Tree () = default;
 
         Tree (const Node* node) = delete;   //It doesn't look good to hand over external ptr.
-        //!TODO rule of 5
         ~Tree ();
 
         Tree (const Tree& other);           //copy constructor
