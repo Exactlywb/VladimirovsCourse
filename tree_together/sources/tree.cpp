@@ -55,8 +55,13 @@ TreeImpl::Tree::Tree (const TreeImpl::Tree& other) {
 }
 
 TreeImpl::Tree& TreeImpl::Tree::operator=  (const Tree& other) {
+    
+    if (this == &other)     //same pointers -_-
+        return *this;
 
-    //!TODO
+    Tree tempTree {other};
+
+    *this = std::move (tempTree);
 
     return *this;
 
