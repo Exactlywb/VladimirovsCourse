@@ -21,7 +21,7 @@ namespace TreeImpl {
 
         int val_        = 0;
 
-        bool color_ = BLACK;
+        bool color_     = BLACK;
 
         int subtreeSize    = 1; //!TODO add it into the copy / move
 
@@ -47,7 +47,6 @@ namespace TreeImpl {
         }
 
         void    deleteSubtree   (); // |!| WARNING: This function delete the object itself.
-        Node*   copySubtree     (); // |!| WARNING: This function copy the object itself.
 
     };
 

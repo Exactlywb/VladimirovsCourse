@@ -16,10 +16,20 @@ int main () {
         mainTree.push (i);
     }
 
-    std::cout << "5-th = " << mainTree.KthOrderStatistic (5) << std::endl;
-    std::cout << "Less than 500 " << mainTree.getNLessThan (500) << std::endl;
+    //for (int i = 0; i < n; ++i) {
+    
+    //    int key = 0;
+	//    std::cin >> key;
 
-    mainTree.graphDump ("tree.dot");
+	//    mainTree.push (key);
+    
+    //}
+
+    std::cout << "5-th = " << mainTree.KthOrderStatistic (5) << std::endl;
+    std::cout << "Less than 10 " << mainTree.getNLessThan (10) << std::endl;
+
+    //mainTree.graphDump ("tree.dot");
     return 0;
 }
   
+ 

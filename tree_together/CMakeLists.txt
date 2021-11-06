@@ -53,4 +53,6 @@ add_compile_options(
 
     -Wdiv-by-zero
 
+    -O2
+
 )
