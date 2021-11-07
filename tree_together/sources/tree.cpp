@@ -310,7 +310,12 @@ namespace TreeImpl {
                 key -= rang;
             }
         }
-        return -666;
+        
+        std::cout   << "No " << key << "th smallest number in tree. Message's from function " << __func__  
+                    << " tree's pointer " << this << std::endl;
+
+        return 0xDEADBEEF;
+
     }
 
     //-----------------------------------------------------------------------------------------------------
