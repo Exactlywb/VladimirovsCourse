@@ -4,3 +4,4 @@
 build
 *.gv
 *.dot
+*.out
