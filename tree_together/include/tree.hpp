@@ -13,7 +13,7 @@ namespace TreeImpl {
         RED = 1
     };
 
-    struct Node {
+    struct Node final {
 
         Node* left_     = nullptr;
         Node* right_    = nullptr;
@@ -30,7 +30,7 @@ namespace TreeImpl {
                 val_ (val),
                 parent_ (parent) {}
         
-        virtual ~Node () = default; // default != {}
+        ~Node () = default; // default != {}
 
         Node (const Node& other)    = delete;               //
         Node (Node&& other)         = delete;               //
@@ -51,7 +51,7 @@ namespace TreeImpl {
 
     };
 
-    struct Tree final {
+    class Tree final {
     
     private:
         Node* root = nullptr;
@@ -63,8 +63,7 @@ namespace TreeImpl {
     public:
         Tree () = default;
 
-        Tree (const Node* node) = delete;   //It doesn't look good to hand over external ptr.
-        ~Tree ();
+        ~Tree () { root->deleteSubtree (); }    
 
         Tree (const Tree& other);           //copy constructor
         Tree (Tree&& other);                //move constructor

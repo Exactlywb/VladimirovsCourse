@@ -2,11 +2,6 @@
 
 namespace TreeImpl {
 
-    Tree::~Tree () {
-
-        root->deleteSubtree ();
-    } 
-
     Tree::Tree (const Tree& other) {
 
         if (other.root == nullptr) {
