@@ -27,6 +27,7 @@ set(SOURCES
 set(TEST_SOURCES
 
     sources/test.cpp
+    sources/tree.cpp
 
 )
 
