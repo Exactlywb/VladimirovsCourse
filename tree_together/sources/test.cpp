@@ -10,10 +10,12 @@ void getRand (int n);
 
 int main () {
 
-    std::cout << "Test" << std::endl;
-    CopyTest ();
-    MoveTest ();
-    AssignmentTest ();
+    // std::cout << "Test" << std::endl;
+    // CopyTest ();
+    // MoveTest ();
+    // AssignmentTest ();
+
+    getRand (100000000);
     return 0;
 
 }
@@ -96,7 +98,7 @@ void getRand (int n) {
 
     bool *arr = new bool [n] {};
 
-    for (int i = 0, end = n * 100; i < end; ++i) {
+    for (int i = 0, end = n * 20; i < end; ++i) {
         int rand = std::rand() % n;
         if (arr[rand] == 0) {
             arr[rand] = 1;
@@ -109,4 +111,6 @@ void getRand (int n) {
             printf("k %d ", i + 1);
         }
     }
+
+    delete[] arr;
 }
