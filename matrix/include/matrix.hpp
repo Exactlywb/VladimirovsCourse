@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstring>
 #include <iomanip>
+#include "common.hpp"
 
 namespace Math {
 
@@ -16,7 +17,7 @@ namespace Math {
         int colNum;
 
     private:
-        int CheckCorrectRowRequest (const int row) {
+        int CheckCorrectRowRequest (const int row) const {
 
             if (row >= rowNum) {
 
@@ -30,7 +31,7 @@ namespace Math {
             
         }
 
-        int CheckCorrectColRequest (const int col) {
+        int CheckCorrectColRequest (const int col) const {
 
             if (col >= colNum) {
 
@@ -44,7 +45,7 @@ namespace Math {
             
         }
 
-        T calc2x2MatrixDet () const {
+        T calc2x2MatrixDet () {
 
             T mainDiagonal = data [0] * data [3];
             T sideDiagonal = data [1] * data [2];
@@ -53,7 +54,7 @@ namespace Math {
 
         }
 
-        T calcDetUsingTrMeth () const {    //For 3x3 matrix only
+        T calcDetUsingTrMeth () {    //For 3x3 matrix only
             
             T mainDiagonal  = data [0] * data [4] * data [8];
 
@@ -69,39 +70,87 @@ namespace Math {
                     sideDiagonal - negStraightTr - negSideTr;
 
         }
+        
+        void GaussRowTransform (const int i, const int j) {
 
-        T calcUsingGaussMeth () const {
-            
-            static const eps = 1e-10;
-            
-            T det = 1;
-            for (int i = 0; i < rowNum; ++i) {
-
-                int curRowNum = i;
-                for (int nextRowNum = i + 1; nextRowNum < rowNum; ++nextRowNum) {
-
-                    if (std::abs (getElemUsingRowCol (nextRowNum, i)) > 
-                        std::abs (getElemUsingRowCol (curRowNum, i)))
-                        curRowNum = nextRowNum;
-
-                }
-
-                if (!DblCmp (getElemUsingRowCol (curRowNum, i), 0))
-                    return T {};
-
-                std::swap (...); 
-
-                if (i != curRowNum)
-                    det = -det;
+            T elem3 = getElemUsingRowCol (j, i);
+            T elem4 = getElemUsingRowCol (i, i);
+            for (int curMoveCol = 0; curMoveCol < colNum; ++curMoveCol) {
                 
-                det *= getElemUsingRowCol (i, i);
-                for (int curColNum = i + 1; curColNum < rowNum; ++curColNum) {
+                T elem1 = getElemUsingRowCol (j, curMoveCol);
+                T elem2 = getElemUsingRowCol (i, curMoveCol);
 
-                    //!TODO
-                    
+                setElemUsingRowCol (j, curMoveCol, elem1 - elem2 * (elem3 / elem4));
+
+            }
+            
+        }
+
+        uint8_t makeTr () {
+
+            int sign = 1;
+            int size = rowNum; //renaming
+            for (int i = 0; i < size; ++i) {
+
+                int curCol = i;
+
+                while (curCol < size && !DblCmp (getElemUsingRowCol (curCol, i), 0))
+                    curCol++;
+
+                if (curCol != size) {
+
+                    if (curCol != i) {
+                        
+                        sign *= -1;
+
+                        int swapRowBeg = size * curCol;
+                        int swapRowEnd = swapRowBeg + size;
+                        std::swap_ranges (data + swapRowBeg, data + swapRowEnd, data + i * size);
+
+                    }
+
+                    for (int j = i + 1; j < size; ++j) { //sory for var j, I really don't know how to name it :(
+                        
+                        if (DblCmp (getElemUsingRowCol (j, i), 0))
+                            GaussRowTransform (i, j);
+                        
+                    }
+
                 }
 
             }
+
+            return sign;
+
+        }
+
+        T calcTrDet (const uint8_t sign) const {
+
+            T det {1};
+
+            for (int i = 0; i < rowNum; ++i) {
+                
+                T curElem = getElemUsingRowCol (i, i);
+                if (DblCmp (curElem, 0))
+                    det = det * curElem;
+                else 
+                    return T {0};
+
+            }
+
+            return sign * det;
+
+        }
+
+        T calcUsingGaussMeth () {
+
+            Matrix<T> tmpSave {*this};
+
+            uint8_t sign = makeTr ();
+
+            T det = calcTrDet (sign);
+
+            *this = tmpSave;
 
             return det;
 
@@ -132,8 +181,10 @@ namespace Math {
             rowNum      (toCopy.rowNum),
             colNum      (toCopy.colNum) {
 
-            data = new T [rowNum + colNum];
-            memcpy (data, toCopy.data, rowNum + colNum);
+            int fullSize = rowNum * colNum;
+            
+            data = new T [fullSize];
+            std::copy (toCopy.data, toCopy.data + fullSize, data);
 
         }
 
@@ -146,9 +197,9 @@ namespace Math {
             rowNum = toCopy.rowNum;
             colNum = toCopy.colNum;
 
-            int fullSize    = rowNum + colNum;
+            int fullSize    = rowNum * colNum;
             T* dataTmp      = new T [fullSize];
-            memcpy (dataTmp, toCopy.data, fullSize);
+            std::copy (toCopy.data, toCopy.data + fullSize, dataTmp);
             delete[] data;
             data = dataTmp;
 
@@ -197,7 +248,7 @@ namespace Math {
         }
 
         //PseudoOperators
-        T getElemUsingRowCol (const int col, const int row) const {
+        T getElemUsingRowCol (const int row, const int col) const {
 
             // The motivation for creating this function is that
             //I don't want to create proxy structures, cause it looks
@@ -210,19 +261,8 @@ namespace Math {
             return data [row * colNum + col];
 
         }
-        
-        void setElemUsingRowNumAndColNum (const int col, const int row, T& elem) {
 
-            // Similar with GetElemUsingRowNumAndColNum
-
-            if (CheckCorrectRowRequest (row) != 0) return;
-            if (CheckCorrectColRequest (col) != 0) return;
-
-            data [row * colNum + col] = elem;
-            
-        }
-
-        void setElemUsingRowNumAndColNum (const int col, const int row, T elem) {
+        void setElemUsingRowCol (const int row, const int col, T elem) {
 
             // Similar with GetElemUsingRowNumAndColNum
 
@@ -253,7 +293,7 @@ namespace Math {
 
         }
 
-        T calcDet () const {
+        T calcDet () {
                 
             if (rowNum != colNum) {
 

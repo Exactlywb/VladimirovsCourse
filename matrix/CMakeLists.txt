@@ -26,6 +26,7 @@ endforeach()
 set (COMPILER_SETTINGS
 
     -O2
+
     -Wall
     -Wextra
     -Wpedantic
@@ -33,5 +34,3 @@ set (COMPILER_SETTINGS
 )
 
 target_compile_options( ${EXEC_NAME} PRIVATE ${COMPILER_SETTINGS} )
-
-# target_compile_options( ${EXEC_NAME} PRIVATE ${COMPILER_SETTINGS})
