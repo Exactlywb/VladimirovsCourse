@@ -33,7 +33,7 @@ foreach( FILE IN LISTS SOURCES)
 endforeach()
 
     if ( "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-        set (COMPILER_SETTINGS -Wall -Wextra -O0 -g -D DEBUG)
+        set (COMPILER_SETTINGS -Wall -Wextra -O2 -g -D DEBUG)
         
     else ()
         set (COMPILER_SETTINGS -Wall -Wextra -O2 -Wfloat-equal -Wdiv-by-zero)
