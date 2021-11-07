@@ -5,3 +5,4 @@ build
 *.gv
 *.dot
 *.out
+tests/time*

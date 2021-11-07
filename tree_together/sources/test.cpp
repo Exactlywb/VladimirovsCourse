@@ -6,7 +6,7 @@ void MoveTest ();
 void AssignmentTest ();
 void DumpAnswer (TreeImpl::Tree &firstTree, TreeImpl::Tree &secondTree,
                 const char* method, const char* treeToDump);
-void getRand (int n);
+void getRand (long long n);
 
 int main () {
 
@@ -38,7 +38,7 @@ void CopyTest () {
 
     TreeImpl::Tree firstTree{};
 
-    for (int i = 0; i < 50; ++i)
+    for (long long i = 0; i < 50; ++i)
         firstTree.push(i);
     TreeImpl::Tree secondTree{firstTree};
 
@@ -52,13 +52,13 @@ void MoveTest () {
 
     TreeImpl::Tree tmpRefRefTree = {};
 
-    for (int i = 0; i < 50; ++i)
+    for (long long i = 0; i < 50; ++i)
         tmpRefRefTree.push(i);
 
     TreeImpl::Tree firstTree{std::move (tmpRefRefTree)};
 
     TreeImpl::Tree thirdTree{};
-    for (int i = 0; i < 50; ++i)
+    for (long long i = 0; i < 50; ++i)
         thirdTree.push(i);
 
     DumpAnswer (firstTree, thirdTree, "COPYMOVE-TEST", "thirdtree.dot");
@@ -69,7 +69,7 @@ void AssignmentTest () {
     TreeImpl::Tree firstTree{};
     TreeImpl::Tree secondTree{};
 
-    for (int i = 0; i < 50; ++i) 
+    for (long long i = 0; i < 50; ++i) 
         firstTree.push(i);
 
     secondTree = firstTree;
@@ -92,21 +92,23 @@ void DumpAnswer (TreeImpl::Tree &firstTree, TreeImpl::Tree &secondTree,
     }
 }
 
-void getRand (int n) {
+void getRand (long long n) {
 
     bool *arr = new bool [n] {};
 
     for (int i = 0, end = n * 100; i < end; ++i) {
-        int rand = std::rand() % n;
+        long long rand = std::rand() % n;
         if (arr[rand] == 0) {
             arr[rand] = 1;
-            printf("k %d ", rand + 1);
+            printf("k %lld ", rand + 1);
         }
     }
 
-    for (int i = 0; i < n; ++i) {
+    for (long long i = 0; i < n; ++i) {
         if (arr[i] == 0) {
-            printf("k %d ", i + 1);
+            printf("k %lld ", i + 1);
         }
     }
+
+    delete [] arr;
 }

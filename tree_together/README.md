@@ -46,7 +46,7 @@
 ### Search ---> LogN
 ### Search k-th order statistic ---> LogN
 ### Calculate an amount of elements in the tree less than N ---> LogN
-# TODO --- GRAPHIC
+![Screenshot](pics/log.png)
 ---
 ## All in all, it is better than using std::set
 ---
