@@ -184,60 +184,59 @@ namespace TreeImpl {
 
     //-----------------------------------------------------------------------------------------------------
 
-    void Tree::balanceTree (Node *curNode) {
+    Node *Tree::partialFixUp (Node *curNode, enum childType side) {
+        
+        Node *granddad = curNode->parent_->parent_;
+        Node *uncle = granddad->left_;
+
+        if (side == LEFT)
+            uncle = granddad->right_;
+
+        if (uncle != nullptr && uncle->color_ == RED) {
+
+            uncle->color_ = BLACK;
+            curNode->parent_->color_ = BLACK;
+            granddad->color_ = RED;
+
+            return granddad;
+        }
+        else {
+            
+            Node *suspectedMe = curNode->parent_->left_;
+            if (side == LEFT)
+                suspectedMe = curNode->parent_->right_;
+
+            if (suspectedMe == curNode) {
+            
+                curNode = curNode->parent_;
+                if (side == LEFT)
+                    leftRotate (curNode);
+                else
+                    rightRotate (curNode);
+            }
+
+            granddad->color_ = RED;
+            curNode->parent_->color_ = BLACK;
+
+            if (side == LEFT)
+                rightRotate (granddad);
+            else
+                leftRotate (granddad);
+            
+            return curNode;
+        }
+    }
+
+    void Tree::insertFixUp (Node *curNode) {
 
         while (curNode->parent_ != nullptr && curNode->parent_->color_ == RED) {
 
             Node *granddad = curNode->parent_->parent_;
-
-            if (granddad->left_ == curNode->parent_) {
-
-                if (granddad->right_ != nullptr && granddad->right_->color_ == RED) {
-
-                    granddad->right_->color_ = BLACK;
-                    curNode->parent_->color_ = BLACK;
-                    granddad->color_ = RED;
-
-                    curNode = granddad;
-                }
-                else {
-                    
-                    if (curNode->parent_->right_ == curNode) {
-                    
-                        curNode = curNode->parent_;
-                        leftRotate (curNode);
-                    }
-
-                    granddad->color_ = RED;
-                    curNode->parent_->color_ = BLACK;
-
-                    rightRotate (granddad);
-                }
-            }
-            else {
-
-                if (granddad->left_ != nullptr && granddad->left_->color_ == RED) {
-
-                    granddad->left_->color_ = BLACK;
-                    curNode->parent_->color_ = BLACK;
-                    granddad->color_ = RED;
-
-                    curNode = granddad;
-                }
-                else {
-                    
-                    if (curNode->parent_->left_ == curNode) {
-                    
-                        curNode = curNode->parent_;
-                        rightRotate (curNode);
-                    }
-
-                    granddad->color_ = RED;
-                    curNode->parent_->color_ = BLACK;
-
-                    leftRotate (granddad);
-                }
-            }
+            
+            if (granddad->left_ == curNode->parent_)
+                curNode = partialFixUp (curNode, LEFT);
+            else
+                curNode = partialFixUp (curNode, RIGHT);
         }
 
         root->color_ = BLACK;
@@ -278,7 +277,7 @@ namespace TreeImpl {
 
         newNode->color_ = RED;
 
-        balanceTree(newNode);
+        insertFixUp(newNode);
     }
 
     //-----------------------------------------------------------------------------------------------------
@@ -306,7 +305,12 @@ namespace TreeImpl {
                 key -= rang;
             }
         }
-        return -666;
+        
+        std::cout   << "No " << key << "th smallest number in tree. Message's from function " << __func__  
+                    << " tree's pointer " << this << std::endl;
+
+        return 0xDEADBEEF;
+
     }
 
     //-----------------------------------------------------------------------------------------------------

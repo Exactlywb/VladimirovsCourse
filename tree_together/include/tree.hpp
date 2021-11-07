@@ -56,9 +56,15 @@ namespace TreeImpl {
     private:
         Node* root = nullptr;
 
+        enum childType {
+            LEFT,
+            RIGHT
+        };
+
         void rightRotate    (Node *x);
         void leftRotate     (Node *x);
-        void balanceTree    (Node *pushedNode);
+        void insertFixUp    (Node *pushedNode);
+        Node *partialFixUp  (Node *curNode, enum childType side);
 
     public:
         Tree () = default;

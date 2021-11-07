@@ -1,46 +1,37 @@
-#
-# Matrix implementation
-# if you want see some more you may check github.com/Exactlywb/VladimirovsCourse
-# (c) Frolov Daniil
-#
+cmake_minimum_required(VERSION 3.16)
 
-cmake_minimum_required(VERSION 3.8)
+project (Matrix)               # PROJECT TITLE
 
-project("Matrix")
+include(CMakePrintHelpers)
 
-set(EXEC_FILE "matrix")
+set(EXEC_NAME "matrix" )
+add_executable( ${EXEC_NAME} )
 
-set(HEADERS
-
-    "include/matrix.hpp"
-
+target_include_directories( ${EXEC_NAME} PRIVATE
+    "${CMAKE_SOURCE_DIR}/include"
 )
+
+set(EXECSOURCES "${CMAKE_SOURCE_DIR}/sources" )
 
 set(SOURCES
-
-    "sources/main.cpp"
-    "sources/matrix.cpp"
-
+    "main.cpp"
 )
 
-#executable files
-add_executable(${EXEC_FILE} ${SOURCES})
-target_include_directories(${EXEC_FILE} PRIVATE include)
+target_sources( ${EXEC_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/sources/main.cpp" )
 
-#compiler settings
-add_compile_options(
+foreach( FILE IN LISTS SOURCES)
+    target_sources( ${EXEC_NAME} PRIVATE "${EXECSOURCES}/${FILE}" )
+endforeach()
 
+set (COMPILER_SETTINGS
+
+    -O2
     -Wall
     -Wextra
     -Wpedantic
 
-    -Wsign-promo
-    -Wsign-conversion
-    -Wdouble-promotion
-
-    -Wfloat-equal
-    -Wbool-compire
-
-    -Wdiv-by-zero
-
 )
+
+target_compile_options( ${EXEC_NAME} PRIVATE ${COMPILER_SETTINGS} )
+
+# target_compile_options( ${EXEC_NAME} PRIVATE ${COMPILER_SETTINGS})
