@@ -14,7 +14,6 @@ target_include_directories( ${EXEC_NAME} PRIVATE
 set(EXECSOURCES "${CMAKE_SOURCE_DIR}/sources" )
 
 set(SOURCES
-    "matrix.cpp"
     "main.cpp"
 )
 

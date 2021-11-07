@@ -5,10 +5,14 @@ int main () {
     int n = 0;
     std::cin >> n;
 
-    Math::Matrix<int> mainMatrix {n};
-    int val = 12;
-    mainMatrix.SetElemUsingRowNumAndColNum (1, 1, val);
-    mainMatrix.MatrixDump ();
+    Math::Matrix<double> mainMatrix {n};
+    
+    for (int i = 0; i < n * n; ++i)
+        std::cin >> mainMatrix [i];
+
+    mainMatrix.matrixDump ();
+
+    std::cout << "det = " << mainMatrix.calcDet () << std::endl;
 
     return 0;
 
