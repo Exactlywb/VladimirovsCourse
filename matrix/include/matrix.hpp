@@ -86,44 +86,6 @@ namespace Math {
             
         }
 
-        uint8_t makeTr () {
-
-            int sign = 1;
-            int size = rowNum; //renaming
-            for (int i = 0; i < size; ++i) {
-
-                int curCol = i;
-
-                while (curCol < size && !DblCmp (getElemUsingRowCol (curCol, i), 0))
-                    curCol++;
-
-                if (curCol != size) {
-
-                    if (curCol != i) {
-                        
-                        sign *= -1;
-
-                        int swapRowBeg = size * curCol;
-                        int swapRowEnd = swapRowBeg + size;
-                        std::swap_ranges (data + swapRowBeg, data + swapRowEnd, data + i * size);
-
-                    }
-
-                    for (int j = i + 1; j < size; ++j) { //sory for var j, I really don't know how to name it :(
-                        
-                        if (DblCmp (getElemUsingRowCol (j, i), 0))
-                            GaussRowTransform (i, j);
-                        
-                    }
-
-                }
-
-            }
-
-            return sign;
-
-        }
-
         T calcTrDet (const uint8_t sign) const {
 
             T det {1};
@@ -170,7 +132,7 @@ namespace Math {
             rowNum (n),
             colNum (n) {
 
-            data = new T [n * n];
+            data = new T [n * n] {};
 
         }
 
@@ -210,8 +172,8 @@ namespace Math {
         //Move constructor
         Matrix (Matrix<T> &&toMove) noexcept :
             data (toMove.data),
-            colNum (toMove.colNum),
-            rowNum (toMove.rowNum) {
+            rowNum (toMove.rowNum),
+            colNum (toMove.colNum) {
 
             toMove.data = nullptr;  //stolen -_-
 
@@ -223,10 +185,7 @@ namespace Math {
             if (this == &toMove)    //bad-bad things...
                 return *this;
             
-            delete[] data;
-            data = toMove.data;         
-            toMove.data = nullptr;  //stolen -_-
-
+            std::swap (toMove.data, data);
             colNum = toMove.colNum;
             rowNum = toMove.rowNum;
 
@@ -298,7 +257,7 @@ namespace Math {
             if (rowNum != colNum) {
 
                 std::cout << "I dunno how to calculate non-square matrix's determinate :(" << std::endl;
-                return -666;
+                return T {0};
 
             }
 
@@ -311,6 +270,44 @@ namespace Math {
             else
                 return calcUsingGaussMeth ();   //!TODO think about triangle matrix
             
+        }
+
+        uint8_t makeTr () {
+
+            int sign = 1;
+            int size = rowNum; //renaming
+            for (int i = 0; i < size; ++i) {
+
+                int curCol = i;
+
+                while (curCol < size && !DblCmp (getElemUsingRowCol (curCol, i), 0))
+                    curCol++;
+
+                if (curCol != size) {
+
+                    if (curCol != i) {
+                        
+                        sign *= -1;
+
+                        int swapRowBeg = size * curCol;
+                        int swapRowEnd = swapRowBeg + size;
+                        std::swap_ranges (data + swapRowBeg, data + swapRowEnd, data + i * size);
+
+                    }
+
+                    for (int j = i + 1; j < size; ++j) { //sory for var j, I really don't know how to name it :(
+                        
+                        if (DblCmp (getElemUsingRowCol (j, i), 0))
+                            GaussRowTransform (i, j);
+                        
+                    }
+
+                }
+
+            }
+
+            return sign;
+
         }
 
     };

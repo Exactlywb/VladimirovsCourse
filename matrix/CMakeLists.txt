@@ -1,36 +1,63 @@
-cmake_minimum_required(VERSION 3.16)
+#
+# Matrix implementation
+# if you want see some more you may check github.com/Exactlywb/VladimirovsCourse
+# (c) Frolov Daniil
+#
 
-project (Matrix)               # PROJECT TITLE
+cmake_minimum_required(VERSION 3.8)
 
-include(CMakePrintHelpers)
+project("Matrix")
 
-set(EXEC_NAME "matrix" )
-add_executable( ${EXEC_NAME} )
+set (GTEST_ROOT ${CMAKE_SOURCE_DIR}/ExternalLibs/gTest)
+find_package(GTest REQUIRED)
 
-target_include_directories( ${EXEC_NAME} PRIVATE
-    "${CMAKE_SOURCE_DIR}/include"
+set(EXEC_FILE "matrix")
+set(TEST_FILE "test_matrix")
+
+set(HEADERS
+
+    include/matrix.hpp
+    include/common.hpp
+
 )
-
-set(EXECSOURCES "${CMAKE_SOURCE_DIR}/sources" )
 
 set(SOURCES
-    "main.cpp"
+
+    sources/main.cpp
+
 )
 
-target_sources( ${EXEC_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/sources/main.cpp" )
+set(TEST_SOURCES
 
-foreach( FILE IN LISTS SOURCES)
-    target_sources( ${EXEC_NAME} PRIVATE "${EXECSOURCES}/${FILE}" )
-endforeach()
+    sources/test.cpp
 
-set (COMPILER_SETTINGS
+)
 
-    -O2
+#executable files
+add_executable(${EXEC_FILE} ${SOURCES})
+add_executable(${TEST_FILE} ${TEST_SOURCES})
+
+target_include_directories(${EXEC_FILE} PRIVATE include)
+
+target_link_libraries(${TEST_FILE} PRIVATE "${GTEST_LIBRARIES}" "pthread")
+target_include_directories(${TEST_FILE} PRIVATE include "${GTEST_INCLUDE_DIRS}")
+
+#compiler settings
+add_compile_options(
 
     -Wall
     -Wextra
     -Wpedantic
 
-)
+    -Wsign-promo
+    -Wsign-conversion
+    -Wdouble-promotion
 
-target_compile_options( ${EXEC_NAME} PRIVATE ${COMPILER_SETTINGS} )
+    -Wfloat-equal
+    -Wbool-compire
+
+    -Wdiv-by-zero
+
+    -O2
+
+)
