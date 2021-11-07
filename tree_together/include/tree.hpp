@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string.h>
 #include <fstream>
+#include <cassert>
 
 namespace TreeImpl {
 
@@ -75,7 +76,9 @@ namespace TreeImpl {
         void    push              (int val);
 
         int     getNLessThan      (int border);
-        int     KthOrderStatistic (int key) ;
+        int     KthOrderStatistic (int key);
+
+        Node*   getRoot           () const { return root; }
         
     };
 

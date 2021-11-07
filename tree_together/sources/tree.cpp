@@ -2,23 +2,25 @@
 
 namespace TreeImpl {
 
-
     Tree::~Tree () {
 
         root->deleteSubtree ();
-
-    }
+    } 
 
     Tree::Tree (const Tree& other) {
 
+        if (other.root == nullptr) {
+            root = nullptr;
+            return;
+        }
+
         root = new Node;
+        assert (root);
+        
+        Node* curCopy       = root;
+        Node* curOther      = other.root;
 
-        Node* curCopy   = root;
-        Node* curOther  = other.root;
-
-        Node* copyHighest   = root;
-
-        while (curCopy->left_ && curCopy->right_ && curCopy != copyHighest) {
+        while ((curOther->left_ || curOther->right_) || root->subtreeSize != other.root->subtreeSize) {
 
             if (curCopy->left_ == nullptr && curOther->left_) { //didn't concat the left node of other subtree
 
@@ -39,17 +41,19 @@ namespace TreeImpl {
                 curOther    = curOther->right_;
 
             } else {
-
+                
                 curCopy->subtreeSize = curOther->subtreeSize;
 
                 curCopy->val_ = curOther->val_;
+                curCopy->color_ = curOther->color_;
 
-                if (curCopy != copyHighest) {
-
+                if (curCopy != root) {
+                    
                     curCopy     = curCopy->parent_;
                     curOther    = curOther->parent_;
-
                 }
+                else 
+                    break;
             }
         }
     }
@@ -62,16 +66,13 @@ namespace TreeImpl {
         Tree tempTree {other};
 
         *this = std::move (tempTree);
-
         return *this;
-
     }
 
     Tree::Tree (Tree&& other) { //move constructor
 
         root = other.root;      //
         other.root = nullptr;   //stolen -_-
-        
     }
 
     Tree& Tree::operator= (Tree&& other) { //move assignment
@@ -84,7 +85,6 @@ namespace TreeImpl {
         other.root = nullptr;   //
 
         return *this;
-
     }
 
     // |!| WARNING: This function delete the object itself.
@@ -121,74 +121,13 @@ namespace TreeImpl {
                     parent->disactiveChild (curNode);
                     
                 delete curNode;
-                break;
-
-            }
-
-        }
-
-    }
-
-    namespace {
-
-        void PrintNodes (std::ofstream& dumpOut, const Node* curNode) {
-            if (curNode == nullptr)
-                return;
-            
-            static int curNodeNum = 0;
-            int curInd = curNodeNum;
-            
-            if (curNode->color_ == BLACK) {
-                dumpOut << "\"box"  << curNodeNum << "\" [shape = \"record\", color = \"white\" label = <<font color = \"#242424\">" 
-                                    << curNode->val_ << ", sizeSubtree = " << curNode->subtreeSize << "</font>>]" << std::endl;
-            }
-            else if (curNode->color_ == RED) {
-                dumpOut << "\"box" << curNodeNum << "\" [shape = \"record\", color=\"white\", label = <<font color = \"#c2453c\">" 
-                        << curNode->val_ << ", sizeSubtree = " << curNode->subtreeSize << "</font>>]" << std::endl;
-            }
-            else {
-
-                std::cout << "Unexpected color in function " << __func__ << std::endl;
                 return; 
 
             }
 
-            curNodeNum++;
-
-            if (curNode->left_ != nullptr) {
-
-                size_t nextIndex = curNodeNum;
-                PrintNodes (dumpOut, curNode->left_);
-                dumpOut << "\"box" << curInd << "\" -> \"box"<< nextIndex << "\"" << std::endl;
-
-            }
-
-            if (curNode->right_ != nullptr) {
-
-                size_t nextIndex = curNodeNum;
-                PrintNodes (dumpOut, curNode->right_);
-                dumpOut << "\"box" << curInd << "\" -> \"box"<< nextIndex << "\"" << std::endl;
-
-            }
-
         }
 
     }
-
-    //=====================================================================================================
-
-    void Tree::graphDump (const char* fileName) {
-
-        std::ofstream dumpOut (fileName, dumpOut.out | dumpOut.trunc);
-
-        dumpOut << "digraph Tree {\n";
-
-        PrintNodes (dumpOut, root);
-
-        dumpOut << "}";
-
-    }
-
     //-----------------------------------------------------------------------------------------------------
 
     void Tree::rightRotate (Node *x) {
@@ -315,7 +254,7 @@ namespace TreeImpl {
 
         Node* newNode = new Node {val};
         Node* tmpNode = root,
-                    * tmpParent = nullptr;
+                        *tmpParent = nullptr;
 
         while (tmpNode != nullptr) {  //big data in right child
 
@@ -361,7 +300,6 @@ namespace TreeImpl {
             else  
                 rang = 1;   
 
-
             if (key == rang)
                 return curNode->val_;
 
@@ -397,7 +335,65 @@ namespace TreeImpl {
             else if (border <= curNode->val_) 
                 curNode = curNode->left_;
         }
-
         return amount;
+    }
+     namespace {
+
+        void PrintNodes (std::ofstream& dumpOut, const Node* curNode) {
+            if (curNode == nullptr)
+                return;
+            
+            static int curNodeNum = 0;
+            int curInd = curNodeNum;
+            
+            if (curNode->color_ == BLACK) {
+                dumpOut << "\"box"  << curNodeNum << "\" [shape = \"record\", color = \"white\" label = <<font color = \"#242424\">" 
+                                    << curNode->val_ << ", sizeSubtree = " << curNode->subtreeSize << "</font>>]" << std::endl;
+            }
+            else if (curNode->color_ == RED) {
+                dumpOut << "\"box" << curNodeNum << "\" [shape = \"record\", color=\"white\", label = <<font color = \"#c2453c\">" 
+                        << curNode->val_ << ", sizeSubtree = " << curNode->subtreeSize << "</font>>]" << std::endl;
+            }
+            else {
+
+                std::cout << "Unexpected color in function " << __func__ << std::endl;
+                return; 
+
+            }
+
+            curNodeNum++;
+
+            if (curNode->left_ != nullptr) {
+
+                size_t nextIndex = curNodeNum;
+                PrintNodes (dumpOut, curNode->left_);
+                dumpOut << "\"box" << curInd << "\" -> \"box"<< nextIndex << "\"" << std::endl;
+
+            }
+
+            if (curNode->right_ != nullptr) {
+
+                size_t nextIndex = curNodeNum;
+                PrintNodes (dumpOut, curNode->right_);
+                dumpOut << "\"box" << curInd << "\" -> \"box"<< nextIndex << "\"" << std::endl;
+
+            }
+
+        }
+
+    }
+
+    //=====================================================================================================
+
+    void Tree::graphDump (const char* fileName) {
+
+        std::ofstream dumpOut (fileName, dumpOut.out | dumpOut.trunc);
+
+        dumpOut << "digraph Tree {\n";
+
+        PrintNodes (dumpOut, root);
+
+        dumpOut << "}";
+
     }
 }
