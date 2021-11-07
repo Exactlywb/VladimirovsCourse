@@ -10,10 +10,12 @@ void getRand (long long n);
 
 int main () {
 
-    std::cout << "Test" << std::endl;
-    CopyTest ();
-    MoveTest ();
-    AssignmentTest ();
+    // std::cout << "Test" << std::endl;
+    // CopyTest ();
+    // MoveTest ();
+    // AssignmentTest ();
+
+    getRand (100000000);
     return 0;
 
 }
