@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cstring>
+#include <iomanip>
 
 namespace Math {
 
@@ -19,8 +20,8 @@ namespace Math {
 
             if (row >= rowNum) {
 
-                std::cout   << "Max row number is " << rowNum 
-                            << "but you requested " << row << std::endl;
+                std::cout   << "Max row number is "  << rowNum - 1
+                            << " but you requested " << row << std::endl;
                 return -1;
 
             }
@@ -33,8 +34,8 @@ namespace Math {
 
             if (col >= colNum) {
 
-                std::cout   << "Max col number is " << colNum 
-                            << "but you requested " << col << std::endl;
+                std::cout   << "Max col number is "  << colNum - 1
+                            << " but you requested " << col << std::endl;
                 return -1;
 
             }
@@ -49,7 +50,7 @@ namespace Math {
             rowNum (rN),
             colNum (cN) {
             
-            data = new T [rowNum + colNum];
+            data = new T [rowNum * colNum];
 
         }
 
@@ -57,7 +58,7 @@ namespace Math {
             rowNum (n),
             colNum (n) {
 
-            data = new T [2 * n];
+            data = new T [n * n];
 
         }
 
@@ -141,16 +142,32 @@ namespace Math {
             return data [row * col + col];
 
         }
-        void SetElemUsingRowNumAndColNum (const int col, const int row, T& elem);
+        
+        void SetElemUsingRowNumAndColNum (const int col, const int row, T& elem) {
+
+            // Similar with GetElemUsingRowNumAndColNum
+
+            if (CheckCorrectRowRequest (row) != 0) return;
+            if (CheckCorrectColRequest (col) != 0) return;
+
+            data [row * col + col] = elem;
+            
+        }
 
         void MatrixDump () const {
 
             std::cout << std::endl;
             for (int curRow = 0; curRow < rowNum; curRow++) {
                 
+                int curBegInd = curRow * colNum;
                 std::cout << "[";
-                for (int curCol = 0; curCol < colNum; curCol++)
-                    std::cout << data [curRow * colNum + curCol] << " ";
+                for (int curCol = 0; curCol < colNum; curCol++) {
+
+                    std::cout << std::setw (5) << data [curBegInd + curCol];
+                    if (curCol + 1 < colNum)
+                        std::cout << " ";
+            
+                }
                 std::cout << "]" << std::endl;
 
             }
