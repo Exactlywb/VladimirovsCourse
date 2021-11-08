@@ -7,6 +7,8 @@
   $ cmake ..
   $ make
 ```
+## If you have some troubles with building the project, try to install GoogleTests:
+
 ## Compiler settings:)
 ```
   $ g++ -Wall -Wextra -Wpedantic -Wsign-promo 

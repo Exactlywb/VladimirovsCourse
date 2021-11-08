@@ -6,5 +6,5 @@ CXX_FLAGS =   -Wall -Wshadow -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fex
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -isystem /home/exactlywb/googletest/googletest/include -isystem /home/exactlywb/googletest/googletest 
+CXX_INCLUDES = -isystem /home/kolobaka2000/googletest/googletest/include -isystem /home/kolobaka2000/googletest/googletest 
 

@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/exactlywb/googletest
+CMAKE_SOURCE_DIR = /home/kolobaka2000/googletest
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest
+CMAKE_BINARY_DIR = /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -137,9 +137,9 @@ test/fast: test
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles 0
 .PHONY : all
 
 # The main clean target

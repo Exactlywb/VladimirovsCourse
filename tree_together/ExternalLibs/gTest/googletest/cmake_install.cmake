@@ -1,4 +1,4 @@
-# Install script for directory: /home/exactlywb/googletest/googletest
+# Install script for directory: /home/kolobaka2000/googletest/googletest
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -41,7 +41,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/GTest/GTestTargets.cmake")
     file(DIFFERENT EXPORT_FILE_CHANGED FILES
          "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/GTest/GTestTargets.cmake"
-         "/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/CMakeFiles/Export/lib/cmake/GTest/GTestTargets.cmake")
+         "/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/CMakeFiles/Export/lib/cmake/GTest/GTestTargets.cmake")
     if(EXPORT_FILE_CHANGED)
       file(GLOB OLD_CONFIG_FILES "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/GTest/GTestTargets-*.cmake")
       if(OLD_CONFIG_FILES)
@@ -50,36 +50,36 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
       endif()
     endif()
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/GTest" TYPE FILE FILES "/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/CMakeFiles/Export/lib/cmake/GTest/GTestTargets.cmake")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/GTest" TYPE FILE FILES "/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/CMakeFiles/Export/lib/cmake/GTest/GTestTargets.cmake")
   if("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^()$")
-    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/GTest" TYPE FILE FILES "/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/CMakeFiles/Export/lib/cmake/GTest/GTestTargets-noconfig.cmake")
+    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/GTest" TYPE FILE FILES "/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/CMakeFiles/Export/lib/cmake/GTest/GTestTargets-noconfig.cmake")
   endif()
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/GTest" TYPE FILE FILES
-    "/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/generated/GTestConfigVersion.cmake"
-    "/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/generated/GTestConfig.cmake"
+    "/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/generated/GTestConfigVersion.cmake"
+    "/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/generated/GTestConfig.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "/home/exactlywb/googletest/googletest/include/")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "/home/kolobaka2000/googletest/googletest/include/")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/lib/libgtest.a")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/lib/libgtest.a")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/lib/libgtest_main.a")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/lib/libgtest_main.a")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/generated/gtest.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/generated/gtest.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/generated/gtest_main.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/generated/gtest_main.pc")
 endif()
 

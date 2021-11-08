@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/exactlywb/googletest
+CMAKE_SOURCE_DIR = /home/kolobaka2000/googletest
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest
+CMAKE_BINARY_DIR = /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest
 
 # Include any dependencies generated for this target.
 include googletest/CMakeFiles/gtest_main.dir/depend.make
@@ -58,17 +58,17 @@ include googletest/CMakeFiles/gtest_main.dir/progress.make
 include googletest/CMakeFiles/gtest_main.dir/flags.make
 
 googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o: googletest/CMakeFiles/gtest_main.dir/flags.make
-googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o: /home/exactlywb/googletest/googletest/src/gtest_main.cc
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o"
-	cd /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/gtest_main.dir/src/gtest_main.cc.o -c /home/exactlywb/googletest/googletest/src/gtest_main.cc
+googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o: /home/kolobaka2000/googletest/googletest/src/gtest_main.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o"
+	cd /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/gtest_main.dir/src/gtest_main.cc.o -c /home/kolobaka2000/googletest/googletest/src/gtest_main.cc
 
 googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/gtest_main.dir/src/gtest_main.cc.i"
-	cd /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/exactlywb/googletest/googletest/src/gtest_main.cc > CMakeFiles/gtest_main.dir/src/gtest_main.cc.i
+	cd /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/kolobaka2000/googletest/googletest/src/gtest_main.cc > CMakeFiles/gtest_main.dir/src/gtest_main.cc.i
 
 googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/gtest_main.dir/src/gtest_main.cc.s"
-	cd /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/exactlywb/googletest/googletest/src/gtest_main.cc -o CMakeFiles/gtest_main.dir/src/gtest_main.cc.s
+	cd /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/kolobaka2000/googletest/googletest/src/gtest_main.cc -o CMakeFiles/gtest_main.dir/src/gtest_main.cc.s
 
 # Object files for target gtest_main
 gtest_main_OBJECTS = \
@@ -80,9 +80,9 @@ gtest_main_EXTERNAL_OBJECTS =
 lib/libgtest_main.a: googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o
 lib/libgtest_main.a: googletest/CMakeFiles/gtest_main.dir/build.make
 lib/libgtest_main.a: googletest/CMakeFiles/gtest_main.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX static library ../lib/libgtest_main.a"
-	cd /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest && $(CMAKE_COMMAND) -P CMakeFiles/gtest_main.dir/cmake_clean_target.cmake
-	cd /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/gtest_main.dir/link.txt --verbose=$(VERBOSE)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX static library ../lib/libgtest_main.a"
+	cd /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest && $(CMAKE_COMMAND) -P CMakeFiles/gtest_main.dir/cmake_clean_target.cmake
+	cd /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/gtest_main.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
 googletest/CMakeFiles/gtest_main.dir/build: lib/libgtest_main.a
@@ -90,10 +90,10 @@ googletest/CMakeFiles/gtest_main.dir/build: lib/libgtest_main.a
 .PHONY : googletest/CMakeFiles/gtest_main.dir/build
 
 googletest/CMakeFiles/gtest_main.dir/clean:
-	cd /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest && $(CMAKE_COMMAND) -P CMakeFiles/gtest_main.dir/cmake_clean.cmake
+	cd /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest && $(CMAKE_COMMAND) -P CMakeFiles/gtest_main.dir/cmake_clean.cmake
 .PHONY : googletest/CMakeFiles/gtest_main.dir/clean
 
 googletest/CMakeFiles/gtest_main.dir/depend:
-	cd /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/exactlywb/googletest /home/exactlywb/googletest/googletest /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/CMakeFiles/gtest_main.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/kolobaka2000/googletest /home/kolobaka2000/googletest/googletest /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/CMakeFiles/gtest_main.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : googletest/CMakeFiles/gtest_main.dir/depend
 

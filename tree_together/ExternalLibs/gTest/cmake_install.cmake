@@ -1,4 +1,4 @@
-# Install script for directory: /home/exactlywb/googletest
+# Install script for directory: /home/kolobaka2000/googletest
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/googlemock/cmake_install.cmake")
+  include("/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/googlemock/cmake_install.cmake")
 
 endif()
 
@@ -51,5 +51,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

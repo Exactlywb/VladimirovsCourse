@@ -1,4 +1,4 @@
-# Install script for directory: /home/exactlywb/googletest/googlemock
+# Install script for directory: /home/kolobaka2000/googletest/googlemock
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -38,28 +38,28 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "/home/exactlywb/googletest/googlemock/include/")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "/home/kolobaka2000/googletest/googlemock/include/")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/lib/libgmock.a")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/lib/libgmock.a")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/lib/libgmock_main.a")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/lib/libgmock_main.a")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/generated/gmock.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/generated/gmock.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/generated/gmock_main.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/generated/gmock_main.pc")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/cmake_install.cmake")
+  include("/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/googletest/cmake_install.cmake")
 
 endif()
 
