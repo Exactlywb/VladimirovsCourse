@@ -9,7 +9,7 @@
 namespace Math {
 
     template <typename T = double>
-    class Matrix {
+    class Matrix final {
 
         T*  data;
 
