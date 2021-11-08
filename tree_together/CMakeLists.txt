@@ -8,6 +8,9 @@ cmake_minimum_required(VERSION 3.8)
 
 project("Tree")
 
+set (GTEST_ROOT ${CMAKE_SOURCE_DIR}/ExternalLibs/gTest)
+find_package(GTest REQUIRED)
+
 set(EXEC_FILE "tree")
 set(TEST_FILE "test_tree")
 
@@ -36,6 +39,8 @@ add_executable(${EXEC_FILE} ${SOURCES})
 add_executable(${TEST_FILE} ${TEST_SOURCES})
 
 target_include_directories(${EXEC_FILE} PRIVATE include)
+
+target_link_libraries(${TEST_FILE} PRIVATE "${GTEST_LIBRARIES}" "pthread")
 target_include_directories(${TEST_FILE} PRIVATE include)
 
 #compiler settings
