@@ -44,10 +44,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/exactlywb/googletest
+CMAKE_SOURCE_DIR = /home/kolobaka2000/googletest
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest
+CMAKE_BINARY_DIR = /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest
 
 #=============================================================================
 # Directory level rules for the build root directory
@@ -113,18 +113,18 @@ googletest/clean: googletest/CMakeFiles/gtest.dir/clean
 # Target rules for target googlemock/CMakeFiles/gmock_main.dir
 
 # All Build rule for target.
-googlemock/CMakeFiles/gmock_main.dir/all: googlemock/CMakeFiles/gmock.dir/all
 googlemock/CMakeFiles/gmock_main.dir/all: googletest/CMakeFiles/gtest.dir/all
+googlemock/CMakeFiles/gmock_main.dir/all: googlemock/CMakeFiles/gmock.dir/all
 	$(MAKE) -f googlemock/CMakeFiles/gmock_main.dir/build.make googlemock/CMakeFiles/gmock_main.dir/depend
 	$(MAKE) -f googlemock/CMakeFiles/gmock_main.dir/build.make googlemock/CMakeFiles/gmock_main.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles --progress-num=3,4 "Built target gmock_main"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles --progress-num=3,4 "Built target gmock_main"
 .PHONY : googlemock/CMakeFiles/gmock_main.dir/all
 
 # Build rule for subdir invocation for target.
 googlemock/CMakeFiles/gmock_main.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles 6
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles 6
 	$(MAKE) -f CMakeFiles/Makefile2 googlemock/CMakeFiles/gmock_main.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles 0
 .PHONY : googlemock/CMakeFiles/gmock_main.dir/rule
 
 # Convenience name for target.
@@ -144,14 +144,14 @@ googlemock/CMakeFiles/gmock_main.dir/clean:
 googlemock/CMakeFiles/gmock.dir/all: googletest/CMakeFiles/gtest.dir/all
 	$(MAKE) -f googlemock/CMakeFiles/gmock.dir/build.make googlemock/CMakeFiles/gmock.dir/depend
 	$(MAKE) -f googlemock/CMakeFiles/gmock.dir/build.make googlemock/CMakeFiles/gmock.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles --progress-num=1,2 "Built target gmock"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles --progress-num=1,2 "Built target gmock"
 .PHONY : googlemock/CMakeFiles/gmock.dir/all
 
 # Build rule for subdir invocation for target.
 googlemock/CMakeFiles/gmock.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles 4
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles 4
 	$(MAKE) -f CMakeFiles/Makefile2 googlemock/CMakeFiles/gmock.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles 0
 .PHONY : googlemock/CMakeFiles/gmock.dir/rule
 
 # Convenience name for target.
@@ -171,14 +171,14 @@ googlemock/CMakeFiles/gmock.dir/clean:
 googletest/CMakeFiles/gtest_main.dir/all: googletest/CMakeFiles/gtest.dir/all
 	$(MAKE) -f googletest/CMakeFiles/gtest_main.dir/build.make googletest/CMakeFiles/gtest_main.dir/depend
 	$(MAKE) -f googletest/CMakeFiles/gtest_main.dir/build.make googletest/CMakeFiles/gtest_main.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles --progress-num=7,8 "Built target gtest_main"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles --progress-num=7,8 "Built target gtest_main"
 .PHONY : googletest/CMakeFiles/gtest_main.dir/all
 
 # Build rule for subdir invocation for target.
 googletest/CMakeFiles/gtest_main.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles 4
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles 4
 	$(MAKE) -f CMakeFiles/Makefile2 googletest/CMakeFiles/gtest_main.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles 0
 .PHONY : googletest/CMakeFiles/gtest_main.dir/rule
 
 # Convenience name for target.
@@ -198,14 +198,14 @@ googletest/CMakeFiles/gtest_main.dir/clean:
 googletest/CMakeFiles/gtest.dir/all:
 	$(MAKE) -f googletest/CMakeFiles/gtest.dir/build.make googletest/CMakeFiles/gtest.dir/depend
 	$(MAKE) -f googletest/CMakeFiles/gtest.dir/build.make googletest/CMakeFiles/gtest.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles --progress-num=5,6 "Built target gtest"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles --progress-num=5,6 "Built target gtest"
 .PHONY : googletest/CMakeFiles/gtest.dir/all
 
 # Build rule for subdir invocation for target.
 googletest/CMakeFiles/gtest.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles 2
 	$(MAKE) -f CMakeFiles/Makefile2 googletest/CMakeFiles/gtest.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/exactlywb/Desktop/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/kolobaka2000/FrolovCode/VladimirovsCourse/tree_together/ExternalLibs/gTest/CMakeFiles 0
 .PHONY : googletest/CMakeFiles/gtest.dir/rule
 
 # Convenience name for target.

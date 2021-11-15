@@ -7,6 +7,13 @@
   $ cmake ..
   $ make
 ```
+## If you have some troubles with building the project, try to install GoogleTests:
+```
+  $ sudo apt-get install libgtest-dev
+  $ cd /usr/src/gtest
+  $ sudo cmake CMakeLists.txt
+  $ sudo make
+```
 ## Compiler settings:)
 ```
   $ g++ -Wall -Wextra -Wpedantic -Wsign-promo 
