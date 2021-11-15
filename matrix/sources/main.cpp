@@ -30,7 +30,7 @@ int main () {
     for (int i = 0; i < n * n; ++i)
         std::cin >> mainMatrix [i];
 
-    std::cout << mainMatrix.calcDet () << std::endl;
+    std::cout << (mainMatrix.calcDet ()) << std::endl;
 
     return 0;
 

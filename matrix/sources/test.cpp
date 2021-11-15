@@ -39,7 +39,7 @@ TEST( detTests, check3x3 ) {
     matr.setElemUsingRowCol (2, 0, 2);
     matr.setElemUsingRowCol (2, 1, 8);
     matr.setElemUsingRowCol (2, 2, 9);
-    matr.matrixDump ();
+    
     EXPECT_DOUBLE_EQ (-92, matr.calcDet ());
 
 }

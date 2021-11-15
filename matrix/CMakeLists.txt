@@ -24,12 +24,14 @@ set(HEADERS
 set(SOURCES
 
     sources/main.cpp
+    sources/common.cpp
 
 )
 
 set(TEST_SOURCES
 
     sources/test.cpp
+    sources/common.cpp
 
 )
 
