@@ -48,15 +48,7 @@ namespace Math {
 
         };
 
-    public:
-
-        int getRowNum () const {
-            return rowNum;
-        }
-
-        int getColNum () const {
-            return colNum;
-        }
+    private:
 
         int CheckCorrectRowRequest (const int row) const {
 
@@ -131,11 +123,11 @@ namespace Math {
 
             Matrix<double> tmpSave {*this};
     
-            int8_t sign = tmpSave.makeTr ();
+            int sign = tmpSave.makeTr ();
 
-            T det = tmpSave.calcTrace (sign);
+            T det = tmpSave.calcTrace ();
 
-            return det;
+            return det * sign;
 
         }
 
@@ -255,6 +247,14 @@ namespace Math {
             delete[] data;
         }
 
+        int getRowNum () const {
+            return rowNum;
+        }
+
+        int getColNum () const {
+            return colNum;
+        }
+
         T& operator[] (const int ind) {
             return data [ind];
         }
@@ -325,7 +325,7 @@ namespace Math {
 
         }
 
-        T calcTrace (const int8_t sign) const {
+        T calcTrace () const {
 
             T det {1};
 
@@ -339,7 +339,7 @@ namespace Math {
 
             }
 
-            return sign * det;
+            return det;
 
         }
 
@@ -363,9 +363,9 @@ namespace Math {
             
         }
 
-        int8_t makeTr () {
+        int makeTr () {
 
-            int8_t sign = 1;
+            int sign = 1;
             int size = rowNum; //renaming
             for (int i = 0; i < size - 1; ++i) {
                 
