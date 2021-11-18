@@ -162,15 +162,23 @@ namespace Math {
             rowNum (rN),
             colNum (cN) {
             
-            data = new T [rowNum * colNum];
+            int fullSize = rowNum * colNum;
+
+            if (fullSize > 0)
+                data = new T [fullSize] {};
+            else
+                data = nullptr;
 
         }
 
         Matrix (int n = 0):
             rowNum (n),
             colNum (n) {
-
-            data = new T [n * n] {};
+            
+            if (n > 0)
+                data = new T [n * n] {};
+            else
+                data = nullptr;
 
         }
 
@@ -181,7 +189,11 @@ namespace Math {
 
             int fullSize = rowNum * colNum;
             
-            data = new T [fullSize];
+            if (fullSize > 0)
+                data = new T [fullSize] {};
+            else
+                data = nullptr;
+
             std::copy (toCopy.data, toCopy.data + fullSize, data);
 
         }
@@ -193,7 +205,11 @@ namespace Math {
 
             int fullSize = rowNum * colNum; 
             
-            data = new T [fullSize];
+            if (fullSize > 0)
+                data = new T [fullSize] {};
+            else
+                data = nullptr;
+
             for (int i = 0; i < rowNum * colNum; ++i)
                 data[i] = static_cast<T> (toCopy [i]);
 
@@ -209,10 +225,21 @@ namespace Math {
             colNum = toCopy.colNum;
 
             int fullSize    = rowNum * colNum;
-            T* dataTmp      = new T [fullSize];
-            std::copy (toCopy.data, toCopy.data + fullSize, dataTmp);
-            delete[] data;
-            data = dataTmp;
+            
+            if (fullSize > 0) {
+
+                T* dataTmp      = new T [fullSize];
+                std::copy (toCopy.data, toCopy.data + fullSize, dataTmp);
+
+                delete[] data;
+                data = dataTmp;
+            
+            } else {
+
+                delete[] data;
+                data = nullptr;
+
+            }
 
             return *this;
 
