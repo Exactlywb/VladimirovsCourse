@@ -119,6 +119,8 @@ class HelloTriangleApplication {
     VkPipeline                      graphicsPipeline;
     std::vector<VkFramebuffer>      swapChainFramebuffers;
 
+    VkCommandPool                   commandPool;
+
     const std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
     const std::vector<const char*> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
@@ -624,7 +626,7 @@ class HelloTriangleApplication {
             
             createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 
-            createInfo.image    = swapChainImages[i];
+            createInfo.image    = swapChainImages [i];
             createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
             createInfo.format   = swapChainImageFormat;
 
@@ -804,23 +806,39 @@ class HelloTriangleApplication {
 
     }
 
+    void createCommandPool () {
+
+        QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
+
+        VkCommandPoolCreateInfo poolInfo {};
+        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+
+        if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) 
+            throw std::runtime_error("failed to create graphics command pool!");
+
+    }
+
     void initVulkan () {
 
-        createInstance      ();
+        createInstance          ();
         
-        setupDebugMessenger ();
+        setupDebugMessenger     ();
 
-        createSurface       ();
+        createSurface           ();
 
-        pickPhysicalDevice  (instance); //!TODO maybe it's better not to transfer arguments
-        createLogicalDevice ();
+        pickPhysicalDevice      (instance); //!TODO maybe it's better not to transfer arguments
+        createLogicalDevice     ();
 
-        createSwapChain     ();
+        createSwapChain         ();
 
-        createImageViews    ();
-        createRenderPass    ();
-        createGraphPipeline ();
-        createFramebuffers  ();
+        createImageViews        ();
+        createRenderPass        ();
+        createGraphPipeline     ();
+        createFramebuffers      ();
+
+        createCommandPool       ();
+        createCommandBuffers    ();
 
     }
     
@@ -839,6 +857,8 @@ class HelloTriangleApplication {
         if (enableValidationLayers)
             DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
         
+        vkDestroyCommandPool    (device, commandPool, nullptr);
+
         vkFreeFramebuffer       ();
         vkDestroyPipeline       (device, graphicsPipeline, nullptr);
         vkDestroyPipelineLayout (device, pipelineLayout  , nullptr);
