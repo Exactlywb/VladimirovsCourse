@@ -5,20 +5,12 @@
 #
 
 cmake_minimum_required(VERSION 3.12)
+set (ProjectName "VulkanTest")
+project(${ProjectName})
 
-project("Vulkan")
-
-find_package(Vulkan REQUIRED FATAL_ERROR) # error
-# find_package(SFML REQUIRED network audio) # error
-find_package(glfw REQUIRED FATAL_ERROR) # error
-
-# Add source to this project's executable.
-# add_executable (MyProject "MyProject.cpp")
-
-
+find_package(Vulkan)
 
 set(EXEC_FILE "vulkan")
-
 
 set(SOURCES
 
@@ -26,24 +18,18 @@ set(SOURCES
 
 )
 
-target_include_directories (Vulkan 
-    PUBLIC ${GLFW_INCLUDE_DIRS}
-    # PUBLIC ${SFML_INCLUDE_DIR}
-    # PUBLIC ${VULKAN_INCLUDE_DIRS}
-)
 
-target_link_libraries (Vulkan glfw)
-# target_link_libraries (EXEC_FILE ${VULKAN_LIB_LIST})
-# target_link_libraries (EXEC_FILE ${SFML_LIBRARIES})
+#  Библиотеки, которые нужны для сборки главной цели
 
-
-#executable files
 add_executable(${EXEC_FILE} ${SOURCES})
 
-target_include_directories(${EXEC_FILE} PRIVATE )
-
-# target_link_libraries(${TEST_FILE} PRIVATE "${GTEST_LIBRARIES}" "pthread")
-# target_include_directories(${TEST_FILE} PRIVATE )
+target_link_libraries(${EXEC_FILE}
+glfw
+dl 
+pthread 
+X11 
+Xrandr
+)
 
 #compiler settings
 
@@ -62,12 +48,12 @@ set (COMPILER_SETTINGS -Wall
 -std=c++17 # G++ version in CMAKE (Special command)
 -O2 
 # For Vulkan
--lglfw 
--lvulkan 
--ldl 
--lpthread 
--lX11 
--lXrandr 
+# -lglfw
+# -lvulkan 
+# -ldl 
+# -lpthread 
+# -lX11 
+# -lXrandr 
 
 )
 target_compile_options( ${EXEC_FILE} PRIVATE ${COMPILER_SETTINGS} )
