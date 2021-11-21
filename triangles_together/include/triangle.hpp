@@ -9,7 +9,6 @@
 #include <list>
 #include <cmath>
 #include "vector.hpp"
-#include "common.hpp"
 
 namespace GObjects {
 //***
@@ -56,38 +55,38 @@ namespace GObjects {
 
 //-----------------------------------------------------------------------------------------------------
 
-        void setVec (Vector &vec, int num) {
+        void setVec (Vector &vec, int num) noexcept {
             rVecs_ [num] = vec;
             typeOfDegenerate ();
         }
 
 //-----------------------------------------------------------------------------------------------------
 
-        Vector getVec (int num) const {
+        Vector getVec (int num) const noexcept {
             return rVecs_ [num];
         }
 
 //-----------------------------------------------------------------------------------------------------
 
-        int getNumber () const {
+        int getNumber () const noexcept {
             return number_;
         }
 
 //-----------------------------------------------------------------------------------------------------
 
-        void setNumber (const int number) {
+        void setNumber (const int number) noexcept {
             number_ = number;
         }
 
 //-----------------------------------------------------------------------------------------------------
 
-        pType getAbsMaxCoord () const;
-        pType getAbsMinCoord () const;
+        pType getAbsMaxCoord () const noexcept;
+        pType getAbsMinCoord () const noexcept;
 
 //-----------------------------------------------------------------------------------------------------
 
-        void typeOfDegenerate     ();
-        char getDegenerationType  () const {
+        void typeOfDegenerate     () noexcept;
+        char getDegenerationType  () const noexcept {
             return typeOfDegeneration_;
         }
 
@@ -96,7 +95,7 @@ namespace GObjects {
         char signedDistance (const Plane &plain, const Triangle &tr) const;
 
         void calcNormal (Vector &normalVector) const;
-        void calcCoefD (Vector &normalV, pType &ourCoefD) const;
+        void calcCoefD (Vector &normalV, pType &ourCoefD) const noexcept;
 
         bool pointInTriangle (const Vector &point) const;
     };
@@ -138,19 +137,19 @@ namespace GObjects {
 
 //-----------------------------------------------------------------------------------------------------
 
-        Vector getVec () const {
+        Vector getVec () const noexcept {
             return nVec_;
         }
 
 //-----------------------------------------------------------------------------------------------------
 
-        pType getD () const {
+        pType getD () const noexcept {
             return d_;
         }
 
 //-----------------------------------------------------------------------------------------------------
 
-        pType dist (Vector &vec) const;
+        pType dist (Vector &vec) const noexcept;    // for the future
     };
 
     std::ostream &operator << (std::ostream &out, const Plane &plane);
@@ -170,6 +169,8 @@ namespace GObjects {
 //-----------------------------------------------------------------------------------------------------
 
         Segment (const Triangle &tr) {
+
+            Cmp::cmp DoubleCmp;
             Vector side1 = tr.getVec(0) - tr.getVec(1);
             Vector side2 = tr.getVec(2) - tr.getVec(1);
 

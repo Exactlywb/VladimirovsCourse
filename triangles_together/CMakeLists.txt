@@ -17,7 +17,6 @@ set( EXECSOURCES "${CMAKE_SOURCE_DIR}/source" )
 
 set( SOURCES
     "intersect.cpp"
-    "common.cpp"
     "octree.cpp"
     "triangle.cpp"
     "vector.cpp"

@@ -6,6 +6,7 @@ namespace GObjects {
         
         bool CheckPointInSegment (const Vector &beginPVec, const Vector &directVec) {
             
+            Cmp::cmp DoubleCmp;
             double vecLen = beginPVec.squareLength ();
 
             if (DoubleCmp (vecLen, 0) == 0) 
@@ -26,6 +27,7 @@ namespace GObjects {
 
         void CheckCurCoords (const pType first, const pType second, const pType toCmp, char &counter) {
             
+            Cmp::cmp DoubleCmp;
             pType minCoord = std::min (first, second);
             pType maxCoord = std::max (first, second);
 
@@ -38,7 +40,7 @@ namespace GObjects {
 //-----------------------------------------------------------------------------------------------------
 
         int checkIntersection (const Segment &curSeg, const Vector &point) {
-            
+
             char counter = 0;
             for (int coordNum = 0; coordNum < 3; ++coordNum) {
                     pType curBeginCoord = curSeg.begin_.getCoord (coordNum);
@@ -85,6 +87,8 @@ namespace GObjects {
 //-----------------------------------------------------------------------------------------------------
 
         bool IsIntersectedTIntervals (pType firstTParams [2], pType secondTParams [2]) {
+
+            Cmp::cmp DoubleCmp;
 
             if ((DoubleCmp (firstTParams [0], firstTParams [1]) > 0))
                 std::swap (firstTParams [0], firstTParams [1]);
@@ -139,6 +143,7 @@ namespace GObjects {
         void CalcTParams (pType tParams [2], const pType projection [3], 
                             const Vector &normalV, const pType dCoef, const Triangle &tr) {
                                 
+            Cmp::cmp DoubleCmp;
             int outlaw = 0;
 
             double firstCalcDist    = CalcDist (normalV, dCoef, tr.getVec (0));
@@ -182,6 +187,7 @@ namespace GObjects {
 
         bool IntersectDegenerates (const Triangle &tr, const Segment &segment) {
 
+            Cmp::cmp DoubleCmp;
             Vector norm{};
             pType coefD = 0;
             tr.calcNormal (norm);
@@ -228,6 +234,7 @@ namespace GObjects {
 
         bool IntersectDegenerates (const Segment &segment1, const Segment &segment2) {
             
+            Cmp::cmp DoubleCmp;
             Vector firstBeginVec  = segment1.begin_;
             Vector secondBeginVec = segment2.begin_;
 
@@ -420,6 +427,7 @@ namespace GObjects {
     bool Intersect3DTriangles (const Triangle &tr1, const Triangle &tr2) {
         
         //Handling for the degenerated triangles
+        Cmp::cmp DoubleCmp;
         char degFlag = tr1.getDegenerationType () + tr2.getDegenerationType ();
         if(degFlag != (1 << 1)) 
             return HandleDegeneratedCases (tr1, tr2, degFlag);
@@ -480,7 +488,7 @@ namespace GObjects {
 //                         TRIANGLE CLASS PART
 //#####################################################################################################
 
-    pType Triangle::getAbsMaxCoord () const {
+    pType Triangle::getAbsMaxCoord () const noexcept {
         return std::max   ({rVecs_ [0].getAbsMaxCoord (), 
                             rVecs_ [1].getAbsMaxCoord (), 
                             rVecs_ [2].getAbsMaxCoord ()});
@@ -488,7 +496,7 @@ namespace GObjects {
 
 //-----------------------------------------------------------------------------------------------------
 
-    pType Triangle::getAbsMinCoord () const {
+    pType Triangle::getAbsMinCoord () const noexcept {
         return std::min   ({rVecs_ [0].getAbsMinCoord (), 
                             rVecs_ [1].getAbsMinCoord (), 
                             rVecs_ [2].getAbsMinCoord ()});
@@ -496,7 +504,7 @@ namespace GObjects {
 
 //-----------------------------------------------------------------------------------------------------
 
-    void Triangle::typeOfDegenerate () {
+    void Triangle::typeOfDegenerate () noexcept {
 
         Vector firstV = rVecs_ [0];
 
@@ -517,6 +525,7 @@ namespace GObjects {
 
     char Triangle::signedDistance (const Plane &plain, const Triangle &tr) const {
 
+        Cmp::cmp DoubleCmp;
         pType dists[3]{};
 
         for (int i = 0; i < 3; ++i)
@@ -564,7 +573,7 @@ namespace GObjects {
 
 //-----------------------------------------------------------------------------------------------------
 
-    void Triangle::calcCoefD (Vector &normalV, pType &ourCoefD) const {
+    void Triangle::calcCoefD (Vector &normalV, pType &ourCoefD) const noexcept {
 
         ourCoefD = 0;
 
@@ -579,6 +588,7 @@ namespace GObjects {
 
     bool Triangle::pointInTriangle (const Vector &point) const{
 
+        Cmp::cmp DoubleCmp;
         for (int i = 0; i < 3; ++i) {
 
             Vector side = rVecs_[(i + 1) % 3] - rVecs_[(i + 2) % 3];
@@ -640,7 +650,7 @@ namespace GObjects {
 //                         PLANE CLASS PART
 //#####################################################################################################
 
-    pType Plane::dist (Vector &vec) const {
+    pType Plane::dist (Vector &vec) const noexcept {
         pType dist{};
 
         for (int index = 0; index < 3; ++index) {

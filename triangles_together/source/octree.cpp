@@ -2,6 +2,8 @@
 
 namespace Tree {
     int Octree::whatChapter (GObjects::Vector &leftBorder, GObjects::Vector &rightBorder, const GObjects::Triangle &tr) {
+        
+        Cmp::cmp DoubleCmp;
         int chapter[3] {}; // (z,y,x)
 
         for (int vertexNum = 0; vertexNum < 3; ++vertexNum) {
