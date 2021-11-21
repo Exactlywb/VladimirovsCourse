@@ -1,3 +1,0 @@
-/home/kolobaka2000/Рабочий стол/VulkanTest/build/CMakeFiles/rebuild_cache.dir
-/home/kolobaka2000/Рабочий стол/VulkanTest/build/CMakeFiles/edit_cache.dir
-/home/kolobaka2000/Рабочий стол/VulkanTest/build/CMakeFiles/vulkan.dir

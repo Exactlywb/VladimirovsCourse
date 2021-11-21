@@ -1,1 +1,0 @@
-/usr/bin/c++     CMakeFiles/vulkan.dir/main.cpp.o  -o vulkan 
