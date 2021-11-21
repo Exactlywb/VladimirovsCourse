@@ -62,3 +62,20 @@ add_compile_options(
     -O2
 
 )
+
+set (COMPILER_SETTINGS -Wall
+-Wextra
+-Wpedantic
+
+-Wsign-promo
+-Wsign-conversion
+-Wdouble-promotion
+
+-Wfloat-equal
+-Wbool-compare
+
+-Wdiv-by-zero
+
+-O2)
+target_compile_options( ${EXEC_FILE} PRIVATE ${COMPILER_SETTINGS} )
+target_compile_options( ${TEST_FILE} PRIVATE ${COMPILER_SETTINGS} )

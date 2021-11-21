@@ -283,6 +283,8 @@ namespace Math {
                 while (curCol < size && !DblCmp (getElemUsingRowCol (curCol, i), 0))
                     curCol++;
 
+                matrixDump ();
+
                 if (curCol != size) {
 
                     if (curCol != i) {
