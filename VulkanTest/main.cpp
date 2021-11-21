@@ -601,8 +601,18 @@ class HelloTriangleApplication {
     }
 
     //!TODO another class for shader handlings
-
     VkShaderModule createShaderModule (const FileBuff& shader) {
+
+        VkShaderModuleCreateInfo createInfo {};
+        createInfo.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        createInfo.codeSize = shader.fileSize;
+        createInfo.pCode    = reinterpret_cast<const uint32_t*>(shader.buffer.data ());
+
+        VkShaderModule shaderModule;
+        if (vkCreateShaderModule (device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+            throw std::runtime_error ("bad shader module create");
+        
+        return shaderModule;
 
     }
 
@@ -614,6 +624,11 @@ class HelloTriangleApplication {
         VkShaderModule vertShaderModule = createShaderModule (vertShader);
         VkShaderModule fragShaderModule = createShaderModule (fragShader);
 
+        ...
+
+        vkDestroyShaderModule (device, fragShaderModule, nullptr);
+        vkDestroyShaderModule (device, vertShaderModule, nullptr);
+        
     }
 
     void initVulkan () {
