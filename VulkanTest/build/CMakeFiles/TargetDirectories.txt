@@ -1,3 +1,0 @@
-/home/kolobaka2000/Ilab_Together/VladimirovsCourse/VulkanTest/build/CMakeFiles/rebuild_cache.dir
-/home/kolobaka2000/Ilab_Together/VladimirovsCourse/VulkanTest/build/CMakeFiles/edit_cache.dir
-/home/kolobaka2000/Ilab_Together/VladimirovsCourse/VulkanTest/build/CMakeFiles/vulktut.dir
