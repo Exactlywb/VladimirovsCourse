@@ -113,10 +113,11 @@ class HelloTriangleApplication {
 
     VkSurfaceKHR surface;
 
-    VkRenderPass            renderPass;
-    VkDescriptorSetLayout   descriptorSetLayout;
-    VkPipelineLayout        pipelineLayout;
-    VkPipeline              graphicsPipeline;
+    VkRenderPass                    renderPass;
+    VkDescriptorSetLayout           descriptorSetLayout;
+    VkPipelineLayout                pipelineLayout;
+    VkPipeline                      graphicsPipeline;
+    std::vector<VkFramebuffer>      swapChainFramebuffers;
 
     const std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
     const std::vector<const char*> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
@@ -772,6 +773,37 @@ class HelloTriangleApplication {
 
     }
 
+    void createFramebuffers () {
+
+        swapChainFramebuffers.resize (swapChainImageViews.size ());
+
+        for (size_t i = 0; i < swapChainImageViews.size (); ++i) {
+
+            VkImageView attachments[] = {swapChainImageViews[i]};
+
+            VkFramebufferCreateInfo framebufferInfo{};
+            framebufferInfo.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebufferInfo.renderPass      = renderPass;
+            framebufferInfo.attachmentCount = 1;
+            framebufferInfo.pAttachments    = attachments;
+            framebufferInfo.width           = swapChainExtent.width;
+            framebufferInfo.height          = swapChainExtent.height;
+            framebufferInfo.layers          = 1;
+
+            if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS)
+                throw std::runtime_error("failed to create framebuffer!");
+
+        }
+
+    }
+
+    void FreeFramebuffer () {
+
+        for (auto framebuffer : swapChainFramebuffers)
+            vkDestroyFramebuffer(device, framebuffer, nullptr);
+
+    }
+
     void initVulkan () {
 
         createInstance      ();
@@ -788,6 +820,7 @@ class HelloTriangleApplication {
         createImageViews    ();
         createRenderPass    ();
         createGraphPipeline ();
+        createFramebuffers  ();
 
     }
     
@@ -805,7 +838,8 @@ class HelloTriangleApplication {
 
         if (enableValidationLayers)
             DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
-        std::cout << "STILL ALIVE" << std::endl;
+        
+        vkFreeFramebuffer       ();
         vkDestroyPipeline       (device, graphicsPipeline, nullptr);
         vkDestroyPipelineLayout (device, pipelineLayout  , nullptr);
         vkDestroyRenderPass     (device, renderPass      , nullptr);
