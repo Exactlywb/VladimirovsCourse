@@ -40,10 +40,8 @@ namespace GObjects {
         int number_;
 
     public:
-        Triangle ():
-            rVecs_ {} {
-            typeOfDegeneration_ = 2;
-        }
+        Triangle (): 
+            typeOfDegeneration_ (2) {}
 
 //-----------------------------------------------------------------------------------------------------
 

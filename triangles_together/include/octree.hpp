@@ -14,7 +14,8 @@ namespace Tree {
     class Octree {
 
     private:
-        GObjects::Vector rightBorder_, leftBorder_;	
+        GObjects::Vector rightBorder_, leftBorder_;
+        Octree *parent {};
         
         int whatChapter (GObjects::Vector &leftBorder, GObjects::Vector &rightBorder, const GObjects::Triangle &tr);
         void createNewNode (Octree &curRoot, int chapter);
@@ -37,7 +38,14 @@ namespace Tree {
 
 //-----------------------------------------------------------------------------------------------------
 
-        ~Octree () {
+        Octree (const Octree &rhs) = delete;            // ban copy ctor
+        Octree (Octree &&rhs) = delete;                 // ban move ctor
+        Octree &operator =(Octree &&rhs) = delete;      // ban move assignment
+        Octree &operator =(const Octree &rhs) = delete; // ban assignment operator
+
+//-----------------------------------------------------------------------------------------------------
+
+        ~Octree () {        // TODO: Frolov must make normal destructor))0
             for(int i = 0; i < 8; ++i)
                 delete child_[i];
         }
