@@ -15,6 +15,10 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 class FileBuff {
 
     size_t              fileSize;
@@ -49,6 +53,48 @@ public:
     
 };
 
+struct Vertex {
+
+    glm::vec3 pos;
+    glm::vec3 color;
+    glm::vec3 normal;
+
+    static VkVertexInputBindingDescription getBindingDescription () {
+
+        VkVertexInputBindingDescription bindingDescription{};
+        bindingDescription.binding = 0;
+        bindingDescription.stride = sizeof(Vertex);
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+        return bindingDescription;
+
+    }
+
+    static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions () {
+
+        std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
+
+        attributeDescriptions[0].binding = 0;
+        attributeDescriptions[0].location = 0;
+        attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[0].offset = offsetof(Vertex, pos);
+
+        attributeDescriptions[1].binding = 0;
+        attributeDescriptions[1].location = 1;
+        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+        attributeDescriptions[2].binding = 0;
+        attributeDescriptions[2].location = 2;
+        attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[2].offset = offsetof(Vertex, normal);
+
+        return attributeDescriptions;
+
+    }
+
+};
+
 class HelloTriangleApplication {
 
     const uint32_t width    = 800;
@@ -66,6 +112,11 @@ class HelloTriangleApplication {
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 
     VkSurfaceKHR surface;
+
+    VkRenderPass            renderPass;
+    VkDescriptorSetLayout   descriptorSetLayout;
+    VkPipelineLayout        pipelineLayout;
+    VkPipeline              graphicsPipeline;
 
     const std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
     const std::vector<const char*> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
@@ -460,7 +511,7 @@ class HelloTriangleApplication {
 
     }
 
-    VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+    VkSurfaceFormatKHR chooseSwapSurfaceFormat (const std::vector<VkSurfaceFormatKHR>& availableFormats) {
 
         for (const auto& availableFormat : availableFormats) {
 
@@ -473,7 +524,7 @@ class HelloTriangleApplication {
         return availableFormats [0];
     }
 
-    VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+    VkPresentModeKHR chooseSwapPresentMode (const std::vector<VkPresentModeKHR>& availablePresentModes) {
 
         for (const auto& availablePresentMode : availablePresentModes) {
 
@@ -486,7 +537,7 @@ class HelloTriangleApplication {
 
     }
 
-    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
+    VkExtent2D chooseSwapExtent (const VkSurfaceCapabilitiesKHR& capabilities) {
 
         if (capabilities.currentExtent.width != UINT32_MAX)
             return capabilities.currentExtent;
@@ -617,6 +668,41 @@ class HelloTriangleApplication {
 
     }
 
+    void buildShaderInfo (const VkShaderModule& vertShaderModule,
+                          const VkShaderModule& fragShaderModule,
+                          VkPipelineShaderStageCreateInfo shaderStages [2]) {
+
+        VkPipelineShaderStageCreateInfo vertShaderStageInfo {};
+        vertShaderStageInfo.sType   = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        vertShaderStageInfo.stage   = VK_SHADER_STAGE_VERTEX_BIT;
+        vertShaderStageInfo.module  = vertShaderModule;
+        vertShaderStageInfo.pName   = "main";
+
+        VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+        fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+        fragShaderStageInfo.module = fragShaderModule;
+        fragShaderStageInfo.pName = "main";
+
+        shaderStages [0] = vertShaderStageInfo; 
+        shaderStages [1] = fragShaderStageInfo;
+    
+    }
+
+    void buildVertexInfo (VkPipelineVertexInputStateCreateInfo* vertexInfo) {
+
+        vertexInfo->sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+
+        auto bindingDescription     = Vertex::getBindingDescription ();
+        auto attributeDescriptions  = Vertex::getAttributeDescriptions ();
+
+        vertexInfo->vertexBindingDescriptionCount = 1;
+        vertexInfo->vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size ());
+        vertexInfo->pVertexBindingDescriptions = &bindingDescription;
+        vertexInfo->pVertexAttributeDescriptions = attributeDescriptions.data ();
+        
+    }
+
     void createGraphPipeline () {
 
         FileBuff vertShader ("../vulkan/shaders/vert.spv");
@@ -625,8 +711,14 @@ class HelloTriangleApplication {
         VkShaderModule vertShaderModule = createShaderModule (vertShader);
         VkShaderModule fragShaderModule = createShaderModule (fragShader);
 
-        std::cout << "Vertex Shader Code Size: " << vertShader.GetFileSize() << std::endl;
-        std::cout << "Fragment Shader Code Size: " << fragShader.GetFileSize() << std::endl;
+        VkPipelineShaderStageCreateInfo shaderStages [2] = {}; 
+        buildShaderInfo (vertShaderModule, fragShaderModule, shaderStages);
+
+        VkPipelineVertexInputStateCreateInfo vertexInputInfo {};
+        buildVertexInfo (&vertexInputInfo);
+
+        // if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
+        //     throw std::runtime_error("failed to create graphics pipeline!");
 
         vkDestroyShaderModule (device, fragShaderModule, nullptr);
         vkDestroyShaderModule (device, vertShaderModule, nullptr);
