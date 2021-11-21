@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = "/home/kolobaka2000/Рабочий стол/VulkanTest"
+CMAKE_SOURCE_DIR = /home/kolobaka2000/Ilab_Together/VladimirovsCourse/VulkanTest
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = "/home/kolobaka2000/Рабочий стол/VulkanTest/build"
+CMAKE_BINARY_DIR = /home/kolobaka2000/Ilab_Together/VladimirovsCourse/VulkanTest/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,9 +80,9 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/kolobaka2000/Рабочий стол/VulkanTest/build/CMakeFiles" "/home/kolobaka2000/Рабочий стол/VulkanTest/build/CMakeFiles/progress.marks"
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/kolobaka2000/Ilab_Together/VladimirovsCourse/VulkanTest/build/CMakeFiles /home/kolobaka2000/Ilab_Together/VladimirovsCourse/VulkanTest/build/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/kolobaka2000/Рабочий стол/VulkanTest/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/kolobaka2000/Ilab_Together/VladimirovsCourse/VulkanTest/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -111,17 +111,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named vulkan
+# Target rules for targets named vulktut
 
 # Build rule for target.
-vulkan: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 vulkan
-.PHONY : vulkan
+vulktut: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 vulktut
+.PHONY : vulktut
 
 # fast build rule for target.
-vulkan/fast:
-	$(MAKE) -f CMakeFiles/vulkan.dir/build.make CMakeFiles/vulkan.dir/build
-.PHONY : vulkan/fast
+vulktut/fast:
+	$(MAKE) -f CMakeFiles/vulktut.dir/build.make CMakeFiles/vulktut.dir/build
+.PHONY : vulktut/fast
 
 main.o: main.cpp.o
 
@@ -129,7 +129,7 @@ main.o: main.cpp.o
 
 # target to build an object file
 main.cpp.o:
-	$(MAKE) -f CMakeFiles/vulkan.dir/build.make CMakeFiles/vulkan.dir/main.cpp.o
+	$(MAKE) -f CMakeFiles/vulktut.dir/build.make CMakeFiles/vulktut.dir/main.cpp.o
 .PHONY : main.cpp.o
 
 main.i: main.cpp.i
@@ -138,7 +138,7 @@ main.i: main.cpp.i
 
 # target to preprocess a source file
 main.cpp.i:
-	$(MAKE) -f CMakeFiles/vulkan.dir/build.make CMakeFiles/vulkan.dir/main.cpp.i
+	$(MAKE) -f CMakeFiles/vulktut.dir/build.make CMakeFiles/vulktut.dir/main.cpp.i
 .PHONY : main.cpp.i
 
 main.s: main.cpp.s
@@ -147,7 +147,7 @@ main.s: main.cpp.s
 
 # target to generate assembly for a file
 main.cpp.s:
-	$(MAKE) -f CMakeFiles/vulkan.dir/build.make CMakeFiles/vulkan.dir/main.cpp.s
+	$(MAKE) -f CMakeFiles/vulktut.dir/build.make CMakeFiles/vulktut.dir/main.cpp.s
 .PHONY : main.cpp.s
 
 # Help Target
@@ -158,7 +158,7 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... vulkan"
+	@echo "... vulktut"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

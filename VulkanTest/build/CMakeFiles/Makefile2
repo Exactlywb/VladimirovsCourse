@@ -44,16 +44,16 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = "/home/kolobaka2000/Рабочий стол/VulkanTest"
+CMAKE_SOURCE_DIR = /home/kolobaka2000/Ilab_Together/VladimirovsCourse/VulkanTest
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = "/home/kolobaka2000/Рабочий стол/VulkanTest/build"
+CMAKE_BINARY_DIR = /home/kolobaka2000/Ilab_Together/VladimirovsCourse/VulkanTest/build
 
 #=============================================================================
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/vulkan.dir/all
+all: CMakeFiles/vulktut.dir/all
 
 .PHONY : all
 
@@ -63,36 +63,36 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/vulkan.dir/clean
+clean: CMakeFiles/vulktut.dir/clean
 
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/vulkan.dir
+# Target rules for target CMakeFiles/vulktut.dir
 
 # All Build rule for target.
-CMakeFiles/vulkan.dir/all:
-	$(MAKE) -f CMakeFiles/vulkan.dir/build.make CMakeFiles/vulkan.dir/depend
-	$(MAKE) -f CMakeFiles/vulkan.dir/build.make CMakeFiles/vulkan.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="/home/kolobaka2000/Рабочий стол/VulkanTest/build/CMakeFiles" --progress-num=1,2 "Built target vulkan"
-.PHONY : CMakeFiles/vulkan.dir/all
+CMakeFiles/vulktut.dir/all:
+	$(MAKE) -f CMakeFiles/vulktut.dir/build.make CMakeFiles/vulktut.dir/depend
+	$(MAKE) -f CMakeFiles/vulktut.dir/build.make CMakeFiles/vulktut.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/kolobaka2000/Ilab_Together/VladimirovsCourse/VulkanTest/build/CMakeFiles --progress-num=1,2 "Built target vulktut"
+.PHONY : CMakeFiles/vulktut.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/vulkan.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/kolobaka2000/Рабочий стол/VulkanTest/build/CMakeFiles" 2
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/vulkan.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/kolobaka2000/Рабочий стол/VulkanTest/build/CMakeFiles" 0
-.PHONY : CMakeFiles/vulkan.dir/rule
+CMakeFiles/vulktut.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/kolobaka2000/Ilab_Together/VladimirovsCourse/VulkanTest/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/vulktut.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/kolobaka2000/Ilab_Together/VladimirovsCourse/VulkanTest/build/CMakeFiles 0
+.PHONY : CMakeFiles/vulktut.dir/rule
 
 # Convenience name for target.
-vulkan: CMakeFiles/vulkan.dir/rule
+vulktut: CMakeFiles/vulktut.dir/rule
 
-.PHONY : vulkan
+.PHONY : vulktut
 
 # clean rule for target.
-CMakeFiles/vulkan.dir/clean:
-	$(MAKE) -f CMakeFiles/vulkan.dir/build.make CMakeFiles/vulkan.dir/clean
-.PHONY : CMakeFiles/vulkan.dir/clean
+CMakeFiles/vulktut.dir/clean:
+	$(MAKE) -f CMakeFiles/vulktut.dir/build.make CMakeFiles/vulktut.dir/clean
+.PHONY : CMakeFiles/vulktut.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

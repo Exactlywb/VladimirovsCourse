@@ -1,59 +1,22 @@
-#
-# Vulkan implementation
-# if you want see some more you may check github.com/Exactlywb/VladimirovsCourse
-# (c) Ivan Ivanov, Vladislav Belov, Frolov Daniil
-#
-
-cmake_minimum_required(VERSION 3.12)
-set (ProjectName "VulkanTest")
-project(${ProjectName})
-
-find_package(Vulkan)
-
-set(EXEC_FILE "vulkan")
-
-set(SOURCES
-
-    main.cpp
-
-)
+cmake_minimum_required(VERSION 3.16)
+project(vulktut)
 
 
-#  Библиотеки, которые нужны для сборки главной цели
+set(CMAKE_CXX_STANDARD 20)
 
-add_executable(${EXEC_FILE} ${SOURCES})
 
-target_link_libraries(${EXEC_FILE}
-glfw
-dl 
-pthread 
-X11 
-Xrandr
-)
+add_executable(vulktut main.cpp)
 
-#compiler settings
 
-set (COMPILER_SETTINGS -Wall
--Wextra
--Wpedantic
+find_package(Vulkan REQUIRED)
+target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} Vulkan::Vulkan)
 
--Wsign-promo
--Wsign-conversion
--Wdouble-promotion
 
--Wfloat-equal
--Wbool-compare
+# find_package(glm CONFIG REQUIRED)
+# target_link_libraries(${PROJECT_NAME} glm)
 
--Wdiv-by-zero
--std=c++17 # G++ version in CMAKE (Special command)
--O2 
-# For Vulkan
-# -lglfw
-# -lvulkan 
-# -ldl 
-# -lpthread 
-# -lX11 
-# -lXrandr 
 
-)
-target_compile_options( ${EXEC_FILE} PRIVATE ${COMPILER_SETTINGS} )
+find_package(glfw3 CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} glfw)
+

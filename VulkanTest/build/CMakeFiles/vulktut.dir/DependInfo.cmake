@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/kolobaka2000/Ilab_Together/VladimirovsCourse/VulkanTest/main.cpp" "/home/kolobaka2000/Ilab_Together/VladimirovsCourse/VulkanTest/build/CMakeFiles/vulkan.dir/main.cpp.o"
+  "/home/kolobaka2000/Ilab_Together/VladimirovsCourse/VulkanTest/main.cpp" "/home/kolobaka2000/Ilab_Together/VladimirovsCourse/VulkanTest/build/CMakeFiles/vulktut.dir/main.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
