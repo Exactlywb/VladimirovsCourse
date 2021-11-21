@@ -12,8 +12,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} Vulkan::Vulkan)
 
 add_custom_command(TARGET vulktut
-    POST_BUILD
-    COMMAND ./vulkan/shaders/compile.sh
+    PRE_BUILD
+    COMMAND ${CMAKE_SOURCE_DIR}/vulkan/shaders/compile.sh
 )
 
 find_package(glfw3 CONFIG REQUIRED)
