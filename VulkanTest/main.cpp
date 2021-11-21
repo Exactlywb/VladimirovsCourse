@@ -600,12 +600,19 @@ class HelloTriangleApplication {
 
     }
 
+    //!TODO another class for shader handlings
+
+    VkShaderModule createShaderModule (const FileBuff& shader) {
+
+    }
+
     void createGraphPipeline () {
 
-        FileBuff vertShader ("vulkan/shaders/vert.spv");
-        FileBuff fragShader ("vulkan/shaders/frag.spv");
+        FileBuff vertShader ("../vulkan/shaders/vert.spv");
+        FileBuff fragShader ("../vulkan/shaders/frag.spv");
 
-        
+        VkShaderModule vertShaderModule = createShaderModule (vertShader);
+        VkShaderModule fragShaderModule = createShaderModule (fragShader);
 
     }
 
