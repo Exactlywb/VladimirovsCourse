@@ -12,7 +12,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} Vulkan::Vulkan)
 
 add_custom_command(TARGET vulktut
-    PRE_BUILD
+    POST_BUILD
     COMMAND ${CMAKE_SOURCE_DIR}/vulkan/shaders/compile.sh
 )
 

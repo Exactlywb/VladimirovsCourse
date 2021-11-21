@@ -25,6 +25,7 @@ public:
 
         std::ifstream file (filename, std::ios::ate | std::ios::binary);
 
+
         if (!file.is_open ())
             throw std::runtime_error ("bad file open");
         
@@ -602,8 +603,8 @@ class HelloTriangleApplication {
 
     void createGraphPipeline () {
 
-        FileBuff vertShader ("vulkan/shaders/vert.spv");
-        FileBuff fragShader ("vulkan/shaders/frag.spv");
+        FileBuff vertShader ("../vulkan/shaders/vert.spv");
+        FileBuff fragShader ("../vulkan/shaders/frag.spv");
 
         
 
