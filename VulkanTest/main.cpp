@@ -39,11 +39,11 @@ public:
 
     }
 
-    std::vector<char> GetBuffer () {
+    std::vector<char> GetBuffer () const {
         return buffer;
     }
 
-    size_t GetFileSize () {
+    size_t GetFileSize () const {
         return fileSize;
     }
     
@@ -601,13 +601,36 @@ class HelloTriangleApplication {
 
     }
 
+    //!TODO another class for shader handlings
+    VkShaderModule createShaderModule (const FileBuff& shader) {
+
+        VkShaderModuleCreateInfo createInfo {};
+        createInfo.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        createInfo.codeSize = shader.GetFileSize();
+        createInfo.pCode    = reinterpret_cast<const uint32_t*>(shader.GetBuffer().data ());
+
+        VkShaderModule shaderModule;
+        if (vkCreateShaderModule (device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+            throw std::runtime_error ("bad shader module create");
+        
+        return shaderModule;
+
+    }
+
     void createGraphPipeline () {
 
         FileBuff vertShader ("../vulkan/shaders/vert.spv");
         FileBuff fragShader ("../vulkan/shaders/frag.spv");
 
-        
+        VkShaderModule vertShaderModule = createShaderModule (vertShader);
+        VkShaderModule fragShaderModule = createShaderModule (fragShader);
 
+        std::cout << "Vertex Shader Code Size: " << vertShader.GetFileSize() << std::endl;
+        std::cout << "Fragment Shader Code Size: " << fragShader.GetFileSize() << std::endl;
+
+        vkDestroyShaderModule (device, fragShaderModule, nullptr);
+        vkDestroyShaderModule (device, vertShaderModule, nullptr);
+        
     }
 
     void initVulkan () {
