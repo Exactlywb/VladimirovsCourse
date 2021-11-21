@@ -3,9 +3,29 @@
 
 #include <iostream>
 #include <algorithm>
-#include "common.hpp"
+
+namespace Cmp {
+    
+    const double EPSILON = 10E-5;
+
+    struct cmp {
+
+        int operator () (const double firstDouble, const double secondDouble) const {
+        
+            if (std::abs (firstDouble - secondDouble) <= EPSILON)    
+                return 0;
+        
+            if (firstDouble > secondDouble)
+                return 1;
+            
+            return -1;
+
+        }
+    };
+}
 
 namespace GObjects {
+
     using pType = double;
 
     class Vector {
@@ -18,7 +38,7 @@ namespace GObjects {
 
 //-----------------------------------------------------------------------------------------------------
 
-        pType getCoord (int coordNum) const {
+        pType getCoord (int coordNum) const noexcept {
             if (coordNum > 2 || coordNum < 0)
                 return 0;
             
@@ -27,12 +47,12 @@ namespace GObjects {
 
 //-----------------------------------------------------------------------------------------------------
 
-        pType getAbsMaxCoord () const;
-        pType getAbsMinCoord () const;
+        pType getAbsMaxCoord () const noexcept;
+        pType getAbsMinCoord () const noexcept;
 
 //-----------------------------------------------------------------------------------------------------
 
-        void setCoord (const int coordNum, pType coord) {
+        void setCoord (const int coordNum, pType coord) noexcept {
             if (coordNum > 2 || coordNum < 0)
                 return;
             
@@ -45,13 +65,13 @@ namespace GObjects {
 
 //-----------------------------------------------------------------------------------------------------
 
-        static const Vector getZeroVector () {
+        static const Vector getZeroVector () noexcept {
             const static Vector zeroVec {};
             return zeroVec;
         }
     };
 
-    const Vector GetZeroVector ();
+    const Vector GetZeroVector () noexcept;
 
     Vector operator -   (const Vector &v);
     Vector operator +   (const Vector &firstV, const Vector &secondV);

@@ -2,7 +2,7 @@
 
 namespace GObjects {
     
-    pType Vector::getAbsMaxCoord () const {
+    pType Vector::getAbsMaxCoord () const noexcept {
         return std::max ({std::abs (coordinates_ [0]), 
                           std::abs (coordinates_ [1]), 
                           std::abs (coordinates_ [2])});
@@ -10,7 +10,7 @@ namespace GObjects {
 
 //-----------------------------------------------------------------------------------------------------
 
-    pType Vector::getAbsMinCoord () const {
+    pType Vector::getAbsMinCoord () const noexcept {
         return std::min ({std::abs (coordinates_ [0]), 
                           std::abs (coordinates_ [1]), 
                           std::abs (coordinates_ [2])});
@@ -135,7 +135,8 @@ namespace GObjects {
 //-----------------------------------------------------------------------------------------------------
 
     bool operator == (const Vector &firstV, const Vector &secondV) {
-
+        
+        Cmp::cmp DoubleCmp;
         if (!DoubleCmp(firstV.getCoord (0), secondV.getCoord (0)) &&
             !DoubleCmp(firstV.getCoord (1), secondV.getCoord (1)) &&
             !DoubleCmp(firstV.getCoord (2), secondV.getCoord (2)))

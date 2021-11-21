@@ -73,9 +73,9 @@ namespace {
 
 int GetTriangles () {
 
-    int countTriangles;
+    int countTriangles = 0;
     std::cin >> countTriangles;
-    assert(std::cin.good());
+    assert (std::cin.good());
 
     Tree::Octree octree{};
     octree.fillTree(countTriangles);
