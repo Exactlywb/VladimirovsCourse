@@ -16,7 +16,40 @@ namespace Math {
         int rowNum;
         int colNum;
 
+        struct MatrixElem {
+
+            int _col = 0;
+            int _row = 0;
+
+            T   _val {};
+
+            void submatrMaxElem (const int border, const int size, Matrix& matr) {
+
+                _val = matr.getElemUsingRowCol (border, border);
+
+                for (int i = border; i < size; i++) {
+
+                    for (int j = border; j < size; j++) {
+
+                        T curElem = matr.getElemUsingRowCol (i, j);
+                        if (DblCmp (std::abs(curElem), std::abs(_val)) > 0) {
+
+                            _row = i;
+                            _col = j;
+                            _val = curElem;
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        };
+
     private:
+
         int CheckCorrectRowRequest (const int row) const {
 
             if (row >= rowNum) {
@@ -45,7 +78,7 @@ namespace Math {
             
         }
 
-        T calc2x2MatrixDet () {
+        T calc2x2MatrixDet () const {
 
             T mainDiagonal = data [0] * data [3];
             T sideDiagonal = data [1] * data [2];
@@ -54,7 +87,7 @@ namespace Math {
 
         }
 
-        T calcDetUsingTrMeth () {    //For 3x3 matrix only
+        T calcDetUsingTrMeth () const {    //For 3x3 matrix only
             
             T mainDiagonal  = data [0] * data [4] * data [8];
 
@@ -86,36 +119,41 @@ namespace Math {
             
         }
 
-        T calcTrDet (const uint8_t sign) const {
+        T calcUsingGaussMeth () const {
 
-            T det {1};
+            Matrix<double> tmpSave {*this};
+    
+            int sign = tmpSave.makeTr ();
 
-            for (int i = 0; i < rowNum; ++i) {
-                
-                T curElem = getElemUsingRowCol (i, i);
-                if (DblCmp (curElem, 0))
-                    det = det * curElem;
-                else 
-                    return T {0};
+            T det = tmpSave.calcTrace ();
 
-            }
-
-            return sign * det;
+            return det * sign;
 
         }
 
-        T calcUsingGaussMeth () {
+        void eliminate (const int curInd, const int size) {
 
-            Matrix<T> tmpSave {*this};
+            double coef = 0;
 
-            uint8_t sign = makeTr ();
+            for (int i = curInd + 1; i < size; ++i) {
 
-            T det = calcTrDet (sign);
+                coef = getElemUsingRowCol (i, curInd) / getElemUsingRowCol (curInd, curInd);
 
-            *this = tmpSave;
+                for (int j = 0; j < size; ++j) {
 
-            return det;
+                    T curElem       = getElemUsingRowCol (curInd, j);
+                    double newVal   = coef * curElem;
 
+                    T recalcElem    = getElemUsingRowCol (i, j);
+                    setElemUsingRowCol (i, j, recalcElem - newVal);
+
+                    if (!DblCmp (getElemUsingRowCol (i, j), 0))
+                        setElemUsingRowCol (i, j, {});
+
+                }
+
+            }
+            
         }
 
     public:
@@ -124,19 +162,25 @@ namespace Math {
             rowNum (rN),
             colNum (cN) {
             
-            data = new T [rowNum * colNum];
+            int fullSize = rowNum * colNum;
+
+            if (fullSize > 0)
+                data = new T [fullSize] {};
+            else
+                data = nullptr;
 
         }
 
         Matrix (int n = 0):
             rowNum (n),
             colNum (n) {
-
-            data = new T [n * n] {};
+            
+            if (n > 0)
+                data = new T [n * n] {};
+            else
+                data = nullptr;
 
         }
-
-        //!TODO test constructors
 
         //Copy constructor
         Matrix (const Matrix &toCopy):
@@ -145,8 +189,29 @@ namespace Math {
 
             int fullSize = rowNum * colNum;
             
-            data = new T [fullSize];
+            if (fullSize > 0)
+                data = new T [fullSize] {};
+            else
+                data = nullptr;
+
             std::copy (toCopy.data, toCopy.data + fullSize, data);
+
+        }
+
+        template <typename U>
+        Matrix (const Matrix<U> &toCopy) : 
+            rowNum      (toCopy.getRowNum ()),
+            colNum      (toCopy.getColNum ()) {
+
+            int fullSize = rowNum * colNum; 
+            
+            if (fullSize > 0)
+                data = new T [fullSize] {};
+            else
+                data = nullptr;
+
+            for (int i = 0; i < rowNum * colNum; ++i)
+                data[i] = static_cast<T> (toCopy [i]);
 
         }
 
@@ -160,10 +225,21 @@ namespace Math {
             colNum = toCopy.colNum;
 
             int fullSize    = rowNum * colNum;
-            T* dataTmp      = new T [fullSize];
-            std::copy (toCopy.data, toCopy.data + fullSize, dataTmp);
-            delete[] data;
-            data = dataTmp;
+            
+            if (fullSize > 0) {
+
+                T* dataTmp      = new T [fullSize];
+                std::copy (toCopy.data, toCopy.data + fullSize, dataTmp);
+
+                delete[] data;
+                data = dataTmp;
+            
+            } else {
+
+                delete[] data;
+                data = nullptr;
+
+            }
 
             return *this;
 
@@ -196,6 +272,14 @@ namespace Math {
         //Destructor
         ~Matrix () {
             delete[] data;
+        }
+
+        int getRowNum () const {
+            return rowNum;
+        }
+
+        int getColNum () const {
+            return colNum;
         }
 
         T& operator[] (const int ind) {
@@ -252,12 +336,46 @@ namespace Math {
 
         }
 
-        T calcDet () {
+        void swapRows (const int first, const int second, const int size) {
+
+            int swapRowBeg = size * first;
+            int swapRowEnd = swapRowBeg + size;
+
+            std::swap_ranges (data + swapRowBeg, data + swapRowEnd, data + second * size);
+
+        }
+
+        void swapColumns (const int first, const int second, const int size) {
+
+            for (int i = 0; i < size; ++i)
+                std::swap (data [i * size + first], data [i * size + second]);
+
+        }
+
+        T calcTrace () const {
+
+            T det {1};
+
+            for (int i = 0; i < rowNum; ++i) {
+                
+                T curElem = getElemUsingRowCol (i, i);
+                if (DblCmp (curElem, 0))
+                    det = det * curElem;
+                else 
+                    return T {0};
+
+            }
+
+            return det;
+
+        }
+
+        T calcDet () const {
                 
             if (rowNum != colNum) {
 
                 std::cout << "I dunno how to calculate non-square matrix's determinate :(" << std::endl;
-                return T {0};
+                return T {};
 
             }
 
@@ -272,39 +390,37 @@ namespace Math {
             
         }
 
-        uint8_t makeTr () {
+        int makeTr () {
 
             int sign = 1;
             int size = rowNum; //renaming
-            for (int i = 0; i < size; ++i) {
+            for (int i = 0; i < size - 1; ++i) {
+                
+                MatrixElem maxElem {}; 
+                maxElem.submatrMaxElem (i, size, *this);
 
-                int curCol = i;
+                if (maxElem._col != i) {
 
-                while (curCol < size && !DblCmp (getElemUsingRowCol (curCol, i), 0))
-                    curCol++;
+                    swapColumns (i, maxElem._col, size);
 
-                matrixDump ();
-
-                if (curCol != size) {
-
-                    if (curCol != i) {
-                        
-                        sign *= -1;
-
-                        int swapRowBeg = size * curCol;
-                        int swapRowEnd = swapRowBeg + size;
-                        std::swap_ranges (data + swapRowBeg, data + swapRowEnd, data + i * size);
-
-                    }
-
-                    for (int j = i + 1; j < size; ++j) { //sory for var j, I really don't know how to name it :(
-                        
-                        if (DblCmp (getElemUsingRowCol (j, i), 0))
-                            GaussRowTransform (i, j);
-                        
-                    }
+                    sign *= -1;
+                    maxElem._col = i;
 
                 }
+
+                if (maxElem._row != i) {
+
+                    swapRows (i, maxElem._row, size);
+
+                    sign *= -1;
+                    maxElem._row = i;
+
+                }
+
+                if (DblCmp (getElemUsingRowCol (maxElem._row, maxElem._col), 0) == 0)
+                    return 0;
+
+                eliminate (i, size);
 
             }
 

@@ -272,8 +272,6 @@ namespace GObjects {
 
         bool HandleDegeneratedCases (const Triangle &tr1, const Triangle &tr2, const char degFlag) {
 
-            // // printf ("DEGENERATE %d\n", degFlag);
-
             //There is a reason to ask why flag :   not degenerated (tr)    = 1 (0b1)
             //                                      point                   = 2 (0b10)
             //                                      segment                 = 4 (0b100)
@@ -342,6 +340,7 @@ namespace GObjects {
 //-----------------------------------------------------------------------------------------------------
 
         bool IntersectSegments (const Segment &segment_1, const Segment &segment_2) { 
+
             Vector begin_1 = segment_1.begin_;
             Vector direct_1 = segment_1.direct_;
 
@@ -502,7 +501,7 @@ namespace GObjects {
         Vector firstV = rVecs_ [0];
 
         if ((((rVecs_[2] - firstV) ^ (rVecs_[1] - firstV))) == Vector (0, 0, 0)) {
-            if(DoubleCmp(getAbsMaxCoord (), getAbsMinCoord ()) == 0){
+            if(rVecs_[0] == rVecs_[1] && rVecs_[0] == rVecs_[2]){
                 typeOfDegeneration_ = (1 << 1);        //point
                 return;
             }

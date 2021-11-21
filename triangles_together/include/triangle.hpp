@@ -50,6 +50,7 @@ namespace GObjects {
 
         Triangle    (const Vector &vec1, const Vector &vec2, const Vector &vec3):
                     rVecs_ {vec1, vec2, vec3} {
+            
             typeOfDegenerate ();
         }
 

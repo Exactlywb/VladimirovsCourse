@@ -15,8 +15,10 @@ int main()
     if (TestIntersectionFunction ())
         std::cout << "Problems with file" << std::endl;
 #else
+
     GetTriangles ();
 #endif
+    
     return 0;
 }
 
