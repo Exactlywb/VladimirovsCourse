@@ -5,7 +5,23 @@ project(vulktut)
 set(CMAKE_CXX_STANDARD 20)
 
 
-add_executable(vulktut main.cpp)
+set(EXEC_FILE vulktut)
+
+set(HEADERS
+
+    headers/vulkan.hpp
+
+)
+
+set(SOURCES
+
+    sources/main.cpp
+    sources/vulkan.cpp
+
+)
+
+add_executable(${EXEC_FILE} ${SOURCES})
+target_include_directories(${EXEC_FILE} PRIVATE headers)
 
 find_package(Vulkan REQUIRED)
 target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
