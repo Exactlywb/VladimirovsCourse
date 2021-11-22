@@ -1,7 +1,7 @@
 #include "octree.hpp"
 
 namespace Tree {
-    int Octree::whatChapter (GObjects::Vector &leftBorder, GObjects::Vector &rightBorder, const GObjects::Triangle &tr) {
+    int OctreeNode::whatChapter (GObjects::Vector &leftBorder, GObjects::Vector &rightBorder, const GObjects::Triangle &tr) {
         
         Cmp::cmp DoubleCmp;
         int chapter[3] {}; // (z,y,x)
@@ -28,9 +28,9 @@ namespace Tree {
 
 //-----------------------------------------------------------------------------------------------------
 
-    void Octree::createNewNode (Octree &curRoot, int chapter) {
+    void OctreeNode::createNewNode (OctreeNode &curRoot, int chapter) {
 
-        curRoot.child_[chapter] = new Octree {};
+        curRoot.child_[chapter] = new OctreeNode {};
         curRoot.child_[chapter]->parent_ = &curRoot;
         
         GObjects::Vector right = curRoot.rightBorder_;
@@ -51,7 +51,7 @@ namespace Tree {
 
 //-----------------------------------------------------------------------------------------------------
 
-    void Octree::siftTree(Octree &curRoot) {
+    void OctreeNode::siftTree(OctreeNode &curRoot) {
         if (curRoot.listOfTriangles_.size() <= 2 || (curRoot.rightBorder_ - curRoot.leftBorder_).squareLength() < LittleSpace)
             return;
 
@@ -87,7 +87,7 @@ namespace Tree {
 
 //-----------------------------------------------------------------------------------------------------
 
-    void Octree::fillTree(int countTriangles) {			
+    void OctreeNode::fillTree(int countTriangles) {			
         pType 	maxInTriangle 	= 0, 
                 maxInTree 		= 0;
         GObjects::Triangle tmp;
@@ -112,7 +112,7 @@ namespace Tree {
 
 //-----------------------------------------------------------------------------------------------------
 
-    void Octree::dumpTree (Octree &curRoot) {
+    void OctreeNode::dumpTree (OctreeNode &curRoot) {
         std::cout << "left = " << curRoot.leftBorder_ << "; right = " << curRoot.rightBorder_ << std::endl;
 
         for(auto v : curRoot.listOfTriangles_)

@@ -2,7 +2,7 @@
 
 namespace {
 
-    void checkUnder (Tree::Octree *octree, GObjects::Triangle &tr, bool *intersectTriangleFlagArray, int &underCounter) {
+    void checkUnder (Tree::OctreeNode *octree, GObjects::Triangle &tr, bool *intersectTriangleFlagArray, int &underCounter) {
 
         for (int i  = 0; i < 8; ++i) {
             if (!octree->child_[i])
@@ -10,7 +10,7 @@ namespace {
             
             std::list < GObjects::Triangle > List = octree->child_[i]->listOfTriangles_;
             
-            for (Tree::Octree::ListIt It = List.begin(); It != List.end(); ++It) {
+            for (Tree::OctreeNode::ListIt It = List.begin(); It != List.end(); ++It) {
                 bool addUnderCounter = GObjects::Intersect3DTriangles (tr, *It);
                 underCounter += addUnderCounter;
                 
@@ -28,7 +28,7 @@ namespace {
 
 //-----------------------------------------------------------------------------------------------------
 
-    int IntersectionCounter (Tree::Octree *octree, bool *intersectTriangleFlagArray) {
+    int IntersectionCounter (Tree::OctreeNode *octree, bool *intersectTriangleFlagArray) {
 
         int counter = 0;
 
@@ -37,11 +37,11 @@ namespace {
 
         std::list <GObjects::Triangle> List = octree->listOfTriangles_;
         
-        for (Tree::Octree::ListIt ItSlow = List.begin(); ItSlow != List.end(); ++ItSlow) {
+        for (Tree::OctreeNode::ListIt ItSlow = List.begin(); ItSlow != List.end(); ++ItSlow) {
 
-            Tree::Octree::ListIt curIt = ItSlow;
+            Tree::OctreeNode::ListIt curIt = ItSlow;
             ++curIt;
-            for (Tree::Octree::ListIt ItFast = curIt; ItFast != List.end(); ++ItFast) {
+            for (Tree::OctreeNode::ListIt ItFast = curIt; ItFast != List.end(); ++ItFast) {
                 bool addCounter = GObjects::Intersect3DTriangles (*ItSlow, *ItFast);
                 counter += addCounter;
 
@@ -77,8 +77,8 @@ int GetTriangles () {
     std::cin >> countTriangles;
     assert (std::cin.good());
 
-    Tree::Tree mainRoot {};
-    // Tree::Octree octree{};
+    Tree::Octree mainRoot {};
+    // Octree::Octree octree{};
     mainRoot.push(countTriangles);
 
     bool *intersectTriangleFlagArray = new bool [countTriangles] {};
