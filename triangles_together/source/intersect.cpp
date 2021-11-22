@@ -77,12 +77,13 @@ int GetTriangles () {
     std::cin >> countTriangles;
     assert (std::cin.good());
 
-    Tree::Octree octree{};
-    octree.fillTree(countTriangles);
+    Tree::Tree mainRoot {};
+    // Tree::Octree octree{};
+    mainRoot.push(countTriangles);
 
     bool *intersectTriangleFlagArray = new bool [countTriangles] {};
 
-    int countIntersection = IntersectionCounter (&octree, intersectTriangleFlagArray);
+    int countIntersection = IntersectionCounter (mainRoot.getRoot(), intersectTriangleFlagArray);
 
     for (int i = 0; i < countTriangles; ++i) {
         if (intersectTriangleFlagArray[i])

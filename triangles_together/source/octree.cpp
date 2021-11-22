@@ -31,7 +31,7 @@ namespace Tree {
     void Octree::createNewNode (Octree &curRoot, int chapter) {
 
         curRoot.child_[chapter] = new Octree {};
-        curRoot.child_[chapter]->parent = &curRoot;
+        curRoot.child_[chapter]->parent_ = &curRoot;
         
         GObjects::Vector right = curRoot.rightBorder_;
         GObjects::Vector left = curRoot.leftBorder_;
