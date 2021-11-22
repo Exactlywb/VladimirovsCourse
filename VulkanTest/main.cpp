@@ -811,16 +811,16 @@ class HelloTriangleApplication {
 
         VkShaderModule vertShaderModule = createShaderModule (vertShader);
         VkShaderModule fragShaderModule = createShaderModule (fragShader);
-
+std::cout << "still alive1" << std::endl;
         VkPipelineShaderStageCreateInfo shaderStages [2] = {}; 
         buildShaderInfo (vertShaderModule, fragShaderModule, shaderStages);
-
+std::cout << "still alive2" << std::endl;
         VkPipelineVertexInputStateCreateInfo vertexInputInfo {};
         buildVertexInfo (vertexInputInfo);
 
         VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
         buildAssembly (inputAssembly);
-
+std::cout << "still alive3" << std::endl;
         VkViewport viewport{};
         buildViewport (viewport);
 
@@ -847,7 +847,7 @@ class HelloTriangleApplication {
         
         if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) 
             throw std::runtime_error("failed to create pipeline layout!");
-
+std::cout << "still alive4" << std::endl;
         VkGraphicsPipelineCreateInfo pipelineInfo{};
 
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -863,11 +863,10 @@ class HelloTriangleApplication {
         pipelineInfo.renderPass = renderPass;
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-
-
+std::cout << "still alive5" << std::endl;
         if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
             throw std::runtime_error("failed to create graphics pipeline!");
-
+std::cout << "still alive6" << std::endl;
         vkDestroyShaderModule (device, fragShaderModule, nullptr);
         vkDestroyShaderModule (device, vertShaderModule, nullptr);
         
@@ -1050,7 +1049,9 @@ class HelloTriangleApplication {
 
         createImageViews        ();
         createRenderPass        ();
+        std::cout << "still alive" << std::endl;
         createGraphPipeline     ();
+        
         createFramebuffers      ();
 
         createCommandPool       ();
