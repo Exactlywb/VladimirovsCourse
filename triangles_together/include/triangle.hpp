@@ -30,7 +30,7 @@ namespace GObjects {
     
 //=====================================================================================================
 
-    class Triangle {
+    class Triangle final {
 
     private:
         Vector rVecs_[3] {};
@@ -111,7 +111,7 @@ namespace GObjects {
 //                         PLANE-CLASS PART
 //##############################################################################
 
-    class Plane {
+    class Plane final {
           Vector nVec_;
           pType d_;
 
@@ -155,7 +155,7 @@ namespace GObjects {
 
 //=====================================================================================================
 
-    struct Segment {
+    struct Segment final {
         Vector begin_, direct_;
 
 //-----------------------------------------------------------------------------------------------------

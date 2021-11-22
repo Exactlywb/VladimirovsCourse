@@ -11,17 +11,17 @@ namespace Tree {
 
     const double LittleSpace = 0.1;
 
-    class Octree {
+    class OctreeNode final{
 
     private:
         GObjects::Vector rightBorder_, leftBorder_;
-        Octree *parent_ {};
+        OctreeNode *parent_ {};
         
         int whatChapter (GObjects::Vector &leftBorder, GObjects::Vector &rightBorder, const GObjects::Triangle &tr);
-        void createNewNode (Octree &curRoot, int chapter);
-        void siftTree(Octree &curRoot);
+        void createNewNode (OctreeNode &curRoot, int chapter);
+        void siftTree(OctreeNode &curRoot);
 
-        void disactiveChild (Octree* curChild) {
+        void disactiveChild (OctreeNode* curChild) {
             
             for (int i = 0; i < 8; ++i) {
 
@@ -39,30 +39,30 @@ namespace Tree {
     public:
         using ListIt = typename std::list < GObjects::Triangle > ::iterator;
         
-        Octree *child_[8] {};
+        OctreeNode *child_[8] {};
         std::list < GObjects::Triangle > listOfTriangles_;
 
 //-----------------------------------------------------------------------------------------------------
 
-        Octree (GObjects::Vector right = 0, GObjects::Vector left = 0):
+        OctreeNode (GObjects::Vector right = 0, GObjects::Vector left = 0):
                 rightBorder_ (right),
                 leftBorder_ (left),
                 child_ {} {}
 
 //-----------------------------------------------------------------------------------------------------
 
-        Octree (const Octree &rhs)            = delete;         // ban copy ctor
-        Octree (Octree &&rhs)                 = delete;         // ban move ctor
-        Octree &operator =(Octree &&rhs)      = delete;         // ban move assignment
-        Octree &operator =(const Octree &rhs) = delete;         // ban assignment operator
-        ~Octree ()                            = default; 
+        OctreeNode (const OctreeNode &rhs)            = delete;         // ban copy ctor
+        OctreeNode (OctreeNode &&rhs)                 = delete;         // ban move ctor
+        OctreeNode &operator =(OctreeNode &&rhs)      = delete;         // ban move assignment
+        OctreeNode &operator =(const OctreeNode &rhs) = delete;         // ban assignment operator
+        ~OctreeNode ()                            = default; 
 //-----------------------------------------------------------------------------------------------------
 
         void deleteSubtree () {       // TODO: Belov must make normal destructor))0               
 
-            Octree* mainRoot = this;
-            Octree* curNode  = this;
-            Octree* toDelete = nullptr;
+            OctreeNode* mainRoot = this;
+            OctreeNode* curNode  = this;
+            OctreeNode* toDelete = nullptr;
 
             while (curNode) {
                 
@@ -92,7 +92,7 @@ namespace Tree {
 
                 } else {
 
-                    Octree* parent = curNode->parent_;
+                    OctreeNode* parent = curNode->parent_;
                     if (parent)
                         parent->disactiveChild (curNode);
                         
@@ -108,31 +108,31 @@ namespace Tree {
 //-----------------------------------------------------------------------------------------------------
 
         void fillTree(int countTriangles);
-        void dumpTree (Octree &curRoot);
+        void dumpTree (OctreeNode &curRoot);
 
     };
 
-    class Tree final{
+    class Octree final{
 
         private:
-        Octree* root = nullptr;
+        OctreeNode* root = nullptr;
 
     public:
-        Tree () : root(new Octree) {};
+        Octree () : root(new OctreeNode) {};
 
-        ~Tree () { root->deleteSubtree (); }    
+        ~Octree () { root->deleteSubtree (); }    
 
-        Tree (const Tree& other) = delete;           //copy constructor
-        Tree (Tree&& other)      = delete;                //move constructor
+        Octree (const Octree& other) = delete;           //copy constructor
+        Octree (Octree&& other)      = delete;                //move constructor
         
-        Tree& operator= (const Tree& other) = delete;    //copy assignment
-        Tree& operator= (Tree&& other)      = delete;         //move assignment
+        Octree& operator= (const Octree& other) = delete;    //copy assignment
+        Octree& operator= (Octree&& other)      = delete;         //move assignment
 
         void    push  (int countTriangles) {
 
             root->fillTree (countTriangles);
         }
-        Octree* getRoot  () const { return root; }
+        OctreeNode* getRoot  () const { return root; }
         
 
     };

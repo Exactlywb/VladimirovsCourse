@@ -28,7 +28,7 @@ namespace GObjects {
 
     using pType = double;
 
-    class Vector {
+    class Vector final {
 
         pType coordinates_ [3];
 
