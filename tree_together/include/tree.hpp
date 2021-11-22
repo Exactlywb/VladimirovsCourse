@@ -32,8 +32,8 @@ namespace TreeImpl {
         
         ~Node () = default; // default != {}
 
-        Node (const Node& other)    = delete;               //
-        Node (Node&& other)         = delete;               //
+        Node (const Node& other)            = delete;               //
+        Node (Node&& other)                 = delete;               //
                                                             // We are not lazy. We've discussed about this.
         Node& operator= (const Node& other) = delete;       //
         Node& operator= (Node&& other)      = delete;       //
