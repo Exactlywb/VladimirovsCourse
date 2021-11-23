@@ -1,4 +1,5 @@
 #include "octree.hpp"
+#include "vulkan.hpp"
 
 namespace {
 
@@ -78,8 +79,17 @@ int GetTriangles () {
     assert (std::cin.good());
 
     Tree::Octree mainRoot {};
-    // Octree::Octree octree{};
-    mainRoot.push(countTriangles);
+
+    std::vector<GObjects::Triangle> trianglesArr;
+    GObjects::Triangle tr;
+    for (int i = 0; i < countTriangles; ++i) {
+
+        std::cin >> tr;
+        trianglesArr.push_back (tr);
+
+    }
+
+    mainRoot.push (trianglesArr);
 
     bool *intersectTriangleFlagArray = new bool [countTriangles] {};
 
@@ -89,6 +99,8 @@ int GetTriangles () {
         if (intersectTriangleFlagArray[i])
             std::cout << i << std::endl;
     }
+
+    drawTriangles (trianglesArr, intersectTriangleFlagArray);
     
     delete [] intersectTriangleFlagArray;
 

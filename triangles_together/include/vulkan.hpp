@@ -1,4 +1,5 @@
-#pragma once
+#ifndef VULKAN_HPP__
+#define VULKAN_HPP__
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -20,7 +21,7 @@
 #include <optional>
 #include <set>
 
-#include "vulkan.hpp"
+#include "octree.hpp"
 
 namespace dblCmpTeamGraphLib
 {
@@ -42,7 +43,7 @@ namespace dblCmpTeamGraphLib
     static const bool enableValidationLayers = true;
     #endif
 
-    static VkResult CreateDebugUtilsMessengerEXT   (VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+    static VkResult CreateDebugUtilsMessengerEXT   (VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, 
                                             const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
 
         auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
@@ -56,7 +57,7 @@ namespace dblCmpTeamGraphLib
     static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
 
         auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-
+        
         if (func)
             func(instance, debugMessenger, pAllocator);
     }
@@ -118,6 +119,8 @@ namespace dblCmpTeamGraphLib
         }
     };
 
+    
+
     struct UniformBufferObject {
 
         alignas(16) glm::mat4 model;
@@ -125,7 +128,7 @@ namespace dblCmpTeamGraphLib
         alignas(16) glm::mat4 proj;
         alignas(16) glm::vec3 view_pos;
     };
-
+ 
     class Window final {
     private:
 
@@ -144,9 +147,9 @@ namespace dblCmpTeamGraphLib
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
             window_ = glfwCreateWindow(WIDTH_, HEIGHT_, nameWindow.data(), nullptr, nullptr); //width and height to class and construct it
-
+            
             glfwSetFramebufferSizeCallback(window_, framebufferResizeCallback);
-        }
+        } 
 
         GLFWwindow* getWindow () const {return window_;}
 
@@ -160,7 +163,7 @@ namespace dblCmpTeamGraphLib
 
             glfwDestroyWindow(window_);
             glfwTerminate();
-       }
+       } 
 
         static void framebufferResizeCallback (GLFWwindow* window, int WIDTH, int HEIGHT);
 
@@ -252,7 +255,7 @@ namespace dblCmpTeamGraphLib
         void drawFrame(); //public or private
 
         void initVulkan() {
-
+            
             createInstance();
             setupDebugMessenger();
             createSurface();
@@ -293,13 +296,13 @@ namespace dblCmpTeamGraphLib
 
         void setupDebugMessenger() {
 
-            if (!enableValidationLayers)
+            if (!enableValidationLayers) 
                 return;
 
             VkDebugUtilsMessengerCreateInfoEXT createInfo;
             populateDebugMessengerCreateInfo(createInfo);
 
-            if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS)
+            if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) 
                 throw std::runtime_error("failed to set up debug messenger!");
         }
 
@@ -371,7 +374,7 @@ namespace dblCmpTeamGraphLib
 
         static std::vector<char> readFile(const std::string& filename);
 
-        static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+        static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, 
                                                             VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
 
             std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
@@ -380,3 +383,8 @@ namespace dblCmpTeamGraphLib
         }
     };
 }
+
+
+void    drawTriangles   (const std::vector<GObjects::Triangle>& trianglesArr, bool* flagArr);
+
+#endif

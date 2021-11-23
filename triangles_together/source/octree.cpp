@@ -87,25 +87,41 @@ namespace Tree {
 
 //-----------------------------------------------------------------------------------------------------
 
-    void OctreeNode::fillTree(int countTriangles) {			
+    void OctreeNode::fillTree(const std::vector<GObjects::Triangle>& triangles) {			
         pType 	maxInTriangle 	= 0, 
                 maxInTree 		= 0;
-        GObjects::Triangle tmp;
+        // GObjects::Triangle tmp;
 
-        for (int i = 0; i < countTriangles; ++i) {
-            std::cin >> tmp;
+        // for (int i = 0; i < countTriangles; ++i) {
+        //     std::cin >> tmp;
+
+        //     tmp.typeOfDegenerate ();
+        //     tmp.setNumber (i);
+
+        //     listOfTriangles_.push_front(tmp);
+
+        //     maxInTriangle = tmp.getAbsMaxCoord();
+        //     if (maxInTriangle > maxInTree)
+        //         maxInTree = maxInTriangle;
+        // }
+
+        GObjects::Triangle tmp;
+        for (size_t i = 0; i < triangles.size (); ++i) {
+
+            tmp = triangles [i];
 
             tmp.typeOfDegenerate ();
             tmp.setNumber (i);
 
-            listOfTriangles_.push_front(tmp);
+            listOfTriangles_.push_front (tmp);
 
-            maxInTriangle = tmp.getAbsMaxCoord();
+            maxInTriangle = tmp.getAbsMaxCoord ();
             if (maxInTriangle > maxInTree)
                 maxInTree = maxInTriangle;
         }
-        rightBorder_ = {maxInTree, maxInTree, maxInTree};
-        leftBorder_ = - rightBorder_;
+
+        rightBorder_    = {maxInTree, maxInTree, maxInTree};
+        leftBorder_     = -rightBorder_;
 
         siftTree (*this);
     }

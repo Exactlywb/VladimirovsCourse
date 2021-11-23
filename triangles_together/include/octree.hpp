@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cmath>
 #include <list>
+#include <vector>
 #include "triangle.hpp"
 
 namespace Tree {
@@ -107,8 +108,8 @@ namespace Tree {
 
 //-----------------------------------------------------------------------------------------------------
 
-        void fillTree(int countTriangles);
-        void dumpTree (OctreeNode &curRoot);
+        void fillTree   (const std::vector<GObjects::Triangle>& triangles);
+        void dumpTree   (OctreeNode &curRoot);
 
     };
 
@@ -122,16 +123,18 @@ namespace Tree {
 
         ~Octree () { root->deleteSubtree (); }    
 
-        Octree (const Octree& other) = delete;           //copy constructor
-        Octree (Octree&& other)      = delete;                //move constructor
+        Octree (const Octree& other) = delete;                  //copy constructor
+        Octree (Octree&& other)      = delete;                  //move constructor
         
-        Octree& operator= (const Octree& other) = delete;    //copy assignment
-        Octree& operator= (Octree&& other)      = delete;         //move assignment
+        Octree& operator= (const Octree& other) = delete;       //copy assignment
+        Octree& operator= (Octree&& other)      = delete;       //move assignment
 
-        void    push  (int countTriangles) {
+        void    push  (const std::vector<GObjects::Triangle>& triangles) {
 
-            root->fillTree (countTriangles);
+            root->fillTree (triangles);
+
         }
+        
         OctreeNode* getRoot  () const { return root; }
         
 

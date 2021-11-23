@@ -141,6 +141,7 @@ namespace dblCmpTeamGraphLib {
 
     void TrApplication::cleanupSwapChain() {
 
+
         for (auto framebuffer : swapChainFramebuffers) 
             vkDestroyFramebuffer(device, framebuffer, nullptr);
 
@@ -160,6 +161,8 @@ namespace dblCmpTeamGraphLib {
             vkDestroyBuffer(device, uniformBuffers[i], nullptr);
             vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
         }
+
+        // swapChainImageViews.clear();
 
         vkDestroyDescriptorPool(device, descriptorPool, nullptr);
     }
@@ -194,7 +197,7 @@ namespace dblCmpTeamGraphLib {
     }
 
     void TrApplication::createInstance() {
-
+#if 0
         glm::vec3 color = {0.0f, 0.0f, 1.0f};
 
         glm::vec3 normal (1, 1, 1);
@@ -208,7 +211,7 @@ namespace dblCmpTeamGraphLib {
 
         if (enableValidationLayers && !checkValidationLayerSupport())
             throw std::runtime_error("validation layers requested, but not available!");
-
+#endif
         VkApplicationInfo appInfo{};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         appInfo.pApplicationName = "Triangle";
@@ -1132,5 +1135,46 @@ namespace dblCmpTeamGraphLib {
     }
 
     
+
+}
+
+void drawTriangles (const std::vector<GObjects::Triangle>& trianglesArr, bool* flagArr) {
+
+    size_t numOfTr = trianglesArr.size ();
+
+    for (size_t i = 0; i < 3 * numOfTr; ++i)
+        dblCmpTeamGraphLib::indices.push_back (i);
+    
+    for (size_t i = 0; i < numOfTr; ++i) {
+
+        glm::vec3 color = {0.0f, 0.0f, 1.0f};
+
+        if (flagArr [i])
+            color = {1.0f, 0.0f, 0.0f};
+
+        GObjects::Vector curNormal {};
+        trianglesArr [i].calcNormal (curNormal);
+        glm::vec3 curNormalVulk {curNormal.getCoord (0), curNormal.getCoord (1), curNormal.getCoord (2)};
+        //!TODO remove copypaste
+        GObjects::Vector firstSide = trianglesArr [i].getVec (0);
+        glm::vec3 firstVertexPos {firstSide.getCoord (0), firstSide.getCoord (1), firstSide.getCoord (2)};
+        dblCmpTeamGraphLib::Vertex firstVertex {firstVertexPos, color, curNormalVulk};
+
+        GObjects::Vector secondSide = trianglesArr [i].getVec (1);
+        glm::vec3 secondVertexPos {secondSide.getCoord (0), secondSide.getCoord (1), secondSide.getCoord (2)};
+        dblCmpTeamGraphLib::Vertex secondVertex {secondVertexPos, color, curNormalVulk};
+
+        GObjects::Vector thirdSide = trianglesArr [i].getVec (2);
+        glm::vec3 thirdVertexPos {thirdSide.getCoord (0), thirdSide.getCoord (1), thirdSide.getCoord (2)};
+        dblCmpTeamGraphLib::Vertex thirdVertex {thirdVertexPos, color, curNormalVulk};
+        
+        dblCmpTeamGraphLib::vertices.push_back (firstVertex);
+        dblCmpTeamGraphLib::vertices.push_back (secondVertex);
+        dblCmpTeamGraphLib::vertices.push_back (thirdVertex);
+
+    }
+
+    dblCmpTeamGraphLib::TrApplication app;
+    app.run ();
 
 }
