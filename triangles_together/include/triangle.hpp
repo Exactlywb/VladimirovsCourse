@@ -78,8 +78,8 @@ namespace GObjects {
 
 //-----------------------------------------------------------------------------------------------------
 
-        pType getAbsMaxCoord () const noexcept;
-        pType getAbsMinCoord () const noexcept;
+        pType getAbsMaxCoord () const ;
+        pType getAbsMinCoord () const ;
 
 //-----------------------------------------------------------------------------------------------------
 

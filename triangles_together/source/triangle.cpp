@@ -488,7 +488,7 @@ namespace GObjects {
 //                         TRIANGLE CLASS PART
 //#####################################################################################################
 
-    pType Triangle::getAbsMaxCoord () const noexcept {
+    pType Triangle::getAbsMaxCoord () const  {
         return std::max   ({rVecs_ [0].getAbsMaxCoord (), 
                             rVecs_ [1].getAbsMaxCoord (), 
                             rVecs_ [2].getAbsMaxCoord ()});
@@ -496,7 +496,7 @@ namespace GObjects {
 
 //-----------------------------------------------------------------------------------------------------
 
-    pType Triangle::getAbsMinCoord () const noexcept {
+    pType Triangle::getAbsMinCoord () const  {
         return std::min   ({rVecs_ [0].getAbsMinCoord (), 
                             rVecs_ [1].getAbsMinCoord (), 
                             rVecs_ [2].getAbsMinCoord ()});

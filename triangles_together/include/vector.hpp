@@ -10,7 +10,7 @@ namespace Cmp {
 
     struct cmp {
 
-        int operator () (const double firstDouble, const double secondDouble) const {
+        int operator () (const double firstDouble, const double secondDouble) const noexcept {
         
             if (std::abs (firstDouble - secondDouble) <= EPSILON)    
                 return 0;
@@ -47,8 +47,8 @@ namespace GObjects {
 
 //-----------------------------------------------------------------------------------------------------
 
-        pType getAbsMaxCoord () const noexcept;
-        pType getAbsMinCoord () const noexcept;
+        pType getAbsMaxCoord () const ;
+        pType getAbsMinCoord () const ;
 
 //-----------------------------------------------------------------------------------------------------
 
@@ -61,7 +61,7 @@ namespace GObjects {
 
 //-----------------------------------------------------------------------------------------------------
 
-        pType squareLength () const;
+        pType squareLength () const noexcept;
 
 //-----------------------------------------------------------------------------------------------------
 

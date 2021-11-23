@@ -18,7 +18,7 @@ namespace Tree {
         GObjects::Vector rightBorder_, leftBorder_;
         OctreeNode *parent_ {};
         
-        int whatChapter (GObjects::Vector &leftBorder, GObjects::Vector &rightBorder, const GObjects::Triangle &tr);
+        int whatChapter (GObjects::Vector &leftBorder, GObjects::Vector &rightBorder, const GObjects::Triangle &tr) noexcept;
         void createNewNode (OctreeNode &curRoot, int chapter);
         void siftTree(OctreeNode &curRoot);
 
@@ -113,7 +113,7 @@ namespace Tree {
 
     };
 
-    class Octree final{
+    class Octree final {
 
         private:
         OctreeNode* root = nullptr;
@@ -135,7 +135,7 @@ namespace Tree {
 
         }
         
-        OctreeNode* getRoot  () const { return root; }
+        OctreeNode* getRoot  () const noexcept { return root; }
         
 
     };

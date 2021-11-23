@@ -212,21 +212,7 @@ namespace dblCmpTeamGraphLib {
     }
 
     void TrApplication::createInstance() {
-#if 0
-        glm::vec3 color = {0.0f, 0.0f, 1.0f};
 
-        glm::vec3 normal (1, 1, 1);
-
-        dblCmpTeamGraphLib::vertices.push_back ({{1, 0, 0}, color, normal});
-        dblCmpTeamGraphLib::vertices.push_back ({{0, 1, 0}, color, normal});
-        dblCmpTeamGraphLib::vertices.push_back ({{0, 0, 1}, color, normal}); //For compiling and testing
-
-    for (size_t i = 0; i < 3 * 1; ++i)
-        dblCmpTeamGraphLib::indices.push_back (i);
-
-        if (enableValidationLayers && !checkValidationLayerSupport())
-            throw std::runtime_error("validation layers requested, but not available!");
-#endif
         VkApplicationInfo appInfo{};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         appInfo.pApplicationName = "Triangle";
@@ -902,7 +888,7 @@ namespace dblCmpTeamGraphLib {
         return shaderModule;
     }
 
-    VkSurfaceFormatKHR TrApplication::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+    VkSurfaceFormatKHR TrApplication::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) noexcept {
 
         for (const auto& availableFormat : availableFormats)
             if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
@@ -911,7 +897,7 @@ namespace dblCmpTeamGraphLib {
         return availableFormats[0];
     }
 
-    VkPresentModeKHR TrApplication::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+    VkPresentModeKHR TrApplication::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) noexcept {
 
         for (const auto& availablePresentMode : availablePresentModes)
             if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) 

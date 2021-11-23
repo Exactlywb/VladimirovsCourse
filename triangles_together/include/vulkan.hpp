@@ -49,7 +49,7 @@ namespace dblCmpTeamGraphLib
             return VK_ERROR_EXTENSION_NOT_PRESENT;
     }
 
-    struct QueueFamilyIndices {
+    struct QueueFamilyIndices final {
 
         std::optional<uint32_t> graphicsFamily;
         std::optional<uint32_t> presentFamily;
@@ -60,14 +60,14 @@ namespace dblCmpTeamGraphLib
         }
     };
 
-    struct SwapChainSupportDetails {
+    struct SwapChainSupportDetails final {
 
         VkSurfaceCapabilitiesKHR capabilities;
         std::vector<VkSurfaceFormatKHR> formats;
         std::vector<VkPresentModeKHR> presentModes;
     };
 
-    struct Vertex {
+    struct Vertex final {
 
         glm::vec3 pos;
         glm::vec3 color;
@@ -108,7 +108,7 @@ namespace dblCmpTeamGraphLib
 
     
 
-    struct UniformBufferObject {
+    struct UniformBufferObject final {
 
         alignas(16) glm::mat4 model;
         alignas(16) glm::mat4 view;
@@ -348,9 +348,9 @@ namespace dblCmpTeamGraphLib
 
         VkShaderModule createShaderModule(const std::vector<char>& code);
 
-        VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+        VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) noexcept;
 
-        VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+        VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) noexcept;
 
         VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 

@@ -2,7 +2,7 @@
 
 namespace GObjects {
     
-    pType Vector::getAbsMaxCoord () const noexcept {
+    pType Vector::getAbsMaxCoord () const  {
         return std::max ({std::abs (coordinates_ [0]), 
                           std::abs (coordinates_ [1]), 
                           std::abs (coordinates_ [2])});
@@ -10,7 +10,7 @@ namespace GObjects {
 
 //-----------------------------------------------------------------------------------------------------
 
-    pType Vector::getAbsMinCoord () const noexcept {
+    pType Vector::getAbsMinCoord () const  {
         return std::min ({std::abs (coordinates_ [0]), 
                           std::abs (coordinates_ [1]), 
                           std::abs (coordinates_ [2])});
@@ -18,7 +18,7 @@ namespace GObjects {
 
 //-----------------------------------------------------------------------------------------------------
 
-    pType Vector::squareLength () const {
+    pType Vector::squareLength () const noexcept {
         const Vector* thisRef = this;
         return (*thisRef) * (*thisRef);
     }
