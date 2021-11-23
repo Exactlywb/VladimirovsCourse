@@ -162,8 +162,8 @@ namespace dblCmpTeamGraphLib
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
             window_ = glfwCreateWindow(WIDTH_, HEIGHT_, nameWindow.data(), nullptr, nullptr); //width and height to class and construct it
+            glfwSetFramebufferSizeCallback(window_, Window::framebufferResizeCallback);           
 
-            glfwSetWindowUserPointer(window_, this);               
         } 
 
         GLFWwindow* getWindow () const {return window_;}
@@ -201,13 +201,12 @@ namespace dblCmpTeamGraphLib
 
         HelloTriangleApplication () : workSpace {600, 800, "Vulcan"} {
 
-
-
+            glfwSetWindowUserPointer(workSpace.getWindow(), this);    
         }
 
         void run() 
         {
-            glfwSetFramebufferSizeCallback(workSpace.getWindow(), Window::framebufferResizeCallback);
+            
 
             initVulkan();
             mainLoop();

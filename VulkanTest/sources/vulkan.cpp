@@ -80,7 +80,7 @@ namespace dblCmpTeamGraphLib {
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
-    void framebufferResizeCallback (GLFWwindow* window, int WIDTH, int HEIGHT) {
+    void Window::framebufferResizeCallback (GLFWwindow* window, int WIDTH, int HEIGHT) {
 
         auto app = reinterpret_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
         app->framebufferResized_ = true;
