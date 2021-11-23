@@ -809,7 +809,7 @@ namespace dblCmpTeamGraphLib {
             renderPassInfo.renderArea.offset = {0, 0};
             renderPassInfo.renderArea.extent = swapChainExtent;
 
-            VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+            VkClearValue clearColor = {{{235.0f/256.0f, 235.0f/256.0f, 235.0f/256.0f, 1.0f}}};
             renderPassInfo.clearValueCount = 1;
             renderPassInfo.pClearValues = &clearColor;
 
@@ -1138,6 +1138,20 @@ namespace dblCmpTeamGraphLib {
 
 }
 
+dblCmpTeamGraphLib::Vertex makeVulkVertex   (const GObjects::Triangle &curTr, int vertNum,
+                                            glm::vec3 color, glm::vec3 curNormalVulk) {
+
+    GObjects::Vector vert   = curTr.getVec (vertNum);
+    glm::vec3 vertexPos {vert.getCoord (0), 
+                         vert.getCoord (1), 
+                         vert.getCoord (2)};
+
+    dblCmpTeamGraphLib::Vertex vertexVulk {vertexPos, color, curNormalVulk};
+
+    return vertexVulk;
+
+}
+
 void drawTriangles (const std::vector<GObjects::Triangle>& trianglesArr, bool* flagArr) {
 
     size_t numOfTr = trianglesArr.size ();
@@ -1147,26 +1161,18 @@ void drawTriangles (const std::vector<GObjects::Triangle>& trianglesArr, bool* f
     
     for (size_t i = 0; i < numOfTr; ++i) {
 
-        glm::vec3 color = {0.0f, 0.0f, 1.0f};
+        glm::vec3 color = {87.0f/256.0f, 161.0f/256.0f, 235.0f/256.0f};
 
         if (flagArr [i])
-            color = {1.0f, 0.0f, 0.0f};
+            color = {235.0f/256.0f, 111.0f/256.0f, 87.0f/256.0f};
 
         GObjects::Vector curNormal {};
         trianglesArr [i].calcNormal (curNormal);
         glm::vec3 curNormalVulk {curNormal.getCoord (0), curNormal.getCoord (1), curNormal.getCoord (2)};
-        //!TODO remove copypaste
-        GObjects::Vector firstSide = trianglesArr [i].getVec (0);
-        glm::vec3 firstVertexPos {firstSide.getCoord (0), firstSide.getCoord (1), firstSide.getCoord (2)};
-        dblCmpTeamGraphLib::Vertex firstVertex {firstVertexPos, color, curNormalVulk};
 
-        GObjects::Vector secondSide = trianglesArr [i].getVec (1);
-        glm::vec3 secondVertexPos {secondSide.getCoord (0), secondSide.getCoord (1), secondSide.getCoord (2)};
-        dblCmpTeamGraphLib::Vertex secondVertex {secondVertexPos, color, curNormalVulk};
-
-        GObjects::Vector thirdSide = trianglesArr [i].getVec (2);
-        glm::vec3 thirdVertexPos {thirdSide.getCoord (0), thirdSide.getCoord (1), thirdSide.getCoord (2)};
-        dblCmpTeamGraphLib::Vertex thirdVertex {thirdVertexPos, color, curNormalVulk};
+        dblCmpTeamGraphLib::Vertex firstVertex  = makeVulkVertex (trianglesArr [i], 0, color, curNormalVulk);
+        dblCmpTeamGraphLib::Vertex secondVertex = makeVulkVertex (trianglesArr [i], 1, color, curNormalVulk);
+        dblCmpTeamGraphLib::Vertex thirdVertex  = makeVulkVertex (trianglesArr [i], 2, color, curNormalVulk);
         
         dblCmpTeamGraphLib::vertices.push_back (firstVertex);
         dblCmpTeamGraphLib::vertices.push_back (secondVertex);
