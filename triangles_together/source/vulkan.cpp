@@ -2,7 +2,13 @@
 
 namespace dblCmpTeamGraphLib {
 
-       
+
+    static double prev_x = 0.0;
+    static double prev_y = 0.0;
+    
+    static const int MAX_FRAMES_IN_FLIGHT = 2;
+
+
     static std::vector<Vertex> vertices = {}; //To Header and to namespace Global
 
     static std::vector<uint16_t> indices = {};
@@ -107,6 +113,15 @@ namespace dblCmpTeamGraphLib {
         }
 
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    }
+
+    static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
+
+        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+        
+        if (func)
+            func(instance, debugMessenger, pAllocator);
+    
     }
 
     TrApplication::~TrApplication () {

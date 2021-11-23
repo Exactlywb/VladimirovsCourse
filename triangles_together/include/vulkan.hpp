@@ -28,11 +28,6 @@ namespace dblCmpTeamGraphLib
 
     class TrApplication;
 
-    static const int MAX_FRAMES_IN_FLIGHT = 2;
-
-    static double prev_x = 0.0;
-    static double prev_y = 0.0;
-
     static const std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
 
     static const std::vector<const char*> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
@@ -52,15 +47,6 @@ namespace dblCmpTeamGraphLib
             return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
         else
             return VK_ERROR_EXTENSION_NOT_PRESENT;
-    }
-
-    static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
-
-        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-        
-        if (func)
-            func(instance, debugMessenger, pAllocator);
-        
     }
 
     struct QueueFamilyIndices {
