@@ -40,6 +40,16 @@
 ---
 ## All in all, it is better than the naive implementation
 ---
+---
+# Some examples of out triangles in Vulcan API:
+## An alone triangle
+![Screenshot](pics/blue.png)
+## Some intersected triangles
+![Screenshot](pics/test2.png)
+## Intersected and not intersected ones
+![Screenshot](pics/test4pic.png)
+## About 10000 random triangles 
+![Screenshot](pics/bigtestpic.png)
 # Useful materials: 
 * https://habr.com/ru/post/334990/ ---> the article about the Octree
 *  **Geometric Tools for Computer Graphics** by Philip Schneider and David Eberly [2003]
