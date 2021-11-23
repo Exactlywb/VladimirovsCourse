@@ -43,8 +43,8 @@ namespace dblCmpTeamGraphLib
     static const bool enableValidationLayers = true;
     #endif
 
-    static VkResult CreateDebugUtilsMessengerEXT   (VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, 
-                                            const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
+    static VkResult CreateDebugUtilsMessengerEXT    (VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, 
+                                                    const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
 
         auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
 
@@ -56,10 +56,11 @@ namespace dblCmpTeamGraphLib
 
     static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
 
-        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
         
         if (func)
             func(instance, debugMessenger, pAllocator);
+        
     }
 
     struct QueueFamilyIndices {
@@ -167,11 +168,9 @@ namespace dblCmpTeamGraphLib
 
         static void framebufferResizeCallback (GLFWwindow* window, int WIDTH, int HEIGHT);
 
-        static void key_callback (GLFWwindow* window , int key, int scancode, int action, int mods);
-
-        static void cursor_position_callback (GLFWwindow* window, double xpos, double ypos);
-
-        static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) noexcept;
+        static void key_callback                (GLFWwindow* window , int key, int scancode, int action, int mods);
+        static void cursor_position_callback    (GLFWwindow* window, double xpos, double ypos);
+        static void mouse_button_callback       (GLFWwindow* window, int button, int action, int mods) noexcept;
 
     };
 
@@ -197,6 +196,7 @@ namespace dblCmpTeamGraphLib
 
             initVulkan();
             mainLoop();
+
         }
 
         bool framebufferResized_ = false;
@@ -257,24 +257,32 @@ namespace dblCmpTeamGraphLib
         void initVulkan() {
             
             createInstance();
+
             setupDebugMessenger();
+
             createSurface();
+
             pickPhysicalDevice();
             createLogicalDevice();
+
             createSwapChain();
             createImageViews();
             createRenderPass();
             createDescriptorSetLayout();
             createGraphicsPipeline();
             createFramebuffers();
+
             createCommandPool();
             createVertexBuffer();
             createIndexBuffer();
             createUniformBuffers();
+
             createDescriptorPool();
             createDescriptorSets();
             createCommandBuffers();
+            
             createSyncObjects();
+
         }
 
         void mainLoop();
@@ -374,8 +382,10 @@ namespace dblCmpTeamGraphLib
 
         static std::vector<char> readFile(const std::string& filename);
 
-        static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, 
-                                                            VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
+        static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(__attribute__((unused))VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, 
+                                                            __attribute__((unused))VkDebugUtilsMessageTypeFlagsEXT messageType, 
+                                                            const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, 
+                                                            __attribute__((unused))void* pUserData) {
 
             std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 

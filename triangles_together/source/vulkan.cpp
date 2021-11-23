@@ -133,7 +133,7 @@ namespace dblCmpTeamGraphLib {
         vkDestroyDevice(device, nullptr);
 
         if (enableValidationLayers) 
-            DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+            DestroyDebugUtilsMessengerEXT (instance, debugMessenger, nullptr);
 
         vkDestroySurfaceKHR(instance, surface, nullptr);
         vkDestroyInstance(instance, nullptr);
@@ -1075,13 +1075,18 @@ namespace dblCmpTeamGraphLib {
 
 //=====================================================================================================
 
-    void Window::framebufferResizeCallback (GLFWwindow* window, int WIDTH, int HEIGHT) {
+    void Window::framebufferResizeCallback (GLFWwindow* window, 
+                                            __attribute__((unused))int WIDTH, 
+                                            __attribute__((unused))int HEIGHT) {
 
         auto app = reinterpret_cast<TrApplication*>(glfwGetWindowUserPointer(window));
         app->framebufferResized_ = true;
     }
 
-    void Window::key_callback (GLFWwindow* window, int key, int scancode, int action, int mods) { 
+    void Window::key_callback (__attribute__((unused))GLFWwindow* window, 
+                               int key, __attribute__((unused))int scancode, 
+                               __attribute__((unused))int action, 
+                               __attribute__((unused))int mods) { 
 
         float cam_speed = 0.05f;
 
@@ -1102,7 +1107,8 @@ namespace dblCmpTeamGraphLib {
             camera_pos -= camera_direction * cam_speed;
     }
 
-    void Window::cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+    void Window::cursor_position_callback  (__attribute__((unused))GLFWwindow* window, 
+                                            double xpos, double ypos) {
 
         if (lpress) {
 
@@ -1126,7 +1132,8 @@ namespace dblCmpTeamGraphLib {
         }
     }
 
-    void Window::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) noexcept {
+    void Window::mouse_button_callback (__attribute__((unused))GLFWwindow* window, 
+                                        int button, int action, __attribute__((unused))int mods) noexcept {
 
         if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
             lpress = true;
