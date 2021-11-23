@@ -414,7 +414,7 @@ namespace dblCmpTeamGraphLib {
     
 //=====================================================================================================
 
-    void    drawTriangles   (const std::vector<GObjects::Triangle>& trianglesArr, bool* flagArr);
+    void    drawTriangles   (const std::vector<GObjects::Triangle>& trianglesArr, bool* flagArr, double maxCoord);
 }
 
 

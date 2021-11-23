@@ -96,10 +96,12 @@ int GetTriangles () {
     int countIntersection = IntersectionCounter (mainRoot.getRoot(), intersectTriangleFlagArray);
 
     for (int i = 0; i < countTriangles; ++i)
-        if (intersectTriangleFlagArray[i])
+        if (intersectTriangleFlagArray[i]) 
             std::cout << i << std::endl;
 
-    dblCmpTeamGraphLib::drawTriangles (trianglesArr, intersectTriangleFlagArray);
+    double maxCoord = mainRoot.getMaxCoor();
+
+    dblCmpTeamGraphLib::drawTriangles (trianglesArr, intersectTriangleFlagArray, maxCoord);
     
     delete [] intersectTriangleFlagArray;
 

@@ -56,7 +56,7 @@ namespace Tree {
         OctreeNode (OctreeNode &&rhs)                 = delete;         // ban move ctor
         OctreeNode &operator =(OctreeNode &&rhs)      = delete;         // ban move assignment
         OctreeNode &operator =(const OctreeNode &rhs) = delete;         // ban assignment operator
-        ~OctreeNode ()                            = default; 
+        ~OctreeNode ()                                = default; 
 //-----------------------------------------------------------------------------------------------------
 
         void deleteSubtree () {       // TODO: Belov must make normal destructor))0               
@@ -106,6 +106,9 @@ namespace Tree {
             
         }
 
+        GObjects::Vector getRightBorder () const noexcept {return rightBorder_;}
+        GObjects::Vector getLeftBorder  () const noexcept {return leftBorder_;}
+
 //-----------------------------------------------------------------------------------------------------
 
         void fillTree   (const std::vector<GObjects::Triangle>& triangles);
@@ -136,8 +139,8 @@ namespace Tree {
         }
         
         OctreeNode* getRoot  () const noexcept { return root; }
-        
 
+        double getMaxCoor () const noexcept {return (root->getRightBorder().getAbsMaxCoord());}
     };
 }
 
