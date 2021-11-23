@@ -17,7 +17,7 @@ int main () {
     for (size_t i = 0; i < 3 * 1; ++i)
         dblCmpTeamGraphLib::indices.push_back (i);
 
-    dblCmpTeamGraphLib::HelloTriangleApplication app;
+    dblCmpTeamGraphLib::TrApplication app;
 
     
     app.run ();
