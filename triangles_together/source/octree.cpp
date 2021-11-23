@@ -88,22 +88,8 @@ namespace Tree {
 //-----------------------------------------------------------------------------------------------------
 
     void OctreeNode::fillTree(const std::vector<GObjects::Triangle>& triangles) {			
-        pType 	maxInTriangle 	= 0, 
-                maxInTree 		= 0;
-        // GObjects::Triangle tmp;
-
-        // for (int i = 0; i < countTriangles; ++i) {
-        //     std::cin >> tmp;
-
-        //     tmp.typeOfDegenerate ();
-        //     tmp.setNumber (i);
-
-        //     listOfTriangles_.push_front(tmp);
-
-        //     maxInTriangle = tmp.getAbsMaxCoord();
-        //     if (maxInTriangle > maxInTree)
-        //         maxInTree = maxInTriangle;
-        // }
+        pType 	maxInTriangle   = 0, 
+                maxInTree       = 0;
 
         GObjects::Triangle tmp;
         for (size_t i = 0; i < triangles.size (); ++i) {

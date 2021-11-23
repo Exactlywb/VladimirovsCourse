@@ -2,14 +2,12 @@
 
 namespace dblCmpTeamGraphLib {
 
-
     static double prev_x = 0.0;
     static double prev_y = 0.0;
     
     static const int MAX_FRAMES_IN_FLIGHT = 2;
 
-
-    static std::vector<Vertex> vertices = {}; //To Header and to namespace Global
+    static std::vector<Vertex> vertices = {};
 
     static std::vector<uint16_t> indices = {};
 
@@ -19,6 +17,7 @@ namespace dblCmpTeamGraphLib {
     static double phi = glm::radians (225.0f), ksi = glm::radians (-35.26f);
     static bool lpress = false;
 
+//=====================================================================================================
 
     void TrApplication::mainLoop() {
 
@@ -37,30 +36,27 @@ namespace dblCmpTeamGraphLib {
         vkDeviceWaitIdle(device);
     }
 
-    void TrApplication::drawFrame() 
-    {
+//-----------------------------------------------------------------------------------------------------
+
+    void TrApplication::drawFrame() {
+
         vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
         uint32_t imageIndex;
         VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
-        if (result == VK_ERROR_OUT_OF_DATE_KHR) 
-        {
+        if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+
             recreateSwapChain();
             return;
         }
-        
-        else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) 
-        {
+        else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
             throw std::runtime_error("failed to acquire swap chain image!");
-        }
 
         updateUniformBuffer(imageIndex);
 
-        if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) 
-        {
+        if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
             vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
-        }
 
         imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
@@ -82,10 +78,8 @@ namespace dblCmpTeamGraphLib {
 
         vkResetFences(device, 1, &inFlightFences[currentFrame]);
 
-        if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) 
-        {
+        if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
             throw std::runtime_error("failed to submit draw command buffer!");
-        }
 
         VkPresentInfoKHR presentInfo{};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -101,19 +95,18 @@ namespace dblCmpTeamGraphLib {
 
         result = vkQueuePresentKHR(presentQueue, &presentInfo);
 
-        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized_) 
-        {
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized_) {
+
             framebufferResized_ = false;
             recreateSwapChain();
         }
-        
-        else if (result != VK_SUCCESS) 
-        {
+        else if (result != VK_SUCCESS)
             throw std::runtime_error("failed to present swap chain image!");
-        }
 
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
 
@@ -123,6 +116,8 @@ namespace dblCmpTeamGraphLib {
             func(instance, debugMessenger, pAllocator);
     
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     TrApplication::~TrApplication () {
             
@@ -154,8 +149,9 @@ namespace dblCmpTeamGraphLib {
         vkDestroyInstance(instance, nullptr);
     }
 
-    void TrApplication::cleanupSwapChain() {
+//-----------------------------------------------------------------------------------------------------
 
+    void TrApplication::cleanupSwapChain() {
 
         for (auto framebuffer : swapChainFramebuffers) 
             vkDestroyFramebuffer(device, framebuffer, nullptr);
@@ -177,10 +173,10 @@ namespace dblCmpTeamGraphLib {
             vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
         }
 
-        // swapChainImageViews.clear();
-
         vkDestroyDescriptorPool(device, descriptorPool, nullptr);
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     void TrApplication::recreateSwapChain() {
 
@@ -210,6 +206,8 @@ namespace dblCmpTeamGraphLib {
 
         imagesInFlight.resize(swapChainImages.size(), VK_NULL_HANDLE);
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     void TrApplication::createInstance() {
 
@@ -250,6 +248,8 @@ namespace dblCmpTeamGraphLib {
             throw std::runtime_error("failed to create instance!");
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     void TrApplication::pickPhysicalDevice() {
 
         uint32_t deviceCount = 0;
@@ -273,6 +273,8 @@ namespace dblCmpTeamGraphLib {
         if (physicalDevice == VK_NULL_HANDLE)
             throw std::runtime_error("failed to find a suitable GPU!");
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     void TrApplication::createLogicalDevice() {
 
@@ -319,6 +321,8 @@ namespace dblCmpTeamGraphLib {
         vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
         vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     void TrApplication::createSwapChain() {
 
@@ -372,6 +376,8 @@ namespace dblCmpTeamGraphLib {
         swapChainExtent = extent;
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     void TrApplication::createImageViews() {
 
         swapChainImageViews.resize(swapChainImages.size());
@@ -397,6 +403,8 @@ namespace dblCmpTeamGraphLib {
                 throw std::runtime_error("failed to create image views!");
         }
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     void TrApplication::createRenderPass() {
 
@@ -440,6 +448,8 @@ namespace dblCmpTeamGraphLib {
             throw std::runtime_error("failed to create render pass!");
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     void TrApplication::createDescriptorSetLayout() {
 
         VkDescriptorSetLayoutBinding uboLayoutBinding{};
@@ -457,6 +467,8 @@ namespace dblCmpTeamGraphLib {
         if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS)
             throw std::runtime_error("failed to create descriptor set layout!");
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     void TrApplication::createGraphicsPipeline() {
 
@@ -575,6 +587,8 @@ namespace dblCmpTeamGraphLib {
         vkDestroyShaderModule(device, vertShaderModule, nullptr);
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     void TrApplication::createFramebuffers() {
 
         swapChainFramebuffers.resize(swapChainImageViews.size());
@@ -597,6 +611,8 @@ namespace dblCmpTeamGraphLib {
         }
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     void TrApplication::createCommandPool() {
 
         QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
@@ -608,6 +624,8 @@ namespace dblCmpTeamGraphLib {
         if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) 
             throw std::runtime_error("failed to create graphics command pool!");
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     void TrApplication::createVertexBuffer() {
 
@@ -630,6 +648,8 @@ namespace dblCmpTeamGraphLib {
         vkFreeMemory(device, stagingBufferMemory, nullptr);
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     void TrApplication::createIndexBuffer() {
 
         VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
@@ -651,6 +671,8 @@ namespace dblCmpTeamGraphLib {
         vkFreeMemory(device, stagingBufferMemory, nullptr);
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     void TrApplication::createUniformBuffers() {
 
         VkDeviceSize bufferSize = sizeof(UniformBufferObject);
@@ -661,6 +683,8 @@ namespace dblCmpTeamGraphLib {
         for (size_t i = 0; i < swapChainImages.size(); ++i) 
             createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     void TrApplication::createDescriptorPool() {
 
@@ -677,6 +701,8 @@ namespace dblCmpTeamGraphLib {
         if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) 
             throw std::runtime_error("failed to create descriptor pool!");
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     void TrApplication::createDescriptorSets() {
         
@@ -711,6 +737,8 @@ namespace dblCmpTeamGraphLib {
         }
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     void TrApplication::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
 
         VkBufferCreateInfo bufferInfo{};
@@ -735,6 +763,8 @@ namespace dblCmpTeamGraphLib {
 
         vkBindBufferMemory(device, buffer, bufferMemory, 0);
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     void TrApplication::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
 
@@ -770,6 +800,8 @@ namespace dblCmpTeamGraphLib {
         vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     uint32_t TrApplication::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
 
         VkPhysicalDeviceMemoryProperties memProperties;
@@ -781,6 +813,8 @@ namespace dblCmpTeamGraphLib {
 
         throw std::runtime_error("failed to find suitable memory type!");
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     void TrApplication::createCommandBuffers() {
         
@@ -835,6 +869,8 @@ namespace dblCmpTeamGraphLib {
         }
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     void TrApplication::createSyncObjects() {
 
         imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -859,6 +895,8 @@ namespace dblCmpTeamGraphLib {
 
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     void TrApplication::updateUniformBuffer(uint32_t currentImage) {
 
         UniformBufferObject ubo{};
@@ -874,6 +912,8 @@ namespace dblCmpTeamGraphLib {
         vkUnmapMemory(device, uniformBuffersMemory[currentImage]);
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     VkShaderModule TrApplication::createShaderModule(const std::vector<char>& code) {
 
         VkShaderModuleCreateInfo createInfo{};
@@ -888,6 +928,8 @@ namespace dblCmpTeamGraphLib {
         return shaderModule;
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     VkSurfaceFormatKHR TrApplication::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) noexcept {
 
         for (const auto& availableFormat : availableFormats)
@@ -897,6 +939,8 @@ namespace dblCmpTeamGraphLib {
         return availableFormats[0];
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     VkPresentModeKHR TrApplication::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) noexcept {
 
         for (const auto& availablePresentMode : availablePresentModes)
@@ -905,6 +949,8 @@ namespace dblCmpTeamGraphLib {
 
         return VK_PRESENT_MODE_FIFO_KHR;
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     VkExtent2D TrApplication::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
 
@@ -923,6 +969,8 @@ namespace dblCmpTeamGraphLib {
             return actualExtent;
         }
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     SwapChainSupportDetails TrApplication::querySwapChainSupport(VkPhysicalDevice device) {
 
@@ -951,6 +999,8 @@ namespace dblCmpTeamGraphLib {
         return details;
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     bool TrApplication::isDeviceSuitable(VkPhysicalDevice device) {
 
         QueueFamilyIndices indices = findQueueFamilies(device);
@@ -968,6 +1018,8 @@ namespace dblCmpTeamGraphLib {
         return indices.isComplete() && extensionsSupported && swapChainAdequate;
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     bool TrApplication::checkDeviceExtensionSupport(VkPhysicalDevice device) {
 
         uint32_t extensionCount;
@@ -983,6 +1035,8 @@ namespace dblCmpTeamGraphLib {
 
         return requiredExtensions.empty();
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     QueueFamilyIndices TrApplication::findQueueFamilies(VkPhysicalDevice device) {
 
@@ -1015,6 +1069,8 @@ namespace dblCmpTeamGraphLib {
         return indices;
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     std::vector<const char*> TrApplication::getRequiredExtensions() {
 
         uint32_t glfwExtensionCount = 0;
@@ -1028,6 +1084,8 @@ namespace dblCmpTeamGraphLib {
 
         return extensions;
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     bool TrApplication::checkValidationLayerSupport() {
 
@@ -1055,6 +1113,8 @@ namespace dblCmpTeamGraphLib {
 
         return true;
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     std::vector<char> TrApplication::readFile(const std::string& filename) {
 
@@ -1084,6 +1144,8 @@ namespace dblCmpTeamGraphLib {
         app->framebufferResized_ = true;
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     void Window::key_callback (__attribute__((unused))GLFWwindow* window, 
                                int key, __attribute__((unused))int scancode, 
                                __attribute__((unused))int action, 
@@ -1107,6 +1169,8 @@ namespace dblCmpTeamGraphLib {
         else if (key == GLFW_KEY_DOWN)
             camera_pos -= camera_direction * cam_speed;
     }
+
+//-----------------------------------------------------------------------------------------------------
 
     void Window::cursor_position_callback  (__attribute__((unused))GLFWwindow* window, 
                                             double xpos, double ypos) {
@@ -1133,6 +1197,8 @@ namespace dblCmpTeamGraphLib {
         }
     }
 
+//-----------------------------------------------------------------------------------------------------
+
     void Window::mouse_button_callback (__attribute__((unused))GLFWwindow* window, 
                                         int button, int action, __attribute__((unused))int mods) noexcept {
 
@@ -1142,53 +1208,54 @@ namespace dblCmpTeamGraphLib {
             lpress = false;
     }
 
-    
+//-----------------------------------------------------------------------------------------------------
 
-}
+    Vertex makeVulkVertex   (const GObjects::Triangle &curTr, int vertNum,
+                                                glm::vec3 color, glm::vec3 curNormalVulk) {
 
-dblCmpTeamGraphLib::Vertex makeVulkVertex   (const GObjects::Triangle &curTr, int vertNum,
-                                            glm::vec3 color, glm::vec3 curNormalVulk) {
+        GObjects::Vector vert   = curTr.getVec (vertNum);
+        glm::vec3 vertexPos {vert.getCoord (0), 
+                            vert.getCoord (1), 
+                            vert.getCoord (2)};
 
-    GObjects::Vector vert   = curTr.getVec (vertNum);
-    glm::vec3 vertexPos {vert.getCoord (0), 
-                         vert.getCoord (1), 
-                         vert.getCoord (2)};
+        dblCmpTeamGraphLib::Vertex vertexVulk {vertexPos, color, curNormalVulk};
 
-    dblCmpTeamGraphLib::Vertex vertexVulk {vertexPos, color, curNormalVulk};
-
-    return vertexVulk;
-
-}
-
-void drawTriangles (const std::vector<GObjects::Triangle>& trianglesArr, bool* flagArr) {
-
-    size_t numOfTr = trianglesArr.size ();
-
-    for (size_t i = 0; i < 3 * numOfTr; ++i)
-        dblCmpTeamGraphLib::indices.push_back (i);
-    
-    for (size_t i = 0; i < numOfTr; ++i) {
-
-        glm::vec3 color = {87.0f/256.0f, 161.0f/256.0f, 235.0f/256.0f};
-
-        if (flagArr [i])
-            color = {235.0f/256.0f, 111.0f/256.0f, 87.0f/256.0f};
-
-        GObjects::Vector curNormal {};
-        trianglesArr [i].calcNormal (curNormal);
-        glm::vec3 curNormalVulk {curNormal.getCoord (0), curNormal.getCoord (1), curNormal.getCoord (2)};
-
-        dblCmpTeamGraphLib::Vertex firstVertex  = makeVulkVertex (trianglesArr [i], 0, color, curNormalVulk);
-        dblCmpTeamGraphLib::Vertex secondVertex = makeVulkVertex (trianglesArr [i], 1, color, curNormalVulk);
-        dblCmpTeamGraphLib::Vertex thirdVertex  = makeVulkVertex (trianglesArr [i], 2, color, curNormalVulk);
-        
-        dblCmpTeamGraphLib::vertices.push_back (firstVertex);
-        dblCmpTeamGraphLib::vertices.push_back (secondVertex);
-        dblCmpTeamGraphLib::vertices.push_back (thirdVertex);
+        return vertexVulk;
 
     }
 
-    dblCmpTeamGraphLib::TrApplication app;
-    app.run ();
+//-----------------------------------------------------------------------------------------------------
 
+    void drawTriangles (const std::vector<GObjects::Triangle>& trianglesArr, bool* flagArr) {
+
+        size_t numOfTr = trianglesArr.size ();
+
+        for (size_t i = 0; i < 3 * numOfTr; ++i)
+            dblCmpTeamGraphLib::indices.push_back (i);
+
+        for (size_t i = 0; i < numOfTr; ++i) {
+
+            glm::vec3 color = {87.0f/256.0f, 161.0f/256.0f, 235.0f/256.0f};
+
+            if (flagArr [i])
+                color = {235.0f/256.0f, 111.0f/256.0f, 87.0f/256.0f};
+
+            GObjects::Vector curNormal {};
+            trianglesArr [i].calcNormal (curNormal);
+            glm::vec3 curNormalVulk {curNormal.getCoord (0), curNormal.getCoord (1), curNormal.getCoord (2)};
+
+            dblCmpTeamGraphLib::Vertex firstVertex  = makeVulkVertex (trianglesArr [i], 0, color, curNormalVulk);
+            dblCmpTeamGraphLib::Vertex secondVertex = makeVulkVertex (trianglesArr [i], 1, color, curNormalVulk);
+            dblCmpTeamGraphLib::Vertex thirdVertex  = makeVulkVertex (trianglesArr [i], 2, color, curNormalVulk);
+            
+            dblCmpTeamGraphLib::vertices.push_back (firstVertex);
+            dblCmpTeamGraphLib::vertices.push_back (secondVertex);
+            dblCmpTeamGraphLib::vertices.push_back (thirdVertex);
+
+        }
+
+        dblCmpTeamGraphLib::TrApplication app;
+        app.run ();
+
+    }
 }

@@ -23,8 +23,7 @@
 
 #include "octree.hpp"
 
-namespace dblCmpTeamGraphLib
-{
+namespace dblCmpTeamGraphLib {
 
     class TrApplication;
 
@@ -38,6 +37,8 @@ namespace dblCmpTeamGraphLib
     static const bool enableValidationLayers = true;
     #endif
 
+//=====================================================================================================
+
     static VkResult CreateDebugUtilsMessengerEXT    (VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, 
                                                     const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
 
@@ -48,6 +49,8 @@ namespace dblCmpTeamGraphLib
         else
             return VK_ERROR_EXTENSION_NOT_PRESENT;
     }
+
+//=====================================================================================================
 
     struct QueueFamilyIndices final {
 
@@ -60,6 +63,8 @@ namespace dblCmpTeamGraphLib
         }
     };
 
+//=====================================================================================================
+
     struct SwapChainSupportDetails final {
 
         VkSurfaceCapabilitiesKHR capabilities;
@@ -67,11 +72,15 @@ namespace dblCmpTeamGraphLib
         std::vector<VkPresentModeKHR> presentModes;
     };
 
+//=====================================================================================================
+
     struct Vertex final {
 
         glm::vec3 pos;
         glm::vec3 color;
         glm::vec3 normal;
+
+//-----------------------------------------------------------------------------------------------------
 
         static VkVertexInputBindingDescription getBindingDescription() {
 
@@ -82,6 +91,8 @@ namespace dblCmpTeamGraphLib
 
             return bindingDescription;
         }
+
+//-----------------------------------------------------------------------------------------------------
 
         static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
 
@@ -106,7 +117,7 @@ namespace dblCmpTeamGraphLib
         }
     };
 
-    
+//=====================================================================================================
 
     struct UniformBufferObject final {
 
@@ -115,6 +126,8 @@ namespace dblCmpTeamGraphLib
         alignas(16) glm::mat4 proj;
         alignas(16) glm::vec3 view_pos;
     };
+
+//=====================================================================================================
  
     class Window final {
     private:
@@ -126,7 +139,6 @@ namespace dblCmpTeamGraphLib
 
     public:
 
-
         Window (uint32_t width, uint32_t height, const std::string nameWindow = "Vulkan") : WIDTH_(width), HEIGHT_(height) { //problem with string?? ref? //NOT THIS THIS
 
             glfwInit();
@@ -137,6 +149,8 @@ namespace dblCmpTeamGraphLib
             
             glfwSetFramebufferSizeCallback(window_, framebufferResizeCallback);
         } 
+
+//-----------------------------------------------------------------------------------------------------
 
         GLFWwindow* getWindow () const {return window_;}
 
@@ -152,6 +166,8 @@ namespace dblCmpTeamGraphLib
             glfwTerminate();
        } 
 
+//-----------------------------------------------------------------------------------------------------
+
         static void framebufferResizeCallback (GLFWwindow* window, int WIDTH, int HEIGHT);
 
         static void key_callback                (GLFWwindow* window , int key, int scancode, int action, int mods);
@@ -159,6 +175,8 @@ namespace dblCmpTeamGraphLib
         static void mouse_button_callback       (GLFWwindow* window, int button, int action, int mods) noexcept;
 
     };
+
+//=====================================================================================================
 
     class TrApplication final {
     public:
@@ -169,7 +187,6 @@ namespace dblCmpTeamGraphLib
 
         }
 
-
         TrApplication (const TrApplication& rhs)              = delete;   // ban copy
         TrApplication (TrApplication&& rhs)                   = delete;   // ban move
 
@@ -177,6 +194,8 @@ namespace dblCmpTeamGraphLib
         TrApplication &operator= (const TrApplication& rhs)   = delete;   // ban copy assignment
 
         ~TrApplication();
+
+//-----------------------------------------------------------------------------------------------------
 
         void run() {
 
@@ -238,7 +257,7 @@ namespace dblCmpTeamGraphLib
         VkDeviceMemory depthImageMemory;
         VkImageView depthImageView;
 
-        void drawFrame(); //public or private
+//-----------------------------------------------------------------------------------------------------
 
         void initVulkan() {
             
@@ -271,6 +290,10 @@ namespace dblCmpTeamGraphLib
 
         }
 
+//-----------------------------------------------------------------------------------------------------
+
+        void drawFrame();
+
         void mainLoop();
 
         void cleanupSwapChain();
@@ -278,6 +301,8 @@ namespace dblCmpTeamGraphLib
         void recreateSwapChain();
 
         void createInstance();
+
+//-----------------------------------------------------------------------------------------------------
 
         void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
 
@@ -287,6 +312,8 @@ namespace dblCmpTeamGraphLib
             createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
             createInfo.pfnUserCallback = debugCallback;
         }
+
+//-----------------------------------------------------------------------------------------------------
 
         void setupDebugMessenger() {
 
@@ -300,11 +327,15 @@ namespace dblCmpTeamGraphLib
                 throw std::runtime_error("failed to set up debug messenger!");
         }
 
+//-----------------------------------------------------------------------------------------------------
+
         void createSurface() {
 
             if (glfwCreateWindowSurface(instance, workSpace.getWindow(), nullptr, &surface) != VK_SUCCESS)
                 throw std::runtime_error("failed to create window surface!");
         }
+
+//-----------------------------------------------------------------------------------------------------
 
         void pickPhysicalDevice();
 
@@ -368,6 +399,8 @@ namespace dblCmpTeamGraphLib
 
         static std::vector<char> readFile(const std::string& filename);
 
+//-----------------------------------------------------------------------------------------------------
+
         static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(__attribute__((unused))VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, 
                                                             __attribute__((unused))VkDebugUtilsMessageTypeFlagsEXT messageType, 
                                                             const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, 
@@ -378,9 +411,11 @@ namespace dblCmpTeamGraphLib
             return VK_FALSE;
         }
     };
+    
+//=====================================================================================================
+
+    void    drawTriangles   (const std::vector<GObjects::Triangle>& trianglesArr, bool* flagArr);
 }
 
-
-void    drawTriangles   (const std::vector<GObjects::Triangle>& trianglesArr, bool* flagArr);
 
 #endif

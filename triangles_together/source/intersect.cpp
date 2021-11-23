@@ -95,12 +95,11 @@ int GetTriangles () {
 
     int countIntersection = IntersectionCounter (mainRoot.getRoot(), intersectTriangleFlagArray);
 
-    for (int i = 0; i < countTriangles; ++i) {
+    for (int i = 0; i < countTriangles; ++i)
         if (intersectTriangleFlagArray[i])
             std::cout << i << std::endl;
-    }
 
-    drawTriangles (trianglesArr, intersectTriangleFlagArray);
+    dblCmpTeamGraphLib::drawTriangles (trianglesArr, intersectTriangleFlagArray);
     
     delete [] intersectTriangleFlagArray;
 
