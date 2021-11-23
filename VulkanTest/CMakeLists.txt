@@ -35,3 +35,5 @@ add_custom_command(TARGET vulktut
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} glfw)
 
+set (COMPILER_SETTINGS -Wall -Wextra -O2 -g -Wfloat-equal -Wdiv-by-zero)
+target_compile_options( ${EXEC_FILE} PRIVATE ${COMPILER_SETTINGS} )
