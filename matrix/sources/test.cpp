@@ -1,4 +1,5 @@
 #include "matrix.hpp"
+#include <fstream>
 #include <gtest/gtest.h>
 
 TEST( detTests, check2x2 ) {
@@ -73,6 +74,86 @@ TEST( detTests, check4x4 ) {
     matr.setElemUsingRowCol (0, 3, 0);
     EXPECT_DOUBLE_EQ (0, matr.calcDet ());
     
+}
+
+TEST( detTests, test1File ) {
+
+    system ("./matrix < ../tests/test1 > test.out");
+    
+    std::ifstream resFile   ("test.out");
+    std::string res         ((std::istreambuf_iterator<char>(resFile)),
+                              std::istreambuf_iterator<char>());
+
+    std::ifstream answFile  ("../tests/answ1");
+    std::string answ        ((std::istreambuf_iterator<char>(answFile)),
+                              std::istreambuf_iterator<char>());
+
+    ASSERT_EQ(answ, res);
+
+}
+
+TEST( detTests, test2File ) {
+
+    system ("./matrix < ../tests/test2 > test.out");
+    
+    std::ifstream resFile   ("test.out");
+    std::string res         ((std::istreambuf_iterator<char>(resFile)),
+                              std::istreambuf_iterator<char>());
+
+    std::ifstream answFile  ("../tests/answ2");
+    std::string answ        ((std::istreambuf_iterator<char>(answFile)),
+                              std::istreambuf_iterator<char>());
+
+    ASSERT_EQ(answ, res);
+
+}
+
+TEST( detTests, test3File ) {
+
+    system ("./matrix < ../tests/test3 > test.out");
+    
+    std::ifstream resFile   ("test.out");
+    std::string res         ((std::istreambuf_iterator<char>(resFile)),
+                              std::istreambuf_iterator<char>());
+
+    std::ifstream answFile  ("../tests/answ3");
+    std::string answ        ((std::istreambuf_iterator<char>(answFile)),
+                              std::istreambuf_iterator<char>());
+
+    ASSERT_EQ(answ, res);
+
+}
+
+TEST( detTests, test4File ) {
+
+    system ("./matrix < ../tests/test4 > test.out");
+    
+    std::ifstream resFile   ("test.out");
+    std::string res         ((std::istreambuf_iterator<char>(resFile)),
+                              std::istreambuf_iterator<char>());
+
+    std::ifstream answFile  ("../tests/answ4");
+    std::string answ        ((std::istreambuf_iterator<char>(answFile)),
+                              std::istreambuf_iterator<char>());
+
+    ASSERT_EQ(answ, res);
+
+}
+
+TEST( detTests, test5File ) {
+
+    system ("./matrix < ../tests/test5 > test.out");
+    
+    std::ifstream resFile   ("test.out");
+    std::string res         ((std::istreambuf_iterator<char>(resFile)),
+                              std::istreambuf_iterator<char>());
+
+    std::ifstream answFile  ("../tests/answ5");
+    std::string answ        ((std::istreambuf_iterator<char>(answFile)),
+                              std::istreambuf_iterator<char>());
+
+    ASSERT_EQ(answ, res);
+
 }
 
 int main (int argc, char** argv) {

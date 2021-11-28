@@ -26,10 +26,12 @@ namespace Math {
             void submatrMaxElem (const int border, const int size, Matrix& matr) {
 
                 _val = matr.getElemUsingRowCol (border, border);
+                _row = border;
+                _col = border;
 
-                for (int i = border; i < size; i++) {
-
-                    for (int j = border; j < size; j++) {
+                for (int i = border; i < size; ++i) {
+                    
+                    for (int j = border; j < size; ++j) {
 
                         T curElem = matr.getElemUsingRowCol (i, j);
                         if (DblCmp (std::abs(curElem), std::abs(_val)) > 0) {
@@ -325,7 +327,7 @@ namespace Math {
                 std::cout << "[";
                 for (int curCol = 0; curCol < colNum; curCol++) {
 
-                    std::cout << std::setw (5) << data [curBegInd + curCol];
+                    std::cout << std::setw (10) << data [curBegInd + curCol];
                     if (curCol + 1 < colNum)
                         std::cout << " ";
             
@@ -394,9 +396,9 @@ namespace Math {
 
             int sign = 1;
             int size = rowNum; //renaming
-            for (int i = 0; i < size - 1; ++i) {
+            for (int i = 0; i < size; ++i) {
                 
-                MatrixElem maxElem {}; 
+                MatrixElem maxElem {};
                 maxElem.submatrMaxElem (i, size, *this);
 
                 if (maxElem._col != i) {
