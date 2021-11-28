@@ -229,9 +229,17 @@ namespace Math {
             int fullSize    = rowNum * colNum;
             
             if (fullSize > 0) {
+                
+                T* dataTmp  = new T [fullSize];
 
-                T* dataTmp      = new T [fullSize];
-                std::copy (toCopy.data, toCopy.data + fullSize, dataTmp);
+                try {
+                    std::copy (toCopy.data, toCopy.data + fullSize, dataTmp);
+                } catch (...) {
+
+                    delete [] dataTmp;
+                    throw;
+
+                }
 
                 delete[] data;
                 data = dataTmp;
