@@ -196,7 +196,14 @@ namespace Math {
             else
                 data = nullptr;
 
-            std::copy (toCopy.data, toCopy.data + fullSize, data);
+            try {
+                std::copy (toCopy.data, toCopy.data + fullSize, data);
+            } catch (...) {
+
+                delete [] data;
+                throw;
+
+            }
 
         }
 
