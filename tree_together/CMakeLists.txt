@@ -34,6 +34,24 @@ set(TEST_SOURCES
 
 )
 
+find_program(CLANG_FORMAT "clang-format")
+if(CLANG_FORMAT)
+    file(GLOB_RECURSE ALL_CXX_SOURCE_FILES
+        ${PROJECT_SOURCE_DIR}/sources/*.[ch]pp
+        ${PROJECT_SOURCE_DIR}/sources/*.[ch]
+        ${PROJECT_SOURCE_DIR}/include/*.[h]pp
+        ${PROJECT_SOURCE_DIR}/include/*.[h]
+    )
+
+    add_custom_target(
+        format
+        COMMAND clang-format
+        -i
+        -style=file
+        ${ALL_CXX_SOURCE_FILES}
+    )
+endif()
+
 #executable files
 add_executable(${EXEC_FILE} ${SOURCES})
 add_executable(${TEST_FILE} ${TEST_SOURCES})
