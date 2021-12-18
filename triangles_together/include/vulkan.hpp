@@ -401,10 +401,10 @@ namespace dblCmpTeamGraphLib {
 
 //-----------------------------------------------------------------------------------------------------
 
-        static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(__attribute__((unused))VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, 
-                                                            __attribute__((unused))VkDebugUtilsMessageTypeFlagsEXT messageType, 
+        static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, 
+                                                            VkDebugUtilsMessageTypeFlagsEXT messageType, 
                                                             const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, 
-                                                            __attribute__((unused))void* pUserData) {
+                                                            void* pUserData) {
 
             std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 
