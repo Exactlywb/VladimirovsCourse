@@ -472,8 +472,8 @@ namespace dblCmpTeamGraphLib {
 
     void TrApplication::createGraphicsPipeline() {
 
-        auto vertShaderCode = readFile("../vulkan/shaders/vert.spv");
-        auto fragShaderCode = readFile("../vulkan/shaders/frag.spv");
+        auto vertShaderCode = readFile("vert.spv");
+        auto fragShaderCode = readFile("frag.spv"); // Pls, on't do 
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
