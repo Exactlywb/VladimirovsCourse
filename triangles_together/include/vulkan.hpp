@@ -198,7 +198,7 @@ namespace dblCmpTeamGraphLib {
 //-----------------------------------------------------------------------------------------------------
 
         void run() {
-
+                
             initVulkan();
             mainLoop();
 
@@ -262,14 +262,14 @@ namespace dblCmpTeamGraphLib {
         void initVulkan() {
             
             createInstance();
+            // exit (1);
 
             setupDebugMessenger();
 
             createSurface();
-
             pickPhysicalDevice();
             createLogicalDevice();
-
+            
             createSwapChain();
             createImageViews();
             createRenderPass();

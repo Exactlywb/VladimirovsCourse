@@ -101,6 +101,7 @@ int GetTriangles () {
 
     double maxCoord = mainRoot.getMaxCoor();
 
+    // return 0;
     dblCmpTeamGraphLib::drawTriangles (trianglesArr, intersectTriangleFlagArray, maxCoord);
     
     delete [] intersectTriangleFlagArray;

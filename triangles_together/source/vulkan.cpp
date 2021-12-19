@@ -472,8 +472,8 @@ namespace dblCmpTeamGraphLib {
 
     void TrApplication::createGraphicsPipeline() {
 
-        auto vertShaderCode = readFile("../vulkan/shaders/vert.spv");
-        auto fragShaderCode = readFile("../vulkan/shaders/frag.spv");
+        auto vertShaderCode = readFile("../vert.spv");
+        auto fragShaderCode = readFile("../frag.spv"); // Pls, on't do 
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -1139,8 +1139,9 @@ namespace dblCmpTeamGraphLib {
     void Window::framebufferResizeCallback (GLFWwindow* window, 
                                             int WIDTH, 
                                             int HEIGHT) {
-
+        
         auto app = reinterpret_cast<TrApplication*>(glfwGetWindowUserPointer(window));
+        
         app->framebufferResized_ = true;
     }
 
@@ -1254,8 +1255,17 @@ namespace dblCmpTeamGraphLib {
 
         }
 
-        dblCmpTeamGraphLib::TrApplication app;
-        app.run ();
+        dblCmpTeamGraphLib::TrApplication app {};
+        try {
+        
+            app.run ();
 
+        }
+        catch (const std::exception & ex) {
+
+            std::cerr << ex.what () << std::endl;
+            // sleep (2);
+            throw;
+        }
     }
 }

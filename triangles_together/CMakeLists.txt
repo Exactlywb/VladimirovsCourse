@@ -53,7 +53,7 @@ target_link_libraries(${EXEC_NAME} PRIVATE glfw Vulkan::Vulkan glm)
 target_sources( ${EXEC_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/source/main.cpp" )
 
 add_custom_command(TARGET ${EXEC_NAME}
-	POST_BUILD
+	PRE_BUILD
     COMMAND ${CMAKE_SOURCE_DIR}/vulkan/shaders/compile.bat
     )
 
@@ -72,7 +72,7 @@ target_link_libraries(${EXEC_NAME} glfw)
 
 target_sources( ${EXEC_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/source/main.cpp" )
 add_custom_command(TARGET ${EXEC_NAME}
-	POST_BUILD
+	PRE_BUILD
     COMMAND ${CMAKE_SOURCE_DIR}/vulkan/shaders/compile.sh
     )
 endif ()
