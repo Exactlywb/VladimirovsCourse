@@ -25,14 +25,18 @@ target_include_directories( ${EXEC_NAME} PRIVATE
 find_package(Vulkan REQUIRED)
 target_include_directories(${EXEC_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(${EXEC_NAME} Vulkan::Vulkan)
-  
+   
+find_package(glfw3 CONFIG REQUIRED)
+target_link_libraries(${EXEC_NAME} glfw)
+
+find_package(glm CONFIG REQUIRED)
+# target_link_libraries(${EXEC_NAME} glfw)
+
 add_custom_command(TARGET ${EXEC_NAME}
     POST_BUILD
     COMMAND ${CMAKE_SOURCE_DIR}/vulkan/shaders/compile.sh
 )
-  
-find_package(glfw3 CONFIG REQUIRED)
-target_link_libraries(${EXEC_NAME} glfw)
+
 
 target_sources( ${EXEC_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/source/main.cpp" )
 
