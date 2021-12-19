@@ -31,32 +31,45 @@ include_directories(3rdparty/glm)
 find_package(Vulkan REQUIRED)
 include_directories(${Vulkan_INCLUDE_DIRS})
 
-add_subdirectory (vulkan/shaders)
-include_directories (${CMAKE_CURRENT_DIR}/vulkan/shaders)
+if (WIN32)
 
 add_executable (${EXEC_NAME})
-
-add_dependencies(${EXEC_NAME} Shaders)
 
 target_include_directories( ${EXEC_NAME} PRIVATE
     "${CMAKE_SOURCE_DIR}/include"
 )
-
-
-
-# find_package(Vulkan REQUIRED)
  target_include_directories(${EXEC_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
  target_link_libraries(${EXEC_NAME} Vulkan::Vulkan)
 
-# add_custom_command(TARGET ${EXEC_NAME}
-	#POST_BUILD
-    # COMMAND ${CMAKE_SOURCE_DIR}/vulkan/shaders/compile.sh
-    #)
-
-# find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(${EXEC_NAME} glfw)
 
+
 target_sources( ${EXEC_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/source/main.cpp" )
+
+add_custom_command(TARGET ${EXEC_NAME}
+	POST_BUILD
+    COMMAND ${CMAKE_SOURCE_DIR}/vulkan/shaders/compile.bat
+    )
+
+else ()
+
+add_executable (${EXEC_NAME})
+
+target_include_directories( ${EXEC_NAME} PRIVATE
+    "${CMAKE_SOURCE_DIR}/include"
+)
+ target_include_directories(${EXEC_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
+ target_link_libraries(${EXEC_NAME} Vulkan::Vulkan)
+
+target_link_libraries(${EXEC_NAME} glfw)
+
+
+target_sources( ${EXEC_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/source/main.cpp" )
+add_custom_command(TARGET ${EXEC_NAME}
+	POST_BUILD
+    COMMAND ${CMAKE_SOURCE_DIR}/vulkan/shaders/compile.sh
+    )
+endif ()
 
 foreach( FILE IN LISTS SOURCES)
     target_sources( ${EXEC_NAME} PRIVATE "${EXECSOURCES}/${FILE}" )
