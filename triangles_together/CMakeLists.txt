@@ -22,6 +22,9 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
+find_package(Threads)
+
+
 add_subdirectory(3rdparty/glfw)
 include_directories(3rdparty/glfw/include)
 
@@ -42,6 +45,9 @@ target_include_directories( ${EXEC_NAME} PRIVATE
  target_link_libraries(${EXEC_NAME} Vulkan::Vulkan)
 
 target_link_libraries(${EXEC_NAME} glfw)
+
+target_link_libraries(${EXEC_NAME} glm)
+target_link_libraries(${EXEC_NAME} PRIVATE glfw Vulkan::Vulkan glm)
 
 
 target_sources( ${EXEC_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/source/main.cpp" )
