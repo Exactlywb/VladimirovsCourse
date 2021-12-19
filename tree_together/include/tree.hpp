@@ -1,92 +1,86 @@
 #ifndef TREE_H__
 #define TREE_H__
 
-#include <iostream>
 #include <string.h>
-#include <fstream>
+
 #include <cassert>
+#include <fstream>
+#include <iostream>
 
 namespace TreeImpl {
 
-    enum Color {
-        BLACK = 0,
-        RED = 1
-    };
+    enum Color { BLACK = 0, RED = 1 };
 
     struct Node final {
+        Node *left_ = nullptr;
+        Node *right_ = nullptr;
 
-        Node* left_     = nullptr;
-        Node* right_    = nullptr;
+        int val_;
 
-        Node* parent_   = nullptr;
+        Node *parent_;
 
-        int val_        = 0;
+        bool color_ = BLACK;
 
-        bool color_     = BLACK;
+        int subtreeSize = 1;
 
-        int subtreeSize    = 1;
+        Node(int val = 0, Node *parent = nullptr) : val_(val), parent_(parent) {}
 
-        Node    (int val = 0, Node* parent = nullptr):
-                val_ (val),
-                parent_ (parent) {}
-        
-        ~Node () = default; // default != {}
+        ~Node() = default;  // default != {}
 
-        Node (const Node& other)            = delete;               //
-        Node (Node&& other)                 = delete;               //
-                                                            // We are not lazy. We've discussed about this.
-        Node& operator= (const Node& other) = delete;       //
-        Node& operator= (Node&& other)      = delete;       //
+        Node(const Node &other) = delete;             //
+        Node(Node &&other) = delete;                  //
+                                                      // We are not lazy. We've discussed about this.
+        Node &operator=(const Node &other) = delete;  //
+        Node &operator=(Node &&other) = delete;       //
 
-        void disactiveChild (const Node* child) {
-
+        void disactiveChild(const Node *child)
+        {
             if (left_ == child)
                 left_ = nullptr;
             else if (right_ == child)
                 right_ = nullptr;
-
         }
 
-        void    deleteSubtree   (); // |!| WARNING: This function delete the object itself.
-
+        void deleteSubtree();  // |!| WARNING: This function delete the object itself.
     };
 
     class Tree final {
-    
     private:
-        Node* root = nullptr;
+        Node *root = nullptr;
 
-        enum childType {
-            LEFT,
-            RIGHT
-        };
+        enum childType { LEFT, RIGHT };
 
-        void rightRotate    (Node *x);
-        void leftRotate     (Node *x);
-        void insertFixUp    (Node *pushedNode);
-        Node *partialFixUp  (Node *curNode, enum childType side);
+        void rightRotate(Node *x);
+        void leftRotate(Node *x);
+        void insertFixUp(Node *pushedNode);
+        Node *partialFixUp(Node *curNode, enum childType side);
 
     public:
-        Tree () = default;
+        Tree() = default;
 
-        ~Tree () { root->deleteSubtree (); }    
+        ~Tree()
+        {
+            root->deleteSubtree();
+        }
 
-        Tree (const Tree& other);           //copy constructor
-        Tree (Tree&& other);                //move constructor
-        
-        Tree& operator= (const Tree& other);    //copy assignment
-        Tree& operator= (Tree&& other);         //move assignment
+        Tree(const Tree &other);  // copy constructor
+        Tree(Tree &&other);       // move constructor
 
-        void    graphDump         (const char* fileName);
-        void    push              (int val);
+        Tree &operator=(const Tree &other);  // copy assignment
+        Tree &operator=(Tree &&other);       // move assignment
 
-        int     getNLessThan      (int border);
-        int     KthOrderStatistic (int key);
+        void graphDump(const char *fileName);
+        void push(int val);
 
-        Node*   getRoot           () const { return root; }
-        
+        int getNLessThan(int border);
+        int KthOrderStatistic(int key);
+
+        Node *getRoot() const
+        {
+            return root;
+        }
     };
 
-}
+}  // namespace TreeImpl
 
 #endif

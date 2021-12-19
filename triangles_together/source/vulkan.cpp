@@ -1137,8 +1137,8 @@ namespace dblCmpTeamGraphLib {
 //=====================================================================================================
 
     void Window::framebufferResizeCallback (GLFWwindow* window, 
-                                            __attribute__((unused))int WIDTH, 
-                                            __attribute__((unused))int HEIGHT) {
+                                            int WIDTH, 
+                                            int HEIGHT) {
 
         auto app = reinterpret_cast<TrApplication*>(glfwGetWindowUserPointer(window));
         app->framebufferResized_ = true;
@@ -1146,10 +1146,10 @@ namespace dblCmpTeamGraphLib {
 
 //-----------------------------------------------------------------------------------------------------
 
-    void Window::key_callback (__attribute__((unused))GLFWwindow* window, 
-                               int key, __attribute__((unused))int scancode, 
-                               __attribute__((unused))int action, 
-                               __attribute__((unused))int mods) { 
+    void Window::key_callback (GLFWwindow* window, 
+                               int key, int scancode, 
+                               int action, 
+                               int mods) { 
 
         float cam_speed = 0.05f;
 
@@ -1172,7 +1172,7 @@ namespace dblCmpTeamGraphLib {
 
 //-----------------------------------------------------------------------------------------------------
 
-    void Window::cursor_position_callback  (__attribute__((unused))GLFWwindow* window, 
+    void Window::cursor_position_callback  (GLFWwindow* window, 
                                             double xpos, double ypos) {
 
         if (lpress) {
@@ -1199,8 +1199,8 @@ namespace dblCmpTeamGraphLib {
 
 //-----------------------------------------------------------------------------------------------------
 
-    void Window::mouse_button_callback (__attribute__((unused))GLFWwindow* window, 
-                                        int button, int action, __attribute__((unused))int mods) noexcept {
+    void Window::mouse_button_callback (GLFWwindow* window, 
+                                        int button, int action, int mods) noexcept {
 
         if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
             lpress = true;
