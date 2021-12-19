@@ -27,5 +27,6 @@ IndentAccessModifiers: false
 IndentWidth: 4
 NamespaceIndentation: All
 PointerAlignment: Right
+SpaceBeforeParens: Always
 TabWidth: 4
 UseTab: Never
