@@ -1,0 +1,54 @@
+%option c++
+
+%{
+
+    #include "grammar.tab.hh"    
+    
+//local functions
+    static  inline  void    OneLineCommentUpdate ();
+
+%}
+
+TRASH_SYMBS             [ \t\n\v]+
+DIGIT                   [0-9]
+
+ALPHA                   [a-zA-Z]
+
+WORD                    ({ALPHA}|"_")({ALPHA}|{DIGIT}|"_")*
+
+ONE_LINE_COMMENT        "//".*
+/* TODO: multiline comments */
+%%
+
+{TRASH_SYMBS}           {   /*skip*/    }
+{ONE_LINE_COMMENT}      {   /*skip*/    }
+
+{DIGIT}*                {   return yy::parser::token_type::NUMBER;      }
+
+"if"                    {   return yy::parser::token_type::IF;          }
+"while"                 {   return yy::parser::token_type::WHILE;       }
+
+";"                     {   return yy::parser::token_type::SEMICOLON;   }
+
+"("                     {   return yy::parser::token_type::OPCIRCBRACK; }
+")"                     {   return yy::parser::token_type::CLCIRCBRACK; }
+
+"+"                     {   return yy::parser::token_type::ADD;         }
+"-"                     {   return yy::parser::token_type::SUB;         }
+"*"                     {   return yy::parser::token_type::MUL;         }
+"/"                     {   return yy::parser::token_type::DIV;         }
+
+"=="                    {   return yy::parser::token_type::EQ;          }
+"!="                    {   return yy::parser::token_type::NEQ;         }
+">"                     {   return yy::parser::token_type::MORE;        }
+"<"                     {   return yy::parser::token_type::LESS;        }
+">="                    {   return yy::parser::token_type::GTE;         }
+"<="                    {   return yy::parser::token_type::LTE;         }
+
+"="                     {   return yy::parser::token_type::ASSIGN;      }
+
+{WORD}                  {   return yy::parser::token_type::ID;          }
+
+.                       {   return yy::parser::token_type::LEXERR;      }
+
+%%
