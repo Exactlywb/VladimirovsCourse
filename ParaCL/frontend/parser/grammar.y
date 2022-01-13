@@ -156,7 +156,12 @@ condExp                     :   expr condOper expr              {
                                                                     $2->addChild ($3);
                                                                     $$ = $2;
                                                                 };
-condOper                    :   MORE                            {   $$ = new AST::OperNode (AST::OperNode::OperType::MORE); };
+condOper                    :   MORE                            {   $$ = new AST::OperNode (AST::OperNode::OperType::MORE); }
+                            |   LESS                            {   $$ = new AST::OperNode (AST::OperNode::OperType::LESS); }
+                            |   EQ                              {   $$ = new AST::OperNode (AST::OperNode::OperType::EQ);   }
+                            |   NEQ                             {   $$ = new AST::OperNode (AST::OperNode::OperType::NEQ);  }
+                            |   GTE                             {   $$ = new AST::OperNode (AST::OperNode::OperType::GTE);  }
+                            |   LTE                             {   $$ = new AST::OperNode (AST::OperNode::OperType::LTE);  };
 
 body                        :   OPCURVBRACK statementHandler CLCURVBRACK 
                                                                 {
