@@ -59,7 +59,7 @@ public:
 
     void interpret () { //!TODO does it have to be in driver?
 
-        Interpreter interpret (&tree_);
+        interpret::Interpreter interpret (&tree_);
         
         try {
        

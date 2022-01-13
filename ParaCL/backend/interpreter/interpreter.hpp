@@ -127,7 +127,7 @@ public:
         VarWrapper* var = curScope->lookup (name);
         if (!var) {
             
-            VarWrapper* newVar = CreateNewVarUsingType (name, type, value);
+            VarWrapper* newVar = CreateNewVarUsingType (value, type);
             curScope->add (name, newVar);
 
         } else {
@@ -140,7 +140,7 @@ public:
                     break;
                 } 
                 case DataType::DOUBLE: {
-                    Variable<int>* clearVar = static_cast<Variable<double>*>(var);
+                    Variable<double>* clearVar = static_cast<Variable<double>*>(var);
                     clearVar->setVal (value);
                     break;
                 }

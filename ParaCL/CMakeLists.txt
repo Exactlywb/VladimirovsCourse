@@ -35,6 +35,7 @@ add_flex_bison_dependency (scanner parser)
 
 add_executable (${PROJECT_NAME}
 
+    backend/interpreter/interpreter.cpp
     frontend/driver/driver.cpp
     frontend/AST/ast.cpp
     ${BISON_parser_OUTPUTS}

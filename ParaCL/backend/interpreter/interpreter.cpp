@@ -2,7 +2,7 @@
 
 namespace interpret {
 
-    ~Scope () {
+    Scope::~Scope () {
 
         //!TODO
 
@@ -10,12 +10,12 @@ namespace interpret {
 
     VarWrapper* Scope::lookup (const std::string& name) const {
         
-        Scope* curScope = this;
+        const Scope* curScope = this;
         while (curScope) {
 
             auto elem = curScope->tbl_.find (name);
             if (elem != curScope->tbl_.end ())
-                return elem.second;
+                return elem->second;
         
             curScope = curScope->parent_;
 
@@ -25,7 +25,7 @@ namespace interpret {
 
     }
 
-    void Scope::add (const std::string& name, Variable* var) {
+    void Scope::add (const std::string& name, VarWrapper* var) {
         tbl_.insert ({name, var}); 
     }
 
@@ -38,21 +38,40 @@ namespace interpret {
     
     void Interpreter::print (Scope* curScope, const std::string& name) {
 
-        Variable* curVar = curScope->lookup (name);        
-        std::cout << curVar->getVal () << std::endl;
+        VarWrapper* curVar = curScope->lookup (name);
+        Variable<int>* clearVar = static_cast<Variable<int>*>(curVar);       
+        std::cout << clearVar->getVal () << std::endl;
 
     }
 
 namespace {
     
+    int CalcExpr (AST::Node* node) {
+
+        return 5;
+
+    }
+
     void ExecOperator (Interpreter* interpret, AST::OperNode* node, Scope* curScope) {
         
-        switch (node->opType_) {
+        switch (node->getOpType ()) {
 
             case AST::OperNode::OperType::ASSIGN: {
-                
-                interpret->assignment (curScope, node->);
+
+                std::vector<AST::Node*> children = node->getChildren ();
+                AST::VarNode* varNode = static_cast<AST::VarNode*>(children [0]);
+                interpret->assignment  (curScope, varNode->getName (), 
+                                        CalcExpr (children [1]));
                 break;
+
+            }
+            case AST::OperNode::OperType::PRINT: {
+                
+                std::vector<AST::Node*> children = node->getChildren ();
+                for (auto curChild: children)
+                    std::cout << CalcExpr (curChild) << std::endl;
+                break;
+
             }
 
         }
@@ -63,14 +82,15 @@ namespace {
 
     void Interpreter::run () {
         
-        std::vector<AST::Node*> curNodes = tree_->getRoot->getChildren ();
+        Scope* curScope = globalScope_;
+        std::vector<AST::Node*> curNodes = tree_->getRoot ()->getChildren ();
         while (!curNodes.empty ()) {
 
             AST::Node* nodeToExec = curNodes [0];
-            switch (nodeToExec->type_) {
+            switch (nodeToExec->getType ()) {
 
-                case OPERATOR: {
-                    ExecOperator (nodeToExec);
+                case AST::NodeT::OPERATOR: {
+                    ExecOperator (this, static_cast<AST::OperNode*>(nodeToExec), curScope);
                     break;
                 }
                 default: {

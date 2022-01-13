@@ -53,10 +53,6 @@ public:
         return type_;
     }
 
-    // NodeT setType (const NodeT newType) {
-    //     type_ = newType;
-    // }
-
     void setChildren (const std::vector<Node*>& children) {
     
         children_ = children;   //!TODO try catch?
@@ -240,6 +236,10 @@ public:
 
     void nodeDump (std::ostream& out) const override {
         out << value_;
+    }
+
+    int getValue () const {
+        return value_;
     }
 
 };
