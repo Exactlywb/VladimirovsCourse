@@ -9,7 +9,7 @@
 
 %}
 
-TRASH_SYMBS             [ \t\n\v]+
+TRASH_SYMBS             [ \t\r\n\v]+
 DIGIT                   [0-9]
 
 ALPHA                   [a-zA-Z]
@@ -28,10 +28,16 @@ ONE_LINE_COMMENT        "//".*
 "if"                    {   return yy::parser::token_type::IF;          }
 "while"                 {   return yy::parser::token_type::WHILE;       }
 
+"print"                 {   return yy::parser::token_type::PRINT;       }
+
+","                     {   return yy::parser::token_type::COMMA;       }
 ";"                     {   return yy::parser::token_type::SEMICOLON;   }
 
 "("                     {   return yy::parser::token_type::OPCIRCBRACK; }
 ")"                     {   return yy::parser::token_type::CLCIRCBRACK; }
+
+"{"                     {   return yy::parser::token_type::OPCURVBRACK; }
+"}"                     {   return yy::parser::token_type::CLCURVBRACK; }
 
 "+"                     {   return yy::parser::token_type::ADD;         }
 "-"                     {   return yy::parser::token_type::SUB;         }

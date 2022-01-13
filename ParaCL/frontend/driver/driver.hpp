@@ -19,11 +19,9 @@ public:
     parser::token_type yylex (parser::semantic_type *yylval) {
 
         parser::token_type tokenT = static_cast<parser::token_type>(lexer_->yylex ());
-        if (tokenT == yy::parser::token_type::NUMBER)
-            yylval->as<int>() = std::stoi (lexer_->YYText ());
-
+        
         switch (tokenT) {
-
+            //!TODO try catch
             case yy::parser::token_type::NUMBER: {
                 
                 yylval->build<int> () = std::stoi (lexer_->YYText ());

@@ -49,10 +49,15 @@ namespace yy {
 %token                      IF          "if"
 
 %token                      WHILE       "while"
+%token                      PRINT       "print"
 
 %token                      OPCIRCBRACK "("
 %token                      CLCIRCBRACK ")"
 
+%token                      OPCURVBRACK "{"
+%token                      CLCURVBRACK "}"
+
+%token                      COMMA       ","
 %token                      SEMICOLON   ";"
 
 %token                      LEXERR
@@ -69,6 +74,19 @@ namespace yy {
 
 %type <AST::Node*>                  statement
 
+%type <AST::Node*>                  ifStatement
+%type <AST::Node*>                  whileStatement
+
+%type <AST::Node*>                  body
+
+%type <AST::Node*>                  condExp
+%type <AST::Node*>                  condOper
+%type <AST::Node*>                  conditionExpression
+
+%type <AST::Node*>                  printStatement
+
+%type <std::vector<AST::Node*>*>    argsList
+%type <std::vector<AST::Node*>*>    args
 %type <std::vector<AST::Node*>*>    statementHandler
 
 %start translationStart
@@ -81,21 +99,71 @@ translationStart            :   statementHandler                {
                                                                     for (auto curStmtNode: *($1))                                                                
                                                                         globalScope->addChild (curStmtNode);
                                                                     
-                                                                    //delete $1;
+                                                                    delete $1;
                                                                     driver->setRoot (globalScope);
                                                                     driver->callDump (std::cout);
                                                                 };
 
 statementHandler            :   statement                       {
                                                                     $$ = new std::vector<AST::Node*>;
-                                                                    $$->push_back ($1);                                
+                                                                    $$->push_back ($1);
                                                                 }
                             |   statementHandler statement      {
                                                                     $1->push_back ($2);
                                                                     $$ = $1;
                                                                 };
 
-statement                   :   assignment                      {   $$ = $1;    };
+statement                   :   assignment                      {   $$ = $1;    }
+                            |   ifStatement                     {   $$ = $1;    }
+                            |   whileStatement                  {   $$ = $1;    }
+                            |   printStatement                  {   $$ = $1;    };
+
+printStatement              :   PRINT argsList SEMICOLON        {
+                                                                    AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::PRINT);
+                                                                    for (auto curArgNode: *($2))
+                                                                        newNode->addChild (curArgNode);
+                                                                    delete $2;
+                                                                    $$ = newNode;
+                                                                };
+argsList                    :   OPCIRCBRACK args CLCIRCBRACK    {   $$ = $2;    };
+args                        :   expr                            {
+                                                                    $$ = new std::vector<AST::Node*>;
+                                                                    $$->push_back ($1);
+                                                                }
+                            |   args COMMA expr                 {
+                                                                    $1->push_back ($3);
+                                                                    $$ = $1;
+                                                                };
+
+ifStatement                 :   IF conditionExpression body     {   
+                                                                    AST::CondNode* newNode = new AST::CondNode (AST::CondNode::ConditionType::IF);
+                                                                    newNode->addChild ($2);
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
+                                                                };
+whileStatement              :   WHILE conditionExpression body  {
+                                                                    AST::CondNode* newNode = new AST::CondNode (AST::CondNode::ConditionType::WHILE);
+                                                                    newNode->addChild ($2);
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
+                                                                };
+
+conditionExpression         :   OPCIRCBRACK condExp CLCIRCBRACK {   $$ = $2;    };
+condExp                     :   expr condOper expr              {
+                                                                    $2->addChild ($1);
+                                                                    $2->addChild ($3);
+                                                                    $$ = $2;
+                                                                };
+condOper                    :   MORE                            {   $$ = new AST::OperNode (AST::OperNode::OperType::MORE); };
+
+body                        :   OPCURVBRACK statementHandler CLCURVBRACK 
+                                                                {
+                                                                    AST::ScopeNode* newScope = new AST::ScopeNode ();
+                                                                    for (auto curStmtNode: *($2))
+                                                                        newScope->addChild (curStmtNode);
+                                                                    delete $2;
+                                                                    $$ = newScope;
+                                                                };
 
 assignment                  :   ID ASSIGN expr SEMICOLON        {
                                                                     AST::OperNode* newNode  = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
@@ -134,6 +202,7 @@ factor                      :   term                            {   $$ = $1;    
                                                                 };
 
 term                        :   NUMBER                          {   $$ = new AST::NumNode ($1); }
+                            |   ID                              {   $$ = new AST::VarNode ($1); }
                             |   OPCIRCBRACK expr CLCIRCBRACK    {   $$ = $2;                    };
 
 %%
