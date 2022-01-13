@@ -71,7 +71,6 @@ public:
         return parent_;
     }
 
-//!TODO Add child
     void addChild (Node* child) {
 
         children_.push_back (child);
@@ -93,7 +92,7 @@ public:
     Tree (Node* root = nullptr):
         root_ (root) {}
 
-    ~Tree ();   //!TODO
+    ~Tree ();
 
 //Rule of 0
     Tree (const Tree&)              = delete;
@@ -241,6 +240,20 @@ public:
 
     void nodeDump (std::ostream& out) const override {
         out << value_;
+    }
+
+};
+
+class ScopeNode final: public Node {
+
+    //!TODO
+
+public:
+    ScopeNode (Node* parent = nullptr):
+        Node (NodeT::SCOPE, parent) {}
+
+    void nodeDump (std::ostream& out) const override {
+        out << "SCOPE";
     }
 
 };

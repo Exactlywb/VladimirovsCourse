@@ -60,22 +60,42 @@ namespace yy {
 %left '+' '-' '*' '/'
 
 /* AST TREE */
-%type <AST::Node*> expr
+%type <AST::Node*>                  expr
 
-%type <AST::Node*> assignment
+%type <AST::Node*>                  assignment
 
-%type <AST::Node*> factor
-%type <AST::Node*> term
+%type <AST::Node*>                  factor
+%type <AST::Node*>                  term
+
+%type <AST::Node*>                  statement
+
+%type <std::vector<AST::Node*>*>    statementHandler
 
 %start translationStart
 
 %%
 
 /* FUNCTIONS IN THE NEAR FUTURE HAS TO BE ADDED HERE */
-translationStart            :   assignment                      {   
-                                                                    driver->setRoot ($1);
+translationStart            :   statementHandler                {   
+                                                                    AST::ScopeNode* globalScope = new AST::ScopeNode ();
+                                                                    for (auto curStmtNode: *($1))                                                                
+                                                                        globalScope->addChild (curStmtNode);
+                                                                    
+                                                                    //delete $1;
+                                                                    driver->setRoot (globalScope);
                                                                     driver->callDump (std::cout);
                                                                 };
+
+statementHandler            :   statement                       {
+                                                                    $$ = new std::vector<AST::Node*>;
+                                                                    $$->push_back ($1);                                
+                                                                }
+                            |   statementHandler statement      {
+                                                                    $1->push_back ($2);
+                                                                    $$ = $1;
+                                                                };
+
+statement                   :   assignment                      {   $$ = $1;    };
 
 assignment                  :   ID ASSIGN expr SEMICOLON        {
                                                                     AST::OperNode* newNode  = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
