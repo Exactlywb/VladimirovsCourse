@@ -51,3 +51,5 @@ target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/fronten
 target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/frontend/driver")
 target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/common/InputHandler/")
 
+target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/backend/interpreter/")
+

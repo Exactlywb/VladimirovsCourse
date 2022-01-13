@@ -5,6 +5,7 @@
 #include <FlexLexer.h>
 #include <string>
 #include "ast.hpp"
+#include "interpreter.hpp"
 
 namespace yy {
 
@@ -54,6 +55,23 @@ public:
     
     void callDump (std::ostream& out) {
         tree_.dump (out);
+    }
+
+    void interpret () { //!TODO does it have to be in driver?
+
+        Interpreter interpret (&tree_);
+        
+        try {
+       
+            interpret.run ();
+
+        } catch (const std::runtime_error& err) {
+
+            std::cout << "Runtime error: " << err.what () << std::endl;
+            throw err;
+
+        }
+
     }
 
 };

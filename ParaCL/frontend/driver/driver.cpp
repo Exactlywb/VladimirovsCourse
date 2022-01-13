@@ -25,6 +25,9 @@ int main (int argc, char** argv) {
     FlexLexer *lexer = new yyFlexLexer;
     yy::FrontendDriver driver (lexer);
     driver.parse ();
+
+    driver.interpret ();
+
     delete lexer;
 
     return 0;
