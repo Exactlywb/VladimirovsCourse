@@ -60,6 +60,8 @@ namespace yy {
 %token                      COMMA       ","
 %token                      SEMICOLON   ";"
 
+%token                      SCAN        "?"
+
 %token                      LEXERR
 
 %left '+' '-' '*' '/'
@@ -201,9 +203,10 @@ factor                      :   term                            {   $$ = $1;    
                                                                     $$ = newNode;
                                                                 };
 
-term                        :   NUMBER                          {   $$ = new AST::NumNode ($1); }
-                            |   ID                              {   $$ = new AST::VarNode ($1); }
-                            |   OPCIRCBRACK expr CLCIRCBRACK    {   $$ = $2;                    };
+term                        :   NUMBER                          {   $$ = new AST::NumNode   ($1);                               }
+                            |   SCAN                            {   $$ = new AST::OperNode  (AST::OperNode::OperType::SCAN);    }
+                            |   ID                              {   $$ = new AST::VarNode   ($1);                               }
+                            |   OPCIRCBRACK expr CLCIRCBRACK    {   $$ = $2;                                                    };
 
 %%
 

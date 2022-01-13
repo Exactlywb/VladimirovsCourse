@@ -30,6 +30,8 @@ ONE_LINE_COMMENT        "//".*
 
 "print"                 {   return yy::parser::token_type::PRINT;       }
 
+"?"                     {   return yy::parser::token_type::SCAN;        }
+
 ","                     {   return yy::parser::token_type::COMMA;       }
 ";"                     {   return yy::parser::token_type::SEMICOLON;   }
 
