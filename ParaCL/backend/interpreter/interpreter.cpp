@@ -4,9 +4,9 @@
 
 namespace interpret {
 
-    Scope::~Scope ()    //TODO: class wrap
+    ScopeTree::~ScopeTree () 
     {
-        Scope *curNode = this;
+        Scope *curNode = root_;
 
         std::stack<Scope *> stack;
         std::vector<Scope *> queueOnDelete;
@@ -21,11 +21,17 @@ namespace interpret {
                 stack.push (child);
         }
 
-        // for (int i = queueOnDelete.size () - 1; i >= 0; --i) {
-        //     delete queueOnDelete[i];
-        // }
+        for (int i = queueOnDelete.size () - 1; i >= 0; --i) {
+            delete queueOnDelete[i];
+        }
     }
-
+#if 1
+    Scope::~Scope ()    //TODO: class wrap
+    {
+        for (auto i : tbl_)
+            delete i.second;
+    }
+#endif 
     VarWrapper *Scope::lookup (const std::string &name) const
     {
         const Scope *curScope = this;
@@ -73,11 +79,30 @@ namespace interpret {
                     return CalcExpr (curScope, children[0]) * CalcExpr (curScope, children[1]);
                 case AST::OperNode::OperType::DIV:
                     return CalcExpr (curScope, children[0]) / CalcExpr (curScope, children[1]);
+                case AST::OperNode::OperType::EQ:
+                    return CalcExpr (curScope, children[0]) == CalcExpr (curScope, children[1]);
+                case AST::OperNode::OperType::NEQ:
+                    return CalcExpr (curScope, children[0]) != CalcExpr (curScope, children[1]);
+                case AST::OperNode::OperType::MORE:
+                    return CalcExpr (curScope, children[0]) > CalcExpr (curScope, children[1]);
+                case AST::OperNode::OperType::LESS:
+                    return CalcExpr (curScope, children[0]) < CalcExpr (curScope, children[1]);
+                case AST::OperNode::OperType::LTE:
+                    return CalcExpr (curScope, children[0]) <= CalcExpr (curScope, children[1]);
+                case AST::OperNode::OperType::GTE:
+                    return CalcExpr (curScope, children[0]) >= CalcExpr (curScope, children[1]);
+                case AST::OperNode::OperType::AND:
+                    return CalcExpr (curScope, children[0]) && CalcExpr (curScope, children[1]);
+                case AST::OperNode::OperType::OR:
+                    return CalcExpr (curScope, children[0]) || CalcExpr (curScope, children[1]);
                 case AST::OperNode::OperType::SCAN: {
-                    return -1;  //!TODO
+                    int tmp;        //TODO: other types
+                    std::cin >> tmp;
+                    return tmp;
                 }
-                default:
+                default:{
                     throw std::runtime_error ("Unexpected operator type in calculation");
+                }
             }
         }
 
@@ -140,7 +165,6 @@ namespace interpret {
 
     void Interpreter::execIf (Scope *curScope, AST::CondNode *node)
     {
-        std::cout << "execIf ()" << std::endl;
         std::vector<AST::Node *> children = node->getChildren ();
         if (CalcExpr (curScope, children[0])) {
             Scope *newScope = new Scope;
@@ -149,16 +173,25 @@ namespace interpret {
         }
     }
 
+    void Interpreter::execWhile (Scope *curScope, AST::CondNode *node)
+    {
+        std::vector<AST::Node *> children = node->getChildren ();
+        while (CalcExpr (curScope, children[0])) {
+            Scope *newScope = new Scope;
+            curScope->add (newScope);
+            execScope (newScope, static_cast<AST::ScopeNode *> (children[1]));
+        }
+    }
+
     void Interpreter::execCond (Scope *curScope, AST::CondNode *node)
     {
-        std::cout << "execCond ()" << std::endl;
         switch (node->getConditionType ()) {
             case AST::CondNode::ConditionType::IF:
                 execIf (curScope, node);
                 break;
-            //case AST::CondNode::ConditionType::WHILE:
-            //    execWhile (curScope, node);
-            //    break;
+            case AST::CondNode::ConditionType::WHILE:
+                execWhile (curScope, node);
+                break;
             default:
                 throw std::runtime_error ("Unexpected condition statement type");
         }
@@ -166,7 +199,6 @@ namespace interpret {
 
     void Interpreter::execScope (Scope *curScope, AST::ScopeNode *node)
     {
-        std::cout << "execScope ()" << std::endl;
         std::vector<AST::Node *> curNodes = node->getChildren ();
         while (!curNodes.empty ()) {
             AST::Node *nodeToExec = curNodes[0];
@@ -188,9 +220,9 @@ namespace interpret {
 
     void Interpreter::run ()
     {
-        Scope *curScope = globalScope_;
+        ScopeTree *mainRoot = globalScope_;
         AST::ScopeNode *startNode = static_cast<AST::ScopeNode *> (tree_->getRoot ());
-        execScope (curScope, startNode);
+        execScope (mainRoot->getRoot(), startNode);
     }
 
 }  // namespace interpret

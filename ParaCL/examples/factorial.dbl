@@ -11,7 +11,7 @@ curIt       = 1;
 
 while (curIt <= max_border) {
 
-    res     = res * i;
+    res     = res * curIt;
     curIt   = curIt + 1;
 
 }

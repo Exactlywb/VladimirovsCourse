@@ -46,6 +46,9 @@ namespace yy {
 %token                      GTE         ">="
 %token                      LTE         "<="
 
+%token                      AND         "&&"
+%token                      OR          "||"
+
 %token                      IF          "if"
 
 %token                      WHILE       "while"
@@ -68,16 +71,17 @@ namespace yy {
 %right '='
 
 /* AST TREE */
-%type <AST::Node*>                  fakeAssignment
+%type <AST::Node*>                  lvl15
+%type <AST::Node*>                  lvl14
+%type <AST::Node*>                  lvl13
+%type <AST::Node*>                  lvl9
+%type <AST::Node*>                  lvl8
+%type <AST::Node*>                  lvl6
+%type <AST::Node*>                  lvl5
 
-%type <AST::Node*>                  cond
-
-%type <AST::Node*>                  expr
+%type <AST::Node*>                  term
 
 %type <AST::Node*>                  assignment
-
-%type <AST::Node*>                  factor
-%type <AST::Node*>                  term
 
 %type <AST::Node*>                  statement
 
@@ -106,7 +110,9 @@ translationStart            :   statementHandler                {
                                                                     
                                                                     delete $1;
                                                                     driver->setRoot (globalScope);
-                                                                    driver->callDump (std::cout);
+                                                                    #if 0
+                                                                        driver->callDump (std::cout);
+                                                                    #endif
                                                                 };
 
 statementHandler            :   statement                       {
@@ -133,11 +139,11 @@ printStatement              :   PRINT argsList SEMICOLON        {
 
 argsList                    :   OPCIRCBRACK args CLCIRCBRACK    {   $$ = $2;    };
 
-args                        :   fakeAssignment                            {
+args                        :   lvl15                           {
                                                                     $$ = new std::vector<AST::Node*>;
                                                                     $$->push_back ($1);
                                                                 }
-                            |   args COMMA fakeAssignment                 {
+                            |   args COMMA lvl15                {
                                                                     $1->push_back ($3);
                                                                     $$ = $1;
                                                                 };
@@ -156,7 +162,7 @@ whileStatement              :   WHILE conditionExpression body  {
                                                                     $$ = newNode;
                                                                 };
 
-conditionExpression         :   OPCIRCBRACK fakeAssignment CLCIRCBRACK    {   $$ = $2;    };
+conditionExpression         :   OPCIRCBRACK lvl15 CLCIRCBRACK    {   $$ = $2;    };
 
 body                        :   OPCURVBRACK statementHandler CLCURVBRACK 
                                                                 {
@@ -167,7 +173,7 @@ body                        :   OPCURVBRACK statementHandler CLCURVBRACK
                                                                     $$ = newScope;
                                                                 };
 
-assignment                  :   ID ASSIGN fakeAssignment SEMICOLON        {
+assignment                  :   ID ASSIGN lvl15 SEMICOLON        {
                                                                     AST::OperNode* newNode  = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
                                                                     AST::VarNode* newVar    = new AST::VarNode  ($1);
                                                                     newNode->addChild (newVar);
@@ -175,74 +181,91 @@ assignment                  :   ID ASSIGN fakeAssignment SEMICOLON        {
                                                                     $$ = newNode;
                                                                 };
 
-fakeAssignment              :   cond                            {   $$ = $1;        }
-                            |   fakeAssignment ASSIGN cond      {
+lvl15                       :   lvl14                           {   $$ = $1;        }
+                            |   lvl15 ASSIGN lvl14              {
                                                                     AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
                                                                     newNode->addChild ($1);
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
                                                                 };
 
-cond                        :   expr                            {   $$ = $1;        }
-                            |   cond EQ expr                    {
+lvl14                       :   lvl13                           {   $$ = $1;        }
+                            |   lvl14 OR lvl13                  {
+                                                                    AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::OR);
+                                                                    newNode->addChild ($1);
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
+                                                                };
+
+lvl13                       :   lvl9                            {   $$ = $1;        }
+                            |   lvl13 AND lvl9                  {
+                                                                    AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::AND);
+                                                                    newNode->addChild ($1);
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
+                                                                };
+
+lvl9                        :   lvl8                            {   $$ = $1;        }
+                            |   lvl9 EQ lvl8                    {
                                                                     AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::EQ);
                                                                     newNode->addChild ($1);
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
                                                                 }
-                            |   cond NEQ expr                   {
+                            |   lvl9 NEQ lvl8                   {
                                                                     AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::NEQ);
                                                                     newNode->addChild ($1);
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
-                                                                }
-                            |   cond MORE expr                  {
+                                                                };
+lvl8                        :   lvl6                            {   $$ = $1;        }
+                            |   lvl8 MORE lvl6                  {
                                                                     AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::MORE);
                                                                     newNode->addChild ($1);
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
                                                                 }
-                            |   cond LESS expr                  {
+                            |   lvl8 LESS lvl6                  {
                                                                     AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::LESS);
                                                                     newNode->addChild ($1);
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
                                                                 }
-                            |   cond GTE expr                   {
+                            |   lvl8 GTE lvl6                   {
                                                                     AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::GTE);
                                                                     newNode->addChild ($1);
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
                                                                 }
-                            |   cond LTE expr                   {
+                            |   lvl8 LTE lvl6                   {
                                                                     AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::LTE);
                                                                     newNode->addChild ($1);
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
                                                                 };
 
-expr                        :   factor                          {   $$ = $1;        }
-                            |   expr ADD factor                 {   
+lvl6                        :   lvl5                            {   $$ = $1;        }
+                            |   lvl6 ADD lvl5                   {   
                                                                     AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::ADD);
                                                                     newNode->addChild ($1);
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
                                                                 }
-                            |   expr SUB factor                 {   
+                            |   lvl6 SUB lvl5                   {   
                                                                     AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::SUB);
                                                                     newNode->addChild ($1);
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
                                                                 };
 
-factor                      :   term                            {   $$ = $1;        }
-                            |   factor MUL term                 {   
+lvl5                        :   term                            {   $$ = $1;        }
+                            |   lvl5 MUL term                   {   
                                                                     AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::MUL);
                                                                     newNode->addChild ($1);
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
                                                                 }
-                            |   factor DIV term                 {
+                            |   lvl5 DIV term                   {
                                                                     AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::DIV);
                                                                     newNode->addChild ($1);
                                                                     newNode->addChild ($3);
@@ -252,7 +275,7 @@ factor                      :   term                            {   $$ = $1;    
 term                        :   NUMBER                          {   $$ = new AST::NumNode   ($1);                               }
                             |   SCAN                            {   $$ = new AST::OperNode  (AST::OperNode::OperType::SCAN);    }
                             |   ID                              {   $$ = new AST::VarNode   ($1);                               }
-                            |   OPCIRCBRACK fakeAssignment CLCIRCBRACK    {   $$ = $2;                                                    };
+                            |   OPCIRCBRACK lvl15 CLCIRCBRACK   {   $$ = $2;                                                    };
 
 %%
 

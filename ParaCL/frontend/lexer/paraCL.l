@@ -50,6 +50,9 @@ ONE_LINE_COMMENT        "//".*
 ">="                    {   return yy::parser::token_type::GTE;         }
 "<="                    {   return yy::parser::token_type::LTE;         }
 
+"&&"                    {   return yy::parser::token_type::AND;         }
+"||"                    {   return yy::parser::token_type::OR;          }
+
 "="                     {   return yy::parser::token_type::ASSIGN;      }
 
 {WORD}                  {   return yy::parser::token_type::ID;          }

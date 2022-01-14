@@ -71,12 +71,37 @@ namespace interpret {
         void add (Scope *scope);
     };
 
+    class ScopeTree final {
+    
+        Scope* root_;
+    public:
+        ScopeTree () : root_(new Scope) {}
+
+        ~ScopeTree ();
+
+        ScopeTree (const ScopeTree &) = delete;
+        ScopeTree (ScopeTree &&) = delete;
+        ScopeTree &operator= (const ScopeTree &) = delete;
+        ScopeTree &operator= (ScopeTree &&) = delete;
+
+        void setRoot (Scope *root)
+        {
+            root_ = root;
+        }
+
+        Scope *getRoot () const
+        {
+            return root_;
+        }
+
+    };
+
     class Interpreter final {
-        Scope *globalScope_;
+        ScopeTree *globalScope_;
         AST::Tree *tree_;
 
     public:
-        Interpreter (AST::Tree *tree) : globalScope_ (new Scope),
+        Interpreter (AST::Tree *tree) : globalScope_ (new ScopeTree),
                                         tree_ (tree) {}
 
         ~Interpreter ()
@@ -107,6 +132,9 @@ namespace interpret {
         void execWhile (Scope *curScope, AST::CondNode *node);
     };
 
+    
+
+    
 }  // namespace interpret
 
 #endif
