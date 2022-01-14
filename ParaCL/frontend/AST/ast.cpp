@@ -6,6 +6,8 @@
 AST::Tree::~Tree ()
 {
     AST::Node *curNode = root_;
+    if (!root_)
+        return;
 
     std::stack<AST::Node *> stack;
     std::vector<AST::Node *> queueOnDelete;

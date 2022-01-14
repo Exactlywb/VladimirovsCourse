@@ -259,7 +259,17 @@ term                        :   NUMBER                          {   $$ = new AST
 namespace yy {
 
 parser::token_type yylex (parser::semantic_type* yylval, FrontendDriver* driver) {
-    return driver->yylex (yylval);
+    
+    try {
+
+        return driver->yylex (yylval);
+    
+    } catch (std::runtime_error& err) {
+
+        throw err;        
+
+    }
+
 }
 
 void parser::error (const std::string&) {/*todo*/}

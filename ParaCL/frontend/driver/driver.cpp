@@ -21,7 +21,17 @@ int main (int argc, char **argv)
     std::cin.rdbuf (input.code_.rdbuf ());
 
     yy::FrontendDriver driver;
-    driver.parse ();
+    
+    try {
+
+        driver.parse ();
+
+    } catch (std::runtime_error& err) {
+
+        std::cout << err.what () << std::endl;
+        return 0;
+
+    }
 
     driver.interpret ();
 

@@ -10,6 +10,8 @@
 #include "grammar.tab.hh"
 #include "interpreter.hpp"
 
+#include "errorHandling.hpp"
+
 namespace yy {
 
     class FrontendDriver {
@@ -31,6 +33,9 @@ namespace yy {
                 }
                 case yy::parser::token_type::ID: {
                     yylval->build<std::string> () = lexer_->YYText ();
+                }
+                case yy::parser::token_type::LEXERR: {
+                    throw std::runtime_error ("Unexpected word");
                 }
             }
 
