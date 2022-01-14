@@ -22,13 +22,13 @@ int main (int argc, char** argv) {
 
     std::cin.rdbuf (input.code_.rdbuf ());
 
-    FlexLexer *lexer = new yyFlexLexer;
+    FlexLexer *lexer = new yyFlexLexer; // Move it in FrontendDriver-class and make it RAII 
     yy::FrontendDriver driver (lexer);
     driver.parse ();
 
-    driver.interpret ();
+    // driver.interpret ();
 
-    delete lexer;
+    delete lexer; // I don't want to delete it here. Let's do FrontendDriver-class is RAII 
 
     return 0;
 
