@@ -80,8 +80,22 @@ namespace interpret {
                     return CalcExpr (curScope, children[0]) * CalcExpr (curScope, children[1]);
                 case AST::OperNode::OperType::DIV:
                     return CalcExpr (curScope, children[0]) / CalcExpr (curScope, children[1]);
+                case AST::OperNode::OperType::EQ:
+                    return CalcExpr (curScope, children[0]) == CalcExpr (curScope, children[1]);
+                case AST::OperNode::OperType::NEQ:
+                    return CalcExpr (curScope, children[0]) != CalcExpr (curScope, children[1]);
+                case AST::OperNode::OperType::MORE:
+                    return CalcExpr (curScope, children[0]) > CalcExpr (curScope, children[1]);
+                case AST::OperNode::OperType::LESS:
+                    return CalcExpr (curScope, children[0]) < CalcExpr (curScope, children[1]);
+                case AST::OperNode::OperType::LTE:
+                    return CalcExpr (curScope, children[0]) <= CalcExpr (curScope, children[1]);
+                case AST::OperNode::OperType::GTE:
+                    return CalcExpr (curScope, children[0]) >= CalcExpr (curScope, children[1]);
                 case AST::OperNode::OperType::SCAN: {
-                    return -1;  //!TODO
+                    int tmp;        //TODO: other types
+                    std::cin >> tmp;
+                    return tmp;
                 }
                 default:
                     throw std::runtime_error ("Unexpected operator type in calculation");
@@ -156,6 +170,17 @@ namespace interpret {
         }
     }
 
+    void Interpreter::execWhile (Scope *curScope, AST::CondNode *node)
+    {
+        std::cout << "execWhile ()" << std::endl;
+        std::vector<AST::Node *> children = node->getChildren ();
+        while (CalcExpr (curScope, children[0])) {
+            Scope *newScope = new Scope;
+            curScope->add (newScope);
+            execScope (newScope, static_cast<AST::ScopeNode *> (children[1]));
+        }
+    }
+
     void Interpreter::execCond (Scope *curScope, AST::CondNode *node)
     {
         std::cout << "execCond ()" << std::endl;
@@ -163,9 +188,9 @@ namespace interpret {
             case AST::CondNode::ConditionType::IF:
                 execIf (curScope, node);
                 break;
-            //case AST::CondNode::ConditionType::WHILE:
-            //    execWhile (curScope, node);
-            //    break;
+            case AST::CondNode::ConditionType::WHILE:
+                execWhile (curScope, node);
+                break;
             default:
                 throw std::runtime_error ("Unexpected condition statement type");
         }
