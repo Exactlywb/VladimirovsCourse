@@ -73,27 +73,6 @@ public:
 
 };
 
-namespace {
-    
-    template <typename T>
-    VarWrapper* CreateNewVarUsingType   (const T value, 
-                                         const DataType type = DataType::INT) {
-        
-        VarWrapper* newVar = nullptr;
-        switch (type) {
-
-            case DataType::INT:
-                newVar = new Variable<int> (value, type);            
-                return newVar;
-
-        }
-    
-        return newVar;
-
-    }
-    
-}
-
 class Interpreter final {
 
     Scope* globalScope_;
@@ -118,38 +97,11 @@ public:
     Interpreter& operator = (Interpreter& other)        = delete;
 
 //Implementin' functions
-    void print      (Scope* curScope, const std::string& name);
-    
-    template <typename T = int>
-    void assignment (Scope* curScope, const std::string& name,
-                     const T value, const DataType type = DataType::INT) {
+private:
+    void execOper   (Scope* curScope, AST::OperNode* node); //!TODO rename
 
-        VarWrapper* var = curScope->lookup (name);
-        if (!var) {
-            
-            VarWrapper* newVar = CreateNewVarUsingType (value, type);
-            curScope->add (name, newVar);
-
-        } else {
-
-            switch (var->type_) {
-
-                case DataType::INT: {
-                    Variable<int>* clearVar = static_cast<Variable<int>*>(var);
-                    clearVar->setVal (value);
-                    break;
-                } 
-                case DataType::DOUBLE: {
-                    Variable<double>* clearVar = static_cast<Variable<double>*>(var);
-                    clearVar->setVal (value);
-                    break;
-                }
-
-            }
-
-        }
-
-    }
+    void print      (Scope* curScope, AST::OperNode* node);
+    void assignment (Scope* curScope, AST::OperNode* node);
 
 };
 

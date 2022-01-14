@@ -36,49 +36,107 @@ namespace interpret {
     
     }
     
-    void Interpreter::print (Scope* curScope, const std::string& name) {
-
-        VarWrapper* curVar = curScope->lookup (name);
-        Variable<int>* clearVar = static_cast<Variable<int>*>(curVar);       
-        std::cout << clearVar->getVal () << std::endl;
-
-    }
-
 namespace {
-    
-    int CalcExpr (AST::Node* node) {
 
-        return 5;
+    int     CalcExpr    (Scope* curScope, AST::Node* node);
+
+    int CalcVar (Scope* curScope, AST::VarNode* var) {
+
+        Variable<int>* clearVar = static_cast<Variable<int>*>(curScope->lookup (var->getName ()));
+        return clearVar->getVal ();
 
     }
 
-    void ExecOperator (Interpreter* interpret, AST::OperNode* node, Scope* curScope) {
-        
+    int CalcOper (Scope* curScope, AST::OperNode* node) {
+
+        std::vector<AST::Node*> children = node->getChildren ();
         switch (node->getOpType ()) {
 
-            case AST::OperNode::OperType::ASSIGN: {
-
-                std::vector<AST::Node*> children = node->getChildren ();
-                AST::VarNode* varNode = static_cast<AST::VarNode*>(children [0]);
-                interpret->assignment  (curScope, varNode->getName (), 
-                                        CalcExpr (children [1]));
-                break;
-
+            case AST::OperNode::OperType::ADD:
+                return CalcExpr (curScope, children [0]) + CalcExpr (curScope, children [1]);
+            case AST::OperNode::OperType::SUB:
+                return CalcExpr (curScope, children [0]) - CalcExpr (curScope, children [1]);
+            case AST::OperNode::OperType::MUL:
+                return CalcExpr (curScope, children [0]) * CalcExpr (curScope, children [1]);
+            case AST::OperNode::OperType::DIV:
+                return CalcExpr (curScope, children [0]) / CalcExpr (curScope, children [1]);
+            case AST::OperNode::OperType::SCAN: {
+                return -1;  //!TODO 
             }
-            case AST::OperNode::OperType::PRINT: {
-                
-                std::vector<AST::Node*> children = node->getChildren ();
-                for (auto curChild: children)
-                    std::cout << CalcExpr (curChild) << std::endl;
-                break;
-
-            }
+            default:
+                throw std::runtime_error ("Unexpected operator type in calculation");           
 
         }
 
     }
 
+    int CalcExpr (Scope* curScope, AST::Node* node) {
+
+        switch (node->getType ()) {
+            
+            case AST::NodeT::VARIABLE:
+                return CalcVar (curScope, static_cast<AST::VarNode*>(node));
+            case AST::NodeT::NUMBER:
+                return static_cast<AST::NumNode*>(node)->getValue ();
+            case AST::NodeT::OPERATOR:
+                return CalcOper (curScope, static_cast<AST::OperNode*>(node));
+            default:
+                throw std::runtime_error ("Unexpected node type");
+
+        }    
+
+    }
+
 }
+
+    void Interpreter::assignment (Scope* curScope, AST::OperNode* node) {
+
+        std::vector<AST::Node*> children = node->getChildren ();
+        
+        AST::VarNode* leftN = static_cast<AST::VarNode*>(children [0]);
+        int val = CalcExpr (curScope, children [1]);  //Now we have only int type... In the near future it shall be template
+
+        const std::string& name = leftN->getName ();
+        VarWrapper* findVar     = curScope->lookup (name);
+        if (!findVar) {
+            
+            Variable<int>* newVar = new Variable<int> (val);
+            curScope->add (name, newVar);
+
+        } else {
+
+            Variable<int>* clearVar = static_cast<Variable<int>*> (findVar);    //Only int type... 
+            clearVar->setVal (val);
+
+        }
+
+    }
+
+    void Interpreter::print (Scope* curScope, AST::OperNode* node) {
+
+        std::vector<AST::Node*> children = node->getChildren ();
+        
+        for (auto curNode: children)
+            std::cout << CalcExpr (curScope, curNode) << std::endl;
+
+    }
+
+    void Interpreter::execOper (Scope* curScope, AST::OperNode* node) {
+        
+        switch (node->getOpType ()) {
+
+            case AST::OperNode::OperType::ASSIGN: {
+                assignment (curScope, node);
+                break;
+            }
+            case AST::OperNode::OperType::PRINT: {
+                print (curScope, node);
+                break;
+            }
+
+        }
+
+    }
 
     void Interpreter::run () {
         
@@ -90,7 +148,7 @@ namespace {
             switch (nodeToExec->getType ()) {
 
                 case AST::NodeT::OPERATOR: {
-                    ExecOperator (this, static_cast<AST::OperNode*>(nodeToExec), curScope);
+                    execOper (curScope, static_cast<AST::OperNode*>(nodeToExec));
                     break;
                 }
                 default: {
