@@ -1,93 +1,79 @@
 #include "ast.hpp"
 
-AST::Tree::~Tree () {
+#include <vector>
+#include <stack>
 
-    AST::Node* curNode = root_;
+AST::Tree::~Tree ()
+{
+    AST::Node *curNode = root_;
 
-    while (curNode) {
+    std::stack<AST::Node *> stack;
+    std::vector<AST::Node *> queueOnDelete;
+    stack.push (curNode);
 
-again:
-        std::vector<AST::Node*> children = curNode->getChildren ();
-        size_t childrenNum = children.size ();
+    while (stack.size ()) {
+        curNode = stack.top ();
+        stack.pop ();
+        queueOnDelete.push_back (curNode);
 
-        for (size_t i = 0; i < childrenNum; ++i) {
-
-            AST::Node* curChild = children [i];
-            if (curChild) { //!TODO useless if?
-
-                curNode->eraseChild (i);
-                curNode = curChild;
-                goto again;                 //Try to do better
-
-            }
-
-        }
-
-        Node* parent = curNode->getParent ();
-        delete curNode;
-        curNode = parent;
-        
+        for (auto &child : curNode->getChildren ())
+            stack.push (child);
     }
-    
+
+    for (int i = queueOnDelete.size () - 1; i >= 0; --i) {
+        delete queueOnDelete[i];
+    }
 }
 
 namespace {
 
-    void PrintNodeIntoGraphviz (AST::Node* curNode, std::ostream& out) {
-
+    void PrintNodeIntoGraphviz (AST::Node *curNode, std::ostream &out)
+    {
         out << "\"" << curNode << "\" [label = \"";
         curNode->nodeDump (out);
         out << "\"]\n";
 
-        std::vector<AST::Node*> children = curNode->getChildren ();
+        std::vector<AST::Node *> children = curNode->getChildren ();
         size_t childrenNum = children.size ();
         for (int i = 0; i < childrenNum; ++i) {
-            
-            AST::Node* curChild = children [i];
+            AST::Node *curChild = children[i];
             if (curChild)
                 PrintNodeIntoGraphviz (curChild, out);
-
         }
-
     }
 
-    void BuildConnectionsInGraphviz (AST::Node* curNode, std::ostream& out) {
-
-        std::vector<AST::Node*> children = curNode->getChildren ();
+    void BuildConnectionsInGraphviz (AST::Node *curNode, std::ostream &out)
+    {
+        std::vector<AST::Node *> children = curNode->getChildren ();
         size_t childrenNum = children.size ();
         for (int i = 0; i < childrenNum; ++i) {
-            
-            AST::Node* curChild = children [i];
+            AST::Node *curChild = children[i];
             if (curChild)
                 out << "\"" << curNode << "\" -> \"" << curChild << "\"\n";
-
         }
 
         for (int i = 0; i < childrenNum; ++i) {
-            
-            AST::Node* curChild = children [i];
+            AST::Node *curChild = children[i];
             if (curChild)
                 BuildConnectionsInGraphviz (curChild, out);
-
         }
-
     }
 
-}
+}  // namespace
 
-void AST::Tree::dump (std::ostream& out) const {    //!TODO more informative dump
+void AST::Tree::dump (std::ostream &out) const
+{  //!TODO more informative dump
 
     if (!root_)
         return;
-    
-    out <<  "digraph tree {\n"
-            "rankdir = \"LR\"\n"
-            "node [fontsize=10, shape=box, height=0.5]\n"
-            "edge [fontsize=10]\n";
-    
-    PrintNodeIntoGraphviz       (root_, out);
-    BuildConnectionsInGraphviz  (root_, out);
+
+    out << "digraph tree {\n"
+           "rankdir = \"LR\"\n"
+           "node [fontsize=10, shape=box, height=0.5]\n"
+           "edge [fontsize=10]\n";
+
+    PrintNodeIntoGraphviz (root_, out);
+    BuildConnectionsInGraphviz (root_, out);
 
     out << "}\n";
-
 }
