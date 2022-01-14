@@ -22,13 +22,10 @@ int main (int argc, char** argv) {
 
     std::cin.rdbuf (input.code_.rdbuf ());
 
-    FlexLexer *lexer = new yyFlexLexer;
-    yy::FrontendDriver driver (lexer);
+    yy::FrontendDriver driver;
     driver.parse ();
 
-    driver.interpret ();
-
-    delete lexer;
+    // driver.interpret ();
 
     return 0;
 

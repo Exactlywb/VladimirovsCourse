@@ -4,6 +4,7 @@
 #include "grammar.tab.hh"
 #include <FlexLexer.h>
 #include <string>
+#include <memory>
 #include "ast.hpp"
 #include "interpreter.hpp"
 
@@ -11,11 +12,11 @@ namespace yy {
 
 class FrontendDriver {
 
-    FlexLexer *lexer_;
+    std::unique_ptr<FlexLexer> lexer_;
     AST::Tree tree_;
 
 public:
-    FrontendDriver (FlexLexer *lexer): lexer_ (lexer), tree_ () {}
+    FrontendDriver (): lexer_ (std::unique_ptr<yyFlexLexer> {new yyFlexLexer}), tree_ () {}
 
     parser::token_type yylex (parser::semantic_type *yylval) {
 
