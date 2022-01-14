@@ -157,6 +157,9 @@ namespace AST {
             GTE,   // >=
             LTE,   // <=
 
+            AND,   // &&
+            OR,    // ||
+
             SCAN,  // ?
             PRINT  // print
 

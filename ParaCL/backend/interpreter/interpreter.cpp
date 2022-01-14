@@ -91,6 +91,10 @@ namespace interpret {
                     return CalcExpr (curScope, children[0]) <= CalcExpr (curScope, children[1]);
                 case AST::OperNode::OperType::GTE:
                     return CalcExpr (curScope, children[0]) >= CalcExpr (curScope, children[1]);
+                case AST::OperNode::OperType::AND:
+                    return CalcExpr (curScope, children[0]) && CalcExpr (curScope, children[1]);
+                case AST::OperNode::OperType::OR:
+                    return CalcExpr (curScope, children[0]) || CalcExpr (curScope, children[1]);
                 case AST::OperNode::OperType::SCAN: {
                     int tmp;        //TODO: other types
                     std::cin >> tmp;

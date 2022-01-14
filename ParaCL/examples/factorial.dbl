@@ -5,7 +5,7 @@
 // Factorial program 
 // ======================================
 
-max_border  = 10;
+max_border  = ?;
 res         = 1;
 curIt       = 1;
 
