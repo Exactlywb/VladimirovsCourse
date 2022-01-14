@@ -138,10 +138,39 @@ namespace {
 
     }
 
-    void Interpreter::run () {
-        
-        Scope* curScope = globalScope_;
-        std::vector<AST::Node*> curNodes = tree_->getRoot ()->getChildren ();
+    void Interpreter::execIf (Scope* curScope, AST::CondNode* node) {
+        std::cout << "execIf ()" << std::endl;
+        std::vector<AST::Node*> children = node->getChildren ();
+        if (CalcExpr (curScope, children [0])) {
+            
+            Scope* newScope = new Scope;
+            curScope->add (newScope); 
+            execScope (newScope, static_cast<AST::ScopeNode*>(children [1]));
+
+        } 
+
+    }
+
+    void Interpreter::execCond (Scope* curScope, AST::CondNode* node) {
+        std::cout << "execCond ()" << std::endl;
+        switch (node->getConditionType ()) {
+            
+            case AST::CondNode::ConditionType::IF:
+                execIf (curScope, node);
+                break;
+            //case AST::CondNode::ConditionType::WHILE:
+            //    execWhile (curScope, node);
+            //    break;
+            default:
+                throw std::runtime_error ("Unexpected condition statement type");
+
+        } 
+
+    }
+    
+    void Interpreter::execScope (Scope* curScope, AST::ScopeNode* node) {
+        std::cout << "execScope ()" << std::endl;
+        std::vector<AST::Node*> curNodes = node->getChildren ();
         while (!curNodes.empty ()) {
 
             AST::Node* nodeToExec = curNodes [0];
@@ -151,14 +180,25 @@ namespace {
                     execOper (curScope, static_cast<AST::OperNode*>(nodeToExec));
                     break;
                 }
-                default: {
-                    throw std::runtime_error ("Unexpected node to execute");
+                case AST::NodeT::CONDITION: {
+                    execCond (curScope, static_cast<AST::CondNode*>(nodeToExec));
+                    break;
                 }
+                default: 
+                    throw std::runtime_error ("Unexpected node to execute");
 
             }
             curNodes.erase (curNodes.begin ());
 
         }
+
+    }
+
+    void Interpreter::run () {
+        
+        Scope* curScope = globalScope_;
+        AST::ScopeNode* startNode = static_cast<AST::ScopeNode*>(tree_->getRoot ());
+        execScope (curScope, startNode); 
 
     }
 
