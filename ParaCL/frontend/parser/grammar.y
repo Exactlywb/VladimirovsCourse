@@ -106,7 +106,9 @@ translationStart            :   statementHandler                {
                                                                     
                                                                     delete $1;
                                                                     driver->setRoot (globalScope);
-                                                                    driver->callDump (std::cout);
+                                                                    #if 0
+                                                                        driver->callDump (std::cout);
+                                                                    #endif
                                                                 };
 
 statementHandler            :   statement                       {

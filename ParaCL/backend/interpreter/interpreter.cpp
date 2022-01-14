@@ -96,8 +96,9 @@ namespace interpret {
                     std::cin >> tmp;
                     return tmp;
                 }
-                default:
+                default:{
                     throw std::runtime_error ("Unexpected operator type in calculation");
+                }
             }
         }
 
@@ -160,7 +161,6 @@ namespace interpret {
 
     void Interpreter::execIf (Scope *curScope, AST::CondNode *node)
     {
-        std::cout << "execIf ()" << std::endl;
         std::vector<AST::Node *> children = node->getChildren ();
         if (CalcExpr (curScope, children[0])) {
             Scope *newScope = new Scope;
@@ -171,7 +171,6 @@ namespace interpret {
 
     void Interpreter::execWhile (Scope *curScope, AST::CondNode *node)
     {
-        std::cout << "execWhile ()" << std::endl;
         std::vector<AST::Node *> children = node->getChildren ();
         while (CalcExpr (curScope, children[0])) {
             Scope *newScope = new Scope;
@@ -182,7 +181,6 @@ namespace interpret {
 
     void Interpreter::execCond (Scope *curScope, AST::CondNode *node)
     {
-        std::cout << "execCond ()" << std::endl;
         switch (node->getConditionType ()) {
             case AST::CondNode::ConditionType::IF:
                 execIf (curScope, node);
@@ -197,7 +195,6 @@ namespace interpret {
 
     void Interpreter::execScope (Scope *curScope, AST::ScopeNode *node)
     {
-        std::cout << "execScope ()" << std::endl;
         std::vector<AST::Node *> curNodes = node->getChildren ();
         while (!curNodes.empty ()) {
             AST::Node *nodeToExec = curNodes[0];
