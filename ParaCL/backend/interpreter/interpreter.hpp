@@ -64,7 +64,7 @@ namespace interpret {
         Scope &operator= (const Scope &other) = delete;
         Scope &operator= (Scope &&other) = delete;
 
-        // ~Scope ();  //!TODO
+        ~Scope ();  //!TODO
 
         VarWrapper *lookup (const std::string &name) const;
         void add (const std::string &name, VarWrapper *var);
@@ -93,6 +93,7 @@ namespace interpret {
         {
             return root_;
         }
+
     };
 
     class Interpreter final {

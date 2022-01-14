@@ -4,7 +4,7 @@
 
 namespace interpret {
 
-    ScopeTree::~ScopeTree ()
+    ScopeTree::~ScopeTree () 
     {
         Scope *curNode = root_;
 
@@ -25,12 +25,11 @@ namespace interpret {
             delete queueOnDelete[i];
         }
     }
-#if 0
+#if 1
     Scope::~Scope ()    //TODO: class wrap
     {
-        for (int i = queueOnDelete.size () - 1; i >= 0; --i) {
-            delete queueOnDelete[i];
-        }
+        for (auto i : tbl_)
+            delete i.second;
     }
 #endif 
     VarWrapper *Scope::lookup (const std::string &name) const

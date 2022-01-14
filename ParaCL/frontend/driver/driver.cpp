@@ -23,7 +23,7 @@ int main (int argc, char **argv)
     yy::FrontendDriver driver;
     driver.parse ();
 
-    // driver.interpret ();
+    driver.interpret ();
 
     return 0;
 }
