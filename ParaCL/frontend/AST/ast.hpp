@@ -246,8 +246,6 @@ public:
 
 class ScopeNode final: public Node {
 
-    //!TODO
-
 public:
     ScopeNode (Node* parent = nullptr):
         Node (NodeT::SCOPE, parent) {}
@@ -261,19 +259,17 @@ public:
 class CondNode final: public Node {
 
 public:
-    enum class ConditionType;
-
-private:
-    ConditionType condType_;
-
-public:
     enum class ConditionType {
 
         IF,
         WHILE
 
     };
+    
+private:
+    ConditionType condType_;
 
+public:
     CondNode (const ConditionType condType, Node* parent = nullptr):
         Node (NodeT::CONDITION, parent),
         condType_ (condType) {}

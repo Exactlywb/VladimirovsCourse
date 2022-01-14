@@ -98,10 +98,16 @@ public:
 
 //Implementin' functions
 private:
-    void execOper   (Scope* curScope, AST::OperNode* node); //!TODO rename
+    void execScope  (Scope* curScope, AST::ScopeNode* node);
+    
+    void execOper   (Scope* curScope, AST::OperNode* node);
+    void execCond   (Scope* curScope, AST::CondNode* node);
 
     void print      (Scope* curScope, AST::OperNode* node);
     void assignment (Scope* curScope, AST::OperNode* node);
+
+    void execIf     (Scope* curScope, AST::CondNode* node);
+    void execWhile  (Scope* curScope, AST::CondNode* node);
 
 };
 
