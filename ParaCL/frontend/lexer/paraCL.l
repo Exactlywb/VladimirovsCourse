@@ -2,10 +2,7 @@
 
 %{
 
-    #include "grammar.tab.hh"    
-    
-//local functions
-    static  inline  void    OneLineCommentUpdate ();
+    #include "grammar.tab.hh"
 
 %}
 

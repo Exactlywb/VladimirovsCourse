@@ -65,8 +65,13 @@ namespace yy {
 %token                      LEXERR
 
 %left '+' '-' '*' '/'
+%right '='
 
 /* AST TREE */
+%type <AST::Node*>                  fakeAssignment
+
+%type <AST::Node*>                  cond
+
 %type <AST::Node*>                  expr
 
 %type <AST::Node*>                  assignment
@@ -81,8 +86,6 @@ namespace yy {
 
 %type <AST::Node*>                  body
 
-%type <AST::Node*>                  condExp
-%type <AST::Node*>                  condOper
 %type <AST::Node*>                  conditionExpression
 
 %type <AST::Node*>                  printStatement
@@ -127,12 +130,14 @@ printStatement              :   PRINT argsList SEMICOLON        {
                                                                     delete $2;
                                                                     $$ = newNode;
                                                                 };
+
 argsList                    :   OPCIRCBRACK args CLCIRCBRACK    {   $$ = $2;    };
-args                        :   expr                            {
+
+args                        :   fakeAssignment                            {
                                                                     $$ = new std::vector<AST::Node*>;
                                                                     $$->push_back ($1);
                                                                 }
-                            |   args COMMA expr                 {
+                            |   args COMMA fakeAssignment                 {
                                                                     $1->push_back ($3);
                                                                     $$ = $1;
                                                                 };
@@ -143,6 +148,7 @@ ifStatement                 :   IF conditionExpression body     {
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
                                                                 };
+
 whileStatement              :   WHILE conditionExpression body  {
                                                                     AST::CondNode* newNode = new AST::CondNode (AST::CondNode::ConditionType::WHILE);
                                                                     newNode->addChild ($2);
@@ -150,18 +156,7 @@ whileStatement              :   WHILE conditionExpression body  {
                                                                     $$ = newNode;
                                                                 };
 
-conditionExpression         :   OPCIRCBRACK condExp CLCIRCBRACK {   $$ = $2;    };
-condExp                     :   expr condOper expr              {
-                                                                    $2->addChild ($1);
-                                                                    $2->addChild ($3);
-                                                                    $$ = $2;
-                                                                };
-condOper                    :   MORE                            {   $$ = new AST::OperNode (AST::OperNode::OperType::MORE); }
-                            |   LESS                            {   $$ = new AST::OperNode (AST::OperNode::OperType::LESS); }
-                            |   EQ                              {   $$ = new AST::OperNode (AST::OperNode::OperType::EQ);   }
-                            |   NEQ                             {   $$ = new AST::OperNode (AST::OperNode::OperType::NEQ);  }
-                            |   GTE                             {   $$ = new AST::OperNode (AST::OperNode::OperType::GTE);  }
-                            |   LTE                             {   $$ = new AST::OperNode (AST::OperNode::OperType::LTE);  };
+conditionExpression         :   OPCIRCBRACK fakeAssignment CLCIRCBRACK    {   $$ = $2;    };
 
 body                        :   OPCURVBRACK statementHandler CLCURVBRACK 
                                                                 {
@@ -172,10 +167,56 @@ body                        :   OPCURVBRACK statementHandler CLCURVBRACK
                                                                     $$ = newScope;
                                                                 };
 
-assignment                  :   ID ASSIGN expr SEMICOLON        {
+assignment                  :   ID ASSIGN fakeAssignment SEMICOLON        {
                                                                     AST::OperNode* newNode  = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
                                                                     AST::VarNode* newVar    = new AST::VarNode  ($1);
                                                                     newNode->addChild (newVar);
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
+                                                                };
+
+fakeAssignment              :   cond                            {   $$ = $1;        }
+                            |   fakeAssignment ASSIGN cond      {
+                                                                    AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
+                                                                    newNode->addChild ($1);
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
+                                                                };
+
+cond                        :   expr                            {   $$ = $1;        }
+                            |   cond EQ expr                    {
+                                                                    AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::EQ);
+                                                                    newNode->addChild ($1);
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
+                                                                }
+                            |   cond NEQ expr                   {
+                                                                    AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::NEQ);
+                                                                    newNode->addChild ($1);
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
+                                                                }
+                            |   cond MORE expr                  {
+                                                                    AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::MORE);
+                                                                    newNode->addChild ($1);
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
+                                                                }
+                            |   cond LESS expr                  {
+                                                                    AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::LESS);
+                                                                    newNode->addChild ($1);
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
+                                                                }
+                            |   cond GTE expr                   {
+                                                                    AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::GTE);
+                                                                    newNode->addChild ($1);
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
+                                                                }
+                            |   cond LTE expr                   {
+                                                                    AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::LTE);
+                                                                    newNode->addChild ($1);
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
                                                                 };
@@ -211,7 +252,7 @@ factor                      :   term                            {   $$ = $1;    
 term                        :   NUMBER                          {   $$ = new AST::NumNode   ($1);                               }
                             |   SCAN                            {   $$ = new AST::OperNode  (AST::OperNode::OperType::SCAN);    }
                             |   ID                              {   $$ = new AST::VarNode   ($1);                               }
-                            |   OPCIRCBRACK expr CLCIRCBRACK    {   $$ = $2;                                                    };
+                            |   OPCIRCBRACK fakeAssignment CLCIRCBRACK    {   $$ = $2;                                                    };
 
 %%
 
