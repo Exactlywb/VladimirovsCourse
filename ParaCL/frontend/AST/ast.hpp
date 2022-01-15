@@ -119,6 +119,7 @@ namespace AST {
             SUB,  // a - b
             MUL,  // a * b
             DIV,  // a / b
+            MOD,  // a % b
 
             UNARY_M, // -a
             UNARY_P, // +a
@@ -198,6 +199,9 @@ namespace AST {
                     break;
                 case OperType::AND:
                     out << "AND (&&)";
+                    break;
+                case OperType::MOD:
+                    out << "MOD (%)";
                     break;
                 case OperType::PRINT:
                     out << "PRINT [print ()]";
