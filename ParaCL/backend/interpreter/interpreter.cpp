@@ -1,37 +1,16 @@
 #include "interpreter.hpp"
+
 #include <stack>
 #include <vector>
 
 namespace interpret {
-
-    ScopeTree::~ScopeTree () 
-    {
-        Scope *curNode = root_;
-
-        std::stack<Scope *> stack;
-        std::vector<Scope *> queueOnDelete;
-        stack.push (curNode);
-
-        while (stack.size ()) {
-            curNode = stack.top ();
-            stack.pop ();
-            queueOnDelete.push_back (curNode);
-
-            for (auto &child : curNode->children_)
-                stack.push (child);
-        }
-
-        for (int i = queueOnDelete.size () - 1; i >= 0; --i) {
-            delete queueOnDelete[i];
-        }
-    }
 #if 1
-    Scope::~Scope ()    //TODO: class wrap
+    Scope::~Scope ()  //TODO: class wrap
     {
         for (auto i : tbl_)
             delete i.second;
     }
-#endif 
+#endif
     VarWrapper *Scope::lookup (const std::string &name) const
     {
         const Scope *curScope = this;
@@ -96,11 +75,11 @@ namespace interpret {
                 case AST::OperNode::OperType::OR:
                     return CalcExpr (curScope, children[0]) || CalcExpr (curScope, children[1]);
                 case AST::OperNode::OperType::SCAN: {
-                    int tmp;        //TODO: other types
+                    int tmp;  //TODO: other types
                     std::cin >> tmp;
                     return tmp;
                 }
-                default:{
+                default: {
                     throw std::runtime_error ("Unexpected operator type in calculation");
                 }
             }
@@ -220,9 +199,9 @@ namespace interpret {
 
     void Interpreter::run ()
     {
-        ScopeTree *mainRoot = globalScope_;
+        Tree::NAryTree<Scope *> *mainRoot = globalScope_;
         AST::ScopeNode *startNode = static_cast<AST::ScopeNode *> (tree_->getRoot ());
-        execScope (mainRoot->getRoot(), startNode);
+        execScope (mainRoot->getRoot (), startNode);
     }
 
 }  // namespace interpret

@@ -16,5 +16,5 @@ while (curIt <= max_border) {
 
 }
 
-printlox (res);
+print (res);
 

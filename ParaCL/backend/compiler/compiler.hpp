@@ -2,6 +2,7 @@
 #define COMPILER_H__
 
 #include "ast.hpp"
+#include "nAryTree.hpp"
 
 #include <vector>
 #include <string>
@@ -19,7 +20,7 @@ namespace ParaCompiler {
 
 class ParaCLLVMCompiler {
 
-    AST::Tree *tree_; 
+    Tree::NAryTree<AST::Node*> *tree_; 
 
     std::unique_ptr<llvm::LLVMContext>  context_;
     std::unique_ptr<llvm::Module>       module_;
@@ -28,7 +29,7 @@ class ParaCLLVMCompiler {
     std::unordered_map<std::string, 
                        llvm::Value*>    symbTbl_;
 public:
-    ParaCLLVMCompiler (AST::Tree *tree) : 
+    ParaCLLVMCompiler (Tree::NAryTree<AST::Node*> *tree) : 
         tree_ (tree),
         context_    (std::make_unique<llvm::LLVMContext> ()),
         module_     (std::make_unique<llvm::Module>("paraCL", *context_)),
@@ -41,7 +42,7 @@ public:
 
         std::cout << "LLVM here" << std::endl;
 
-        genScope ();
+        //genScope ();
 
     }
 

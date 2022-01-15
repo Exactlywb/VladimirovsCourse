@@ -10,12 +10,13 @@
 #include "ast.hpp"
 #include "grammar.tab.hh"
 #include "interpreter.hpp"
+#include "nAryTree.hpp"
 
 namespace yy {
 
     class FrontendDriver {
         std::unique_ptr<FlexLexer> lexer_;
-        AST::Tree tree_;
+        Tree::NAryTree<AST::Node *> tree_;
 
     public:
         FrontendDriver () : lexer_ (std::unique_ptr<yyFlexLexer>{new yyFlexLexer}), tree_ () {}
