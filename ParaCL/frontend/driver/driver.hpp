@@ -6,11 +6,10 @@
 #include <memory>
 #include <string>
 
+#include "compiler.hpp"
 #include "ast.hpp"
 #include "grammar.tab.hh"
 #include "interpreter.hpp"
-
-#include "errorHandling.hpp"
 
 namespace yy {
 
@@ -33,6 +32,7 @@ namespace yy {
                 }
                 case yy::parser::token_type::ID: {
                     yylval->build<std::string> () = lexer_->YYText ();
+                    break;
                 }
                 case yy::parser::token_type::LEXERR: {
                     throw std::runtime_error ("Unexpected word");
@@ -72,6 +72,22 @@ namespace yy {
                 throw err;
             }
         }
+
+        void compile () 
+        {
+
+            ParaCompiler::ParaCLLVMCompiler compiler (&tree_);
+            
+            try {
+                compiler.run ();
+            }
+            catch (const std::runtime_error &err) {
+                std::cout << "Runtime error: " << err.what ();
+                throw err;
+            }
+
+        }
+
     };
 
 }  // namespace yy

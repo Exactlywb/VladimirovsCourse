@@ -37,7 +37,8 @@ int main (int argc, char **argv)
 
     std::cin.rdbuf(cinbuf);
 
-    driver.interpret ();
+//    driver.interpret ();
+    driver.compile ();
 
     return 0;
 }
