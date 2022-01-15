@@ -120,7 +120,7 @@ translationStart            :   statementHandler                {
                                                                         delete $1;
                                                                     }
                                                                     driver->setRoot (globalScope);
-                                                                    #if 0
+                                                                    #if 1
                                                                         driver->callDump (std::cout);
                                                                     #endif
                                                                 };
