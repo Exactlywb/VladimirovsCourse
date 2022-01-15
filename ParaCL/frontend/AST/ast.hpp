@@ -80,34 +80,6 @@ namespace AST {
         }
     };
 
-    // class Tree final {
-    //     Node *root_ = nullptr;
-
-    // public:
-    //     Tree (Node *root = nullptr) : root_ (root) {}
-
-    //     ~Tree ();
-
-    //     //Rule of 0
-    //     Tree (const Tree &) = delete;
-    //     Tree (Tree &&) = delete;
-    //     Tree &operator= (const Tree &) = delete;
-    //     Tree &operator= (Tree &&) = delete;
-
-    //     void dump (std::ostream &out) const;
-
-    //     //Setters and getters
-    //     void setRoot (Node *root)
-    //     {
-    //         root_ = root;
-    //     }
-
-    //     Node *getRoot () const
-    //     {
-    //         return root_;
-    //     }
-    // };
-
 }  // namespace AST
 
 //*****************************************************************************
@@ -143,25 +115,28 @@ namespace AST {
     public:
         enum class OperType {
 
-            ADD,  // +
-            SUB,  // -
-            MUL,  // *
-            DIV,  // /
+            ADD,  // a + b
+            SUB,  // a - b
+            MUL,  // a * b
+            DIV,  // a / b
 
-            ASSIGN,  // =
+            UNARY_M, // -a
+            UNARY_P, // +a
 
-            MORE,  // >
-            LESS,  // <
-            EQ,    // ==
-            NEQ,   // !=
-            GTE,   // >=
-            LTE,   // <=
+            ASSIGN,  // a = b
 
-            AND,  // &&
-            OR,   // ||
+            MORE,  // a > b
+            LESS,  // a < b 
+            EQ,    // a == b
+            NEQ,   // a != b
+            GTE,   // a >= b
+            LTE,   // a <= b
 
-            SCAN,  // ?
-            PRINT  // print
+            AND,  // a && b
+            OR,   // a || b 
+
+            SCAN,  // a = ?
+            PRINT  // print (a)
 
         };
 
@@ -181,6 +156,12 @@ namespace AST {
                     break;
                 case OperType::SUB:
                     out << "SUB (-)";
+                    break;
+                case OperType::UNARY_M:
+                    out << "UNARY_M (-)";
+                    break;
+                case OperType::UNARY_P:
+                    out << "UNARY_P (+)";
                     break;
                 case OperType::MUL:
                     out << "MUL (*)";
@@ -211,6 +192,12 @@ namespace AST {
                     break;
                 case OperType::SCAN:
                     out << "SCAN (?)";
+                    break;
+                case OperType::OR:
+                    out << "OR (||)";
+                    break;
+                case OperType::AND:
+                    out << "AND (&&)";
                     break;
                 case OperType::PRINT:
                     out << "PRINT [print ()]";

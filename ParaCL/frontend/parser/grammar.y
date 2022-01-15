@@ -78,6 +78,7 @@ namespace yy {
 %type <AST::Node*>                  lvl8
 %type <AST::Node*>                  lvl6
 %type <AST::Node*>                  lvl5
+%type <AST::Node*>                  lvl3
 
 %type <AST::Node*>                  term
 
@@ -258,19 +259,31 @@ lvl6                        :   lvl5                            {   $$ = $1;    
                                                                     $$ = newNode;
                                                                 };
 
-lvl5                        :   term                            {   $$ = $1;        }
-                            |   lvl5 MUL term                   {   
+lvl5                        :   lvl3                            {   $$ = $1;        }
+                            |   lvl5 MUL lvl3                   {   
                                                                     AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::MUL);
                                                                     newNode->addChild ($1);
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
                                                                 }
-                            |   lvl5 DIV term                   {
+                            |   lvl5 DIV lvl3                   {
                                                                     AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::DIV);
                                                                     newNode->addChild ($1);
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
                                                                 };
+
+lvl3                        :   term                            {   $$ = $1;        }
+                            |   SUB lvl3                        {   
+                                                                    AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::UNARY_M);
+                                                                    newNode->addChild ($2);
+                                                                    $$ = newNode;
+                                                                }
+                            |   ADD lvl3                        {   
+                                                                    AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::UNARY_P);
+                                                                    newNode->addChild ($2);
+                                                                    $$ = newNode;
+                                                                };                                                            
 
 term                        :   NUMBER                          {   $$ = new AST::NumNode   ($1);                               }
                             |   SCAN                            {   $$ = new AST::OperNode  (AST::OperNode::OperType::SCAN);    }

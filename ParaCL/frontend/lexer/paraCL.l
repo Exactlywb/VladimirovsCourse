@@ -9,8 +9,6 @@
 TRASH_SYMBS             [ \t\r\n\v]+
 DIGIT                   [0-9]
 
-UNARY                   (\+|\-)?
-
 ALPHA                   [a-zA-Z]
 
 WORD                    ({ALPHA}|"_")({ALPHA}|{DIGIT}|"_")*
