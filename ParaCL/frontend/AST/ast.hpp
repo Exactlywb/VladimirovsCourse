@@ -80,33 +80,33 @@ namespace AST {
         }
     };
 
-    class Tree final {
-        Node *root_ = nullptr;
+    // class Tree final {
+    //     Node *root_ = nullptr;
 
-    public:
-        Tree (Node *root = nullptr) : root_ (root) {}
+    // public:
+    //     Tree (Node *root = nullptr) : root_ (root) {}
 
-        ~Tree ();
+    //     ~Tree ();
 
-        //Rule of 0
-        Tree (const Tree &) = delete;
-        Tree (Tree &&) = delete;
-        Tree &operator= (const Tree &) = delete;
-        Tree &operator= (Tree &&) = delete;
+    //     //Rule of 0
+    //     Tree (const Tree &) = delete;
+    //     Tree (Tree &&) = delete;
+    //     Tree &operator= (const Tree &) = delete;
+    //     Tree &operator= (Tree &&) = delete;
 
-        void dump (std::ostream &out) const;
+    //     void dump (std::ostream &out) const;
 
-        //Setters and getters
-        void setRoot (Node *root)
-        {
-            root_ = root;
-        }
+    //     //Setters and getters
+    //     void setRoot (Node *root)
+    //     {
+    //         root_ = root;
+    //     }
 
-        Node *getRoot () const
-        {
-            return root_;
-        }
-    };
+    //     Node *getRoot () const
+    //     {
+    //         return root_;
+    //     }
+    // };
 
 }  // namespace AST
 
@@ -157,8 +157,8 @@ namespace AST {
             GTE,   // >=
             LTE,   // <=
 
-            AND,   // &&
-            OR,    // ||
+            AND,  // &&
+            OR,   // ||
 
             SCAN,  // ?
             PRINT  // print

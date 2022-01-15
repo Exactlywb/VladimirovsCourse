@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ast.hpp"
+#include "nAryTree.hpp"
 
 namespace interpret {
 
@@ -66,43 +67,28 @@ namespace interpret {
 
         ~Scope ();  //!TODO
 
+        std::vector<Scope *> getChildren () const
+        {
+            return children_;
+        }
+
+        void nodeDump (std::ostream &out) const
+        {
+            out << "it is for compile";  //TODO: something with it
+        }
+
         VarWrapper *lookup (const std::string &name) const;
         void add (const std::string &name, VarWrapper *var);
         void add (Scope *scope);
     };
 
-    class ScopeTree final {
-    
-        Scope* root_;
-    public:
-        ScopeTree () : root_(new Scope) {}
-
-        ~ScopeTree ();
-
-        ScopeTree (const ScopeTree &) = delete;
-        ScopeTree (ScopeTree &&) = delete;
-        ScopeTree &operator= (const ScopeTree &) = delete;
-        ScopeTree &operator= (ScopeTree &&) = delete;
-
-        void setRoot (Scope *root)
-        {
-            root_ = root;
-        }
-
-        Scope *getRoot () const
-        {
-            return root_;
-        }
-
-    };
-
     class Interpreter final {
-        ScopeTree *globalScope_;
-        AST::Tree *tree_;
+        Tree::NAryTree<Scope *> *globalScope_;
+        Tree::NAryTree<AST::Node *> *tree_;
 
     public:
-        Interpreter (AST::Tree *tree) : globalScope_ (new ScopeTree),
-                                        tree_ (tree) {}
+        Interpreter (Tree::NAryTree<AST::Node *> *tree) : globalScope_ (new Tree::NAryTree<Scope *> (new Scope)),
+                                                          tree_ (tree) {}
 
         ~Interpreter ()
         {
@@ -132,9 +118,6 @@ namespace interpret {
         void execWhile (Scope *curScope, AST::CondNode *node);
     };
 
-    
-
-    
 }  // namespace interpret
 
 #endif

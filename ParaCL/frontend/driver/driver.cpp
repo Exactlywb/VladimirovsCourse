@@ -1,7 +1,7 @@
 #include "driver.hpp"
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 #include "InputHandler.hpp"
 
@@ -18,26 +18,24 @@ int main (int argc, char **argv)
         std::cout << "Input error: " << err.what () << std::endl;
         return 0;
     }
-    
-    std::streambuf *cinbuf = std::cin.rdbuf();
+
+    std::streambuf *cinbuf = std::cin.rdbuf ();
     std::cin.rdbuf (input.code_.rdbuf ());
 
     yy::FrontendDriver driver;
-    
+
     try {
-
         driver.parse ();
-
-    } catch (std::runtime_error& err) {
-
+    }
+    catch (std::runtime_error &err) {
         std::cout << err.what () << std::endl;
         return 0;
-
     }
 
-    std::cin.rdbuf(cinbuf);
+    std::cin.rdbuf (cinbuf);
 
     driver.interpret ();
+//    driver.compile ();
 
     return 0;
 }
