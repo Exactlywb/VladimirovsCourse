@@ -33,9 +33,13 @@ while (curIt <= max_border) {
 
 print (res);
 ```
-![Screenshot](pics/dump.png)
+<p align = "center">
+<img src = "pics/dump.png">
+</p>
+
 ---
 ===================================================================================================
+
 [ExactlyWb](https://github.com/Exactlywb)
 
 [PozhiloyPumba](https://github.com/PozhiloyPumba)
