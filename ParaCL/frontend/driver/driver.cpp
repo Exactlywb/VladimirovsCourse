@@ -22,13 +22,21 @@ int main (int argc, char **argv)
     std::streambuf *cinbuf = std::cin.rdbuf ();
     std::cin.rdbuf (input.code_.rdbuf ());
 
-    yy::FrontendDriver driver;
+    yy::FrontendDriver driver (argv [1]);
 
     try {
         driver.parse ();
     }
     catch (std::runtime_error &err) {
         std::cout << err.what () << std::endl;
+        return 0;
+    }
+
+    std::vector<std::string> error = driver.getErrVec();
+    if (!error.empty()) {
+
+        for (auto vec : error) 
+            std::cout << vec << std::endl;
         return 0;
     }
 

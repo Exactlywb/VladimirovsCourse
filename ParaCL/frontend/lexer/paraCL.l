@@ -1,9 +1,12 @@
 %option c++
 
+%option yylineno
+
+
 %{
 
     #include "grammar.tab.hh"
-
+    
 %}
 
 TRASH_SYMBS             [ \t\r\n\v]+

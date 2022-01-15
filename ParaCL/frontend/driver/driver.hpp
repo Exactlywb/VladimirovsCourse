@@ -5,6 +5,8 @@
 
 #include <memory>
 #include <string>
+#include <vector>
+#include <fstream>
 
 #include "compiler.hpp"
 #include "ast.hpp"
@@ -16,10 +18,26 @@ namespace yy {
 
     class FrontendDriver {
         std::unique_ptr<FlexLexer> lexer_;
-        Tree::NAryTree<AST::Node *> tree_;
+        Tree::NAryTree<AST::Node*> tree_;
+
+        std::vector<std::string> error_;
+        std::vector<std::string> code_;
 
     public:
-        FrontendDriver () : lexer_ (std::unique_ptr<yyFlexLexer>{new yyFlexLexer}), tree_ () {}
+        FrontendDriver (const char* input): 
+                lexer_ (std::unique_ptr<yyFlexLexer>{new yyFlexLexer}),
+                tree_ () {
+            
+            std::fstream inputFile (input, std::ios_base::in);
+            while (inputFile) {
+                
+                std::string newLine;
+                std::getline (inputFile, newLine);
+                code_.push_back (newLine);
+
+            }
+
+        }
 
         parser::token_type yylex (parser::semantic_type *yylval)
         {
@@ -28,6 +46,7 @@ namespace yy {
             switch (tokenT) {
                 //!TODO try catch
                 case yy::parser::token_type::NUMBER: {
+
                     yylval->build<int> () = std::stoi (lexer_->YYText ());
                     break;
                 }
@@ -42,6 +61,29 @@ namespace yy {
 
             return tokenT;
         }
+
+        int getLineNo() const noexcept {return lexer_->lineno();}
+
+        std::string getYYText() const noexcept {return lexer_->YYText();}
+
+        void pushError (const std::string& err)  {
+
+            error_.push_back(std::string("#") + std::to_string(getLineNo ()) + std::string(": ")
+                            + err + std::string (" ") + code_ [getLineNo () - 1]);
+
+        }
+
+        void pushErrorWithoutYYText (const std::string& err) {
+
+            error_.push_back(std::string("#") + std::to_string(getLineNo ()) + std::string(": ")
+                            + err);
+
+        }
+
+        std::vector<std::string> getErrVec () const {
+
+            return error_;
+        } 
 
         bool parse ()
         {
@@ -70,7 +112,6 @@ namespace yy {
             }
             catch (const std::runtime_error &err) {
                 std::cout << "Runtime error: " << err.what () << std::endl;
-                throw err;
             }
         }
 
@@ -84,7 +125,6 @@ namespace yy {
             }
             catch (const std::runtime_error &err) {
                 std::cout << "Runtime error: " << err.what ();
-                throw err;
             }
 
         }

@@ -106,13 +106,17 @@ namespace interpret {
 
         //Implementin' functions
     private:
+        int CalcExpr (Scope *curScope, AST::Node *node);
+        int CalcVar (Scope *curScope, AST::VarNode *var);
+        int CalcOper (Scope *curScope, AST::OperNode *node);\
+
         void execScope (Scope *curScope, AST::ScopeNode *node);
 
         void execOper (Scope *curScope, AST::OperNode *node);
         void execCond (Scope *curScope, AST::CondNode *node);
 
         void print (Scope *curScope, AST::OperNode *node);
-        void assignment (Scope *curScope, AST::OperNode *node);
+        int assignment (Scope *curScope, AST::OperNode *node);
 
         void execIf (Scope *curScope, AST::CondNode *node);
         void execWhile (Scope *curScope, AST::CondNode *node);

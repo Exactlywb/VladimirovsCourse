@@ -79,7 +79,7 @@ namespace Tree {
         {
             if (!root_)
                 return;
-
+            
             out << "digraph tree {\n"
                    "rankdir = \"LR\"\n"
                    "node [fontsize=10, shape=box, height=0.5]\n"
