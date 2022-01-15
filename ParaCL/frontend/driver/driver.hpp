@@ -9,14 +9,13 @@
 #include "ast.hpp"
 #include "grammar.tab.hh"
 #include "interpreter.hpp"
-
-#include "errorHandling.hpp"
+#include "nAryTree.hpp"
 
 namespace yy {
 
     class FrontendDriver {
         std::unique_ptr<FlexLexer> lexer_;
-        AST::Tree tree_;
+        Tree::NAryTree<AST::Node *> tree_;
 
     public:
         FrontendDriver () : lexer_ (std::unique_ptr<yyFlexLexer>{new yyFlexLexer}), tree_ () {}
@@ -33,6 +32,7 @@ namespace yy {
                 }
                 case yy::parser::token_type::ID: {
                     yylval->build<std::string> () = lexer_->YYText ();
+                    break;
                 }
                 case yy::parser::token_type::LEXERR: {
                     throw std::runtime_error ("Unexpected word");
