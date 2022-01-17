@@ -4,13 +4,13 @@
 #include <vector>
 
 namespace interpret {
-#if 1
-    Scope::~Scope ()  //TODO: class wrap
+
+    Scope::~Scope ()
     {
         for (auto i : tbl_)
             delete i.second;
     }
-#endif
+
     VarWrapper *Scope::lookup (const std::string &name) const
     {
         const Scope *curScope = this;
@@ -58,6 +58,8 @@ namespace interpret {
                 return CalcExpr (curScope, children[0]) * CalcExpr (curScope, children[1]);
             case AST::OperNode::OperType::DIV:
                 return CalcExpr (curScope, children[0]) / CalcExpr (curScope, children[1]);
+            case AST::OperNode::OperType::MOD:
+                return CalcExpr (curScope, children[0]) % CalcExpr (curScope, children[1]);
             case AST::OperNode::OperType::EQ:
                 return CalcExpr (curScope, children[0]) == CalcExpr (curScope, children[1]);
             case AST::OperNode::OperType::NEQ:

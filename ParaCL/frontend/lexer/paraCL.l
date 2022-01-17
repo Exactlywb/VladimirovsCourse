@@ -45,6 +45,7 @@ ONE_LINE_COMMENT        "//".*
 "-"                     {   return yy::parser::token_type::SUB;         }
 "*"                     {   return yy::parser::token_type::MUL;         }
 "/"                     {   return yy::parser::token_type::DIV;         }
+"%"                     {   return yy::parser::token_type::MOD;         }
 
 "=="                    {   return yy::parser::token_type::EQ;          }
 "!="                    {   return yy::parser::token_type::NEQ;         }

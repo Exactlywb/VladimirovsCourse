@@ -40,6 +40,7 @@ namespace yy {
 %token                      SUB         "-"
 %token                      MUL         "*"
 %token                      DIV         "/"
+%token                      MOD         "%"
 
 %token                      EQ          "=="
 %token                      NEQ         "!="
@@ -69,7 +70,7 @@ namespace yy {
 
 %token                      LEXERR
 
-%left '+' '-' '*' '/'
+%left '+' '-' '*' '/' '%'
 %right '='
 
 /* AST TREE */
@@ -411,11 +412,21 @@ lvl5                        :   lvl3                            {   $$ = $1;    
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
                                                                 }
+                            |   lvl5 MOD lvl3                   {   
+                                                                    AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::MOD);
+                                                                    newNode->addChild ($1);
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
+                                                                }
                             |   MUL lvl3                        {   
                                                                     driver->pushError ("Empty expression");
                                                                     $$ = nullptr;   
                                                                 }
                             |   DIV lvl3                        {   
+                                                                    driver->pushError ("Empty expression");
+                                                                    $$ = nullptr;   
+                                                                }
+                            |   MOD lvl3                        {   
                                                                     driver->pushError ("Empty expression");
                                                                     $$ = nullptr;   
                                                                 };
