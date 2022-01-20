@@ -19,7 +19,7 @@ namespace yy {class FrontendDriver;};
 
 %code
 {
-    extern int yylineno;
+extern int yylineno;
 #include "frontend/driver/driver.hpp"
 #include <string>
 
@@ -84,6 +84,7 @@ namespace yy {
 %type <AST::Node*>                  lvl3
 
 %type <AST::Node*>                  term
+%type <AST::Node*>                  atomic
 
 %type <AST::Node*>                  assignment
 
@@ -164,14 +165,19 @@ printStatement              :   PRINT argsList SEMICOLON        {
                                                                         $$ = newNode;
                                                                     }
                                                                 }
+                            |   PRINT atomic SEMICOLON          {   
+                                                                    AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::PRINT);
+                                                                    newNode->addChild ($2);            
+                                                                    $$ = newNode;
+                                                                }
                             |   PRINT argsList error            {
                                                                     driver->pushErrorWithoutYYText(std::string ("\';\' expected after print"));
                                                                     $$ = nullptr;
-                                                                };                        
+                                                                };
 
 argsList                    :   OPCIRCBRACK args CLCIRCBRACK    {   $$ = $2;    }
-                            |   OPCIRCBRACK error CLCIRCBRACK   {   
-                                                                    driver->pushError ("Undefined expression between \'(\' and \')\'");
+                            |   error                           {   
+                                                                    driver->pushError ("Undefined expression in argsList");
                                                                     $$ = nullptr;
                                                                 };
 
@@ -443,11 +449,12 @@ lvl3                        :   term                            {   $$ = $1;    
                                                                     $$ = newNode;
                                                                 };
 
+term                        :   atomic                          {   $$ = $1;    }
+                            |   OPCIRCBRACK lvl15 CLCIRCBRACK   {   $$ = $2;    };
 
-term                        :   NUMBER                          {   $$ = new AST::NumNode   ($1);                               }
+atomic                      :   NUMBER                          {   $$ = new AST::NumNode   ($1);                               }
                             |   SCAN                            {   $$ = new AST::OperNode  (AST::OperNode::OperType::SCAN);    }
-                            |   ID                              {   $$ = new AST::VarNode   ($1);                               }
-                            |   OPCIRCBRACK lvl15 CLCIRCBRACK   {   $$ = $2;                                                    };
+                            |   ID                              {   $$ = new AST::VarNode   ($1);                               };
 
 %%
 
