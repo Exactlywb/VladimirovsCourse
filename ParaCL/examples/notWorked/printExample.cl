@@ -1,3 +1,5 @@
 a = 10;
 b = 11;
-print a + b;    //atomaric print. No any expressions.
+
+print (a, b, 1, a + b);     //multy-print
+print a;                    //atomaric print

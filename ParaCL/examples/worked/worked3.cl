@@ -18,5 +18,6 @@ while (belov) {
 
 }
 
-print (belov, stradat);
+print belov; 
+print stradat;
 

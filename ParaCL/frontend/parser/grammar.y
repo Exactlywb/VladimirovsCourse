@@ -99,8 +99,8 @@ namespace yy {
 
 %type <AST::Node*>                  printStatement
 
-%type <std::vector<AST::Node*>*>    argsList
-%type <std::vector<AST::Node*>*>    args
+// %type <std::vector<AST::Node*>*>    argsList
+// %type <std::vector<AST::Node*>*>    args
 %type <std::vector<AST::Node*>*>    statementHandler
 
 %start translationStart
@@ -151,44 +151,30 @@ statement                   :   assignment                      {   $$ = $1;    
                             |   printStatement                  {   $$ = $1;    }
                             |   error                           {   driver->pushError ("Unexpected statement"); };
 
-printStatement              :   PRINT argsList SEMICOLON        {
-                                                                    if (!($2))
-                                                                        $$ = nullptr;
-                                                                    else {
-                                                                        AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::PRINT); 
-                                                                        for (auto curArgNode: *($2)) {
-                                                                            if (!curArgNode)
-                                                                                continue;
-                                                                            newNode->addChild (curArgNode);
-                                                                        }
-                                                                        delete $2;
-                                                                        $$ = newNode;
-                                                                    }
-                                                                }
-                            |   PRINT atomic SEMICOLON          {   
+printStatement              :   PRINT lvl15 SEMICOLON           {   
                                                                     AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::PRINT);
                                                                     newNode->addChild ($2);            
                                                                     $$ = newNode;
                                                                 }
-                            |   PRINT argsList error            {
+                            |   PRINT lvl15 error               {
                                                                     driver->pushErrorWithoutYYText(std::string ("\';\' expected after print"));
                                                                     $$ = nullptr;
                                                                 };
 
-argsList                    :   OPCIRCBRACK args CLCIRCBRACK    {   $$ = $2;    }
-                            |   error                           {   
-                                                                    driver->pushError ("Undefined expression in argsList");
-                                                                    $$ = nullptr;
-                                                                };
+// argsList                    :   OPCIRCBRACK args CLCIRCBRACK    {   $$ = $2;    }
+//                             |   error                           {   
+//                                                                     driver->pushError ("Undefined expression in argsList");
+//                                                                     $$ = nullptr;
+//                                                                 };
 
-args                        :   lvl15                           {
-                                                                    $$ = new std::vector<AST::Node*>;
-                                                                    $$->push_back ($1);
-                                                                }
-                            |   args COMMA lvl15                {
-                                                                    $1->push_back ($3);
-                                                                    $$ = $1;
-                                                                };
+// args                        :   lvl15                           {
+//                                                                     $$ = new std::vector<AST::Node*>;
+//                                                                     $$->push_back ($1);
+//                                                                 }
+//                             |   args COMMA lvl15                {
+//                                                                     $1->push_back ($3);
+//                                                                     $$ = $1;
+//                                                                 };
 
 ifStatement                 :   IF conditionExpression body     {
                                                                     if (!($2) || !($3))
