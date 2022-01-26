@@ -1,11 +1,14 @@
 %option c++
 
 %option yylineno
-
+%option yyclass="ParaCLexer"
 
 %{
 
     #include "grammar.tab.hh"
+    
+    #include "../frontend/customLexer/customLexer.hpp"
+    #define YY_USER_ACTION setLocation ();
     
 %}
 

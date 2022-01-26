@@ -14,10 +14,13 @@
 #include "interpreter.hpp"
 #include "nAryTree.hpp"
 
+#include "customLexer.hpp"
+
 namespace yy {
 
     class FrontendDriver {
-        std::unique_ptr<FlexLexer> lexer_;
+
+        std::unique_ptr<ParaCLexer> lexer_;
         Tree::NAryTree<AST::Node*> tree_;
 
         std::vector<std::string> error_;
@@ -25,7 +28,7 @@ namespace yy {
 
     public:
         FrontendDriver (const char* input): 
-                lexer_ (std::unique_ptr<yyFlexLexer>{new yyFlexLexer}),
+                lexer_ (std::unique_ptr<ParaCLexer>{new ParaCLexer}),
                 tree_ () {
             
             std::fstream inputFile (input, std::ios_base::in);
@@ -39,7 +42,7 @@ namespace yy {
 
         }
 
-        parser::token_type yylex (parser::semantic_type *yylval)
+        parser::token_type yylex (parser::semantic_type *yylval, parser::location_type* location)
         {
             parser::token_type tokenT = static_cast<parser::token_type> (lexer_->yylex ());
 
@@ -68,15 +71,29 @@ namespace yy {
 
         void pushError (const std::string& err)  {
 
-            error_.push_back(std::string("#") + std::to_string(getLineNo ()) + std::string(": ")
-                            + err + std::string (" ") + code_ [getLineNo () - 1]);
+            yy::location curLocation = lexer_->getLocation ();
+
+            std::string errPos      =   std::string ("#") + std::to_string (curLocation.begin.line) + std::string (", ")
+                                        + std::to_string (curLocation.begin.column) + std::string (": ");
+            std::string errMsg      =   err + std::string (": ");
+            std::string codePart    =   code_ [curLocation.begin.line - 1];
+            
+            std::string underLine ("\n");
+            underLine.insert (1, curLocation.begin.column + errPos.size () + errMsg.size () - 1, '~');
+            underLine              +=   std::string ("^");
+            
+            error_.push_back (errPos + errMsg + codePart + underLine);
 
         }
 
         void pushErrorWithoutYYText (const std::string& err) {
 
-            error_.push_back(std::string("#") + std::to_string(getLineNo ()) + std::string(": ")
-                            + err);
+            yy::location curLocation = lexer_->getLocation ();
+
+            std::string errPos      =   std::string ("#") + std::to_string (curLocation.begin.line) + std::string (", ")
+                                        + std::to_string (curLocation.begin.column) + std::string (": ");
+
+            error_.push_back (errPos + err);
 
         }
 

@@ -25,11 +25,13 @@ extern int yylineno;
 
 namespace yy {
 
-    parser::token_type yylex(parser::semantic_type* yylval, FrontendDriver *driver);
+    parser::token_type yylex(parser::semantic_type* yylval, parser::location_type* location, FrontendDriver *driver);
 
 }
 
 }
+
+%locations
 
 %token <int>                NUMBER
 %token <std::string>        ID
@@ -460,11 +462,11 @@ atomic                      :   NUMBER                          {   $$ = new AST
 
 namespace yy {
 
-parser::token_type yylex (parser::semantic_type* yylval, FrontendDriver* driver) {
+parser::token_type yylex (parser::semantic_type* yylval, parser::location_type* location, FrontendDriver* driver) {
     
     try {
 
-        return driver->yylex (yylval);
+        return driver->yylex (yylval, location);
     
     } catch (std::runtime_error& err) {
 
@@ -474,7 +476,7 @@ parser::token_type yylex (parser::semantic_type* yylval, FrontendDriver* driver)
 
 }
 
-void parser::error (const std::string&) {/*todo*/
+void parser::error (const parser::location_type& location, const std::string& what) {
 
 }
 
