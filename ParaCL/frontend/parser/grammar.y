@@ -132,12 +132,25 @@ translationStart            :   statementHandler                {
                                                                 };
 
 statementHandler            :   statement                       {
-                                                                    $$ = new std::vector<AST::Node*>;
-                                                                    $$->push_back ($1);
+                                                                    if ($1) {
+                                                                        $$ = new std::vector<AST::Node*>;
+                                                                        $$->push_back ($1);
+                                                                    } else
+                                                                        $$ = nullptr;
                                                                 }
                             |   statementHandler statement      {
-                                                                    $1->push_back ($2);
-                                                                    $$ = $1;
+                                                                    if ($1 && $2) {
+                                                                        $1->push_back ($2);
+                                                                        $$ = $1;
+                                                                    } else {
+                                                                        $$ = nullptr;
+                                                                        if ($1) {
+                                                                            for (auto v: *($1))
+                                                                                delete v;
+                                                                        }
+                                                                        delete $1;
+                                                                        delete $2;
+                                                                    }
                                                                 };
 
 
@@ -145,22 +158,26 @@ statement                   :   assignment                      {   $$ = $1;    
                             |   ifStatement                     {   $$ = $1;    }
                             |   whileStatement                  {   $$ = $1;    }
                             |   printStatement                  {   $$ = $1;    }
-                            |   error SEMICOLON                 {   
-                                                                    driver->pushError ("Undefined statement");
+                            |   error SEMICOLON                 {
+                                                                    driver->pushError (@1, "Undefined statement");
                                                                     $$ = nullptr;
                                                                 }
                             |   error END                       {
-                                                                    driver->pushError ("Undefined statement");
+                                                                    driver->pushError (@1, "Undefined statement");
                                                                     $$ = nullptr;
                                                                 };
 
-printStatement              :   PRINT lvl15 SEMICOLON           { 
+printStatement              :   PRINT lvl15 SEMICOLON           {
                                                                     AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::PRINT);
-                                                                    newNode->addChild ($2);            
+                                                                    newNode->addChild ($2); 
                                                                     $$ = newNode;
                                                                 }
                             |   PRINT error SEMICOLON           { 
-                                                                    driver->pushError ("Undefined expression in print");
+                                                                    driver->pushError (@2, "Undefined expression in print");
+                                                                    $$ = nullptr;
+                                                                }
+                            |   PRINT error END                 {   
+                                                                    driver->pushError (@2, "Undefined expression in print");
                                                                     $$ = nullptr;
                                                                 };
 
@@ -180,27 +197,46 @@ printStatement              :   PRINT lvl15 SEMICOLON           {
 //                                                                 };
 
 ifStatement                 :   IF conditionExpression body     {
-                                                                    AST::CondNode* newNode = new AST::CondNode (AST::CondNode::ConditionType::IF);
-                                                                    newNode->addChild ($2);
-                                                                    newNode->addChild ($3);
-                                                                    $$ = newNode;
+                                                                    if ($2 && $3) {
+                                                                        AST::CondNode* newNode = new AST::CondNode (AST::CondNode::ConditionType::IF);
+                                                                        newNode->addChild ($2);
+                                                                        newNode->addChild ($3);
+                                                                        $$ = newNode;
+                                                                    } else {
+                                                                        $$ = nullptr;
+                                                                        delete $2;
+                                                                        delete $3;
+                                                                    }
+
                                                                 };
 
 whileStatement              :   WHILE conditionExpression body  {
-                                                                    AST::CondNode* newNode = new AST::CondNode (AST::CondNode::ConditionType::WHILE);
-                                                                    newNode->addChild ($2);
-                                                                    newNode->addChild ($3);
-                                                                    $$ = newNode;
+                                                                    if ($2 && $3) {
+                                                                        AST::CondNode* newNode = new AST::CondNode (AST::CondNode::ConditionType::WHILE);
+                                                                        newNode->addChild ($2);
+                                                                        newNode->addChild ($3);
+                                                                        $$ = newNode;
+                                                                    } else {
+                                                                        $$ = nullptr;
+                                                                        delete $2;
+                                                                        delete $3;
+                                                                    }
                                                                 };
 
-conditionExpression         :   OPCIRCBRACK lvl15 CLCIRCBRACK   {   $$ = $2;    };
+conditionExpression         :   OPCIRCBRACK lvl15 CLCIRCBRACK   {   $$ = $2;    }
+                            |   OPCIRCBRACK error CLCIRCBRACK   {
+                                                                    $$ = nullptr;
+                                                                    driver->pushError (@2, "Bad expression for condition");
+                                                                };
 
 
 body                        :   OPCURVBRACK statementHandler CLCURVBRACK 
                                                                 {
                                                                     AST::ScopeNode* newScope = new AST::ScopeNode ();
-                                                                    for (auto curStmtNode: *($2))
-                                                                        newScope->addChild (curStmtNode);
+                                                                    if ($2) {
+                                                                        for (auto curStmtNode: *($2))
+                                                                           newScope->addChild (curStmtNode);
+                                                                    }
                                                                     delete $2;
                                                                     $$ = newScope;
                                                                 }
@@ -212,6 +248,22 @@ assignment                  :   ID ASSIGN lvl15 SEMICOLON       {
                                                                     newNode->addChild (newVar);
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
+                                                                }
+                            |   ID SEMICOLON                    {   
+                                                                    AST::OperNode*  newNode = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
+                                                                    AST::VarNode*   newVar  = new AST::VarNode ($1);
+                                                                    AST::NumNode*   defaultVal = new AST::NumNode (0);
+                                                                    newNode->addChild (newVar);
+                                                                    newNode->addChild (defaultVal);
+                                                                    $$ = newNode;
+                                                                }
+                            |   ID ASSIGN error SEMICOLON       {
+                                                                    $$ = nullptr;
+                                                                    driver->pushError (@3, "Bad expression after assignment");
+                                                                }
+                            |   ID error SEMICOLON              {
+                                                                    $$ = nullptr;
+                                                                    driver->pushError (@2, "Unexpected operation with variable");
                                                                 };
 
 lvl15                       :   lvl14                           {   $$ = $1;        }

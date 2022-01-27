@@ -69,9 +69,7 @@ namespace yy {
 
         std::string getYYText() const noexcept {return lexer_->YYText();}
 
-        void pushError (const std::string& err)  {
-
-            yy::location curLocation = lexer_->getLocation ();
+        void pushError (yy::location curLocation, const std::string& err)  {
 
             std::string errPos      =   std::string ("#") + std::to_string (curLocation.begin.line) + std::string (", ")
                                         + std::to_string (curLocation.begin.column) + std::string (": ");
@@ -79,21 +77,10 @@ namespace yy {
             std::string codePart    =   code_ [curLocation.begin.line - 1];
             
             std::string underLine ("\n");
-            underLine.insert (1, curLocation.begin.column + errPos.size () + errMsg.size () - 1, '~');
+            underLine.insert (1, curLocation.begin.column + errPos.size () + errMsg.size (), '~');
             underLine              +=   std::string ("^");
             
             error_.push_back (errPos + errMsg + codePart + underLine);
-
-        }
-
-        void pushErrorWithoutYYText (const std::string& err) {
-
-            yy::location curLocation = lexer_->getLocation ();
-
-            std::string errPos      =   std::string ("#") + std::to_string (curLocation.begin.line) + std::string (", ")
-                                        + std::to_string (curLocation.begin.column) + std::string (": ");
-
-            error_.push_back (errPos + err);
 
         }
 
