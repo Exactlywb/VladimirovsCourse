@@ -62,6 +62,8 @@ namespace yy {
                 }
             }
 
+            *location = lexer_->getLocation ();
+
             return tokenT;
         }
 

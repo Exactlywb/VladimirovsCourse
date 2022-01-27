@@ -263,7 +263,7 @@ assignment                  :   ID ASSIGN lvl15 SEMICOLON       {
                                                                 }
                             |   ID error SEMICOLON              {
                                                                     $$ = nullptr;
-                                                                    driver->pushError (@2, "Unexpected operation with variable");
+                                                                    driver->pushError (@1, "Unexpected operation with variable");
                                                                 };
 
 lvl15                       :   lvl14                           {   $$ = $1;        }
