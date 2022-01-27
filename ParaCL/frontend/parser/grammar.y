@@ -70,10 +70,12 @@ namespace yy {
 
 %token                      SCAN        "?"
 
+%token                      END         0   "end of file"
+
 %token                      LEXERR
 
 %left '+' '-' '*' '/' '%'
-%right '='
+%right '=' 
 
 /* AST TREE */
 %type <AST::Node*>                  lvl15
@@ -124,26 +126,18 @@ translationStart            :   statementHandler                {
                                                                         delete $1;
                                                                     }
                                                                     driver->setRoot (globalScope);
-                                                                    #if 0
+                                                                    #if 1
                                                                         driver->callDump (std::cout);
                                                                     #endif
                                                                 };
 
 statementHandler            :   statement                       {
-                                                                    if (!($1))
-                                                                        $$ = nullptr;
-                                                                    else {
-                                                                        $$ = new std::vector<AST::Node*>;
-                                                                        $$->push_back ($1);
-                                                                    }
+                                                                    $$ = new std::vector<AST::Node*>;
+                                                                    $$->push_back ($1);
                                                                 }
                             |   statementHandler statement      {
-                                                                    if (!($1) || !($2))
-                                                                        $$ = nullptr;
-                                                                    else {
-                                                                        $1->push_back ($2);
-                                                                        $$ = $1;
-                                                                    }
+                                                                    $1->push_back ($2);
+                                                                    $$ = $1;
                                                                 };
 
 
@@ -151,15 +145,22 @@ statement                   :   assignment                      {   $$ = $1;    
                             |   ifStatement                     {   $$ = $1;    }
                             |   whileStatement                  {   $$ = $1;    }
                             |   printStatement                  {   $$ = $1;    }
-                            |   error                           {   driver->pushError ("Unexpected statement"); };
+                            |   error SEMICOLON                 {   
+                                                                    driver->pushError ("Undefined statement");
+                                                                    $$ = nullptr;
+                                                                }
+                            |   error END                       {
+                                                                    driver->pushError ("Undefined statement");
+                                                                    $$ = nullptr;
+                                                                };
 
-printStatement              :   PRINT lvl15 SEMICOLON           {   
+printStatement              :   PRINT lvl15 SEMICOLON           { 
                                                                     AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::PRINT);
                                                                     newNode->addChild ($2);            
                                                                     $$ = newNode;
                                                                 }
-                            |   PRINT lvl15 error               {
-                                                                    driver->pushErrorWithoutYYText(std::string ("\';\' expected after print"));
+                            |   PRINT error SEMICOLON           { 
+                                                                    driver->pushError ("Undefined expression in print");
                                                                     $$ = nullptr;
                                                                 };
 
@@ -179,83 +180,46 @@ printStatement              :   PRINT lvl15 SEMICOLON           {
 //                                                                 };
 
 ifStatement                 :   IF conditionExpression body     {
-                                                                    if (!($2) || !($3))
-                                                                        $$ = nullptr;
-                                                                    else {
-                                                                        AST::CondNode* newNode = new AST::CondNode (AST::CondNode::ConditionType::IF);
-                                                                        newNode->addChild ($2);
-                                                                        newNode->addChild ($3);
-                                                                        $$ = newNode;
-                                                                    }
+                                                                    AST::CondNode* newNode = new AST::CondNode (AST::CondNode::ConditionType::IF);
+                                                                    newNode->addChild ($2);
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
                                                                 };
 
 whileStatement              :   WHILE conditionExpression body  {
-                                                                    if (!($2) || !($3)) {
-                                                                        $$ = nullptr;
-                                                                    }
-                                                                    else {
-                                                                        AST::CondNode* newNode = new AST::CondNode (AST::CondNode::ConditionType::WHILE);
-                                                                        newNode->addChild ($2);
-                                                                        newNode->addChild ($3);
-                                                                        $$ = newNode;
-                                                                    }
+                                                                    AST::CondNode* newNode = new AST::CondNode (AST::CondNode::ConditionType::WHILE);
+                                                                    newNode->addChild ($2);
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
                                                                 };
 
-conditionExpression         :   OPCIRCBRACK lvl15 CLCIRCBRACK   {   $$ = $2;    }
-                            |   OPCIRCBRACK error CLCIRCBRACK   {
-                                                                    driver->pushError ("Undefined expression between \'(\' and \')\'");
-                                                                    $$ = nullptr;
-                                                                };
+conditionExpression         :   OPCIRCBRACK lvl15 CLCIRCBRACK   {   $$ = $2;    };
 
 
 body                        :   OPCURVBRACK statementHandler CLCURVBRACK 
                                                                 {
-                                                                    if (!($2))
-                                                                        $$ = nullptr;
-                                                                    else {
-                                                                        AST::ScopeNode* newScope = new AST::ScopeNode ();
-                                                                        for (auto curStmtNode: *($2))
-                                                                            newScope->addChild (curStmtNode);
-                                                                        delete $2;
-                                                                        $$ = newScope;
-                                                                    }
+                                                                    AST::ScopeNode* newScope = new AST::ScopeNode ();
+                                                                    for (auto curStmtNode: *($2))
+                                                                        newScope->addChild (curStmtNode);
+                                                                    delete $2;
+                                                                    $$ = newScope;
                                                                 }
                             |   OPCURVBRACK CLCURVBRACK         {   $$ = new AST::ScopeNode ();   };
 
-assignment                  :   ID ASSIGN lvl15 SEMICOLON        {
-                                                                    if ($3) {
-                                                                        AST::OperNode* newNode  = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
-                                                                        AST::VarNode* newVar    = new AST::VarNode  ($1);
-                                                                        newNode->addChild (newVar);
-                                                                        newNode->addChild ($3);
-                                                                        $$ = newNode;
-                                                                    } else
-                                                                        $$ = nullptr;
-                                                                    
-                                                                }
-                            |   ID ASSIGN lvl15 error           {
-                                                                    driver->pushErrorWithoutYYText(std::string ("Expression expected in assignment"));
-                                                                    $$ = nullptr;
-                                                                }
-                            |   ID SEMICOLON                    {   
-                                                                    driver->pushError (std::string ("With initializatin' only:)"));
-                                                                    $$ = nullptr;
+assignment                  :   ID ASSIGN lvl15 SEMICOLON       {
+                                                                    AST::OperNode* newNode  = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
+                                                                    AST::VarNode* newVar    = new AST::VarNode  ($1);
+                                                                    newNode->addChild (newVar);
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
                                                                 };
 
 lvl15                       :   lvl14                           {   $$ = $1;        }
                             |   ID ASSIGN lvl15                 {
-                                                                    if ($3) {
-                                                                        AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
-                                                                        newNode->addChild (new AST::VarNode ($1));
-                                                                        newNode->addChild ($3);
-                                                                        $$ = newNode;
-                                                                    }
-                                                                    else
-                                                                        $$ = nullptr;
-                                                                }
-                            |   %empty                          {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
+                                                                    AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
+                                                                    newNode->addChild (new AST::VarNode ($1));
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
                                                                 };
 
 lvl14                       :   lvl13                           {   $$ = $1;        }
@@ -264,14 +228,6 @@ lvl14                       :   lvl13                           {   $$ = $1;    
                                                                     newNode->addChild ($1);
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
-                                                                }
-                            |   OR lvl13                        {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
-                                                                }
-                            |   lvl14 OR                        {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
                                                                 };
 
 
@@ -281,14 +237,6 @@ lvl13                       :   lvl9                            {   $$ = $1;    
                                                                     newNode->addChild ($1);
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
-                                                                }
-                            |   AND lvl9                        {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
-                                                                }
-                            |   lvl13 AND                       {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
                                                                 };
 
 lvl9                        :   lvl8                            {   $$ = $1;        }
@@ -303,22 +251,6 @@ lvl9                        :   lvl8                            {   $$ = $1;    
                                                                     newNode->addChild ($1);
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
-                                                                }
-                            |   EQ lvl8                         {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
-                                                                }
-                            |   lvl9 EQ                         {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
-                                                                }
-                            |   NEQ lvl8                        {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
-                                                                }
-                            |   lvl9 NEQ                        {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
                                                                 };
 
 lvl8                        :   lvl6                            {   $$ = $1;        }
@@ -345,38 +277,6 @@ lvl8                        :   lvl6                            {   $$ = $1;    
                                                                     newNode->addChild ($1);
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
-                                                                }
-                            |   MORE lvl6                       {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
-                                                                }
-                            |   lvl8 MORE                       {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
-                                                                }
-                            |   LESS lvl6                       {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
-                                                                }
-                            |   lvl8 LESS                       {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
-                                                                }
-                            |   GTE lvl6                        {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
-                                                                }
-                            |   lvl8 GTE                        {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
-                                                                }
-                            |   LTE lvl6                        {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
-                                                                }
-                            |   lvl8 LTE                        {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
                                                                 };
 
 lvl6                        :   lvl5                            {   $$ = $1;        }
@@ -411,18 +311,6 @@ lvl5                        :   lvl3                            {   $$ = $1;    
                                                                     newNode->addChild ($1);
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
-                                                                }
-                            |   MUL lvl3                        {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
-                                                                }
-                            |   DIV lvl3                        {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
-                                                                }
-                            |   MOD lvl3                        {   
-                                                                    driver->pushError ("Empty expression");
-                                                                    $$ = nullptr;   
                                                                 };
 
 lvl3                        :   term                            {   $$ = $1;        }
@@ -456,7 +344,7 @@ parser::token_type yylex (parser::semantic_type* yylval, parser::location_type* 
     
     } catch (std::runtime_error& err) {
 
-        throw err;        
+        throw err; 
 
     }
 

@@ -9,7 +9,8 @@
     
     #include "../frontend/customLexer/customLexer.hpp"
     #define YY_USER_ACTION setLocation ();
-    
+    #define yyterminate() return yy::parser::token_type::END    
+
 %}
 
 TRASH_SYMBS             [ \t\r\n\v]+
