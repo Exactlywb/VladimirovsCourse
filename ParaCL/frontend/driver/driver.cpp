@@ -32,11 +32,17 @@ int main (int argc, char **argv)
         return 0;
     }
 
-    std::vector<std::string> error = driver.getErrVec();
-    if (!error.empty()) {
+    auto errorSt = driver.errBegin ();
+    auto errorFin = driver.errEnd ();
 
-        for (auto vec : error) 
-            std::cout << vec << std::endl;
+    if (errorSt != errorFin) {
+
+        while (errorSt != errorFin) {
+
+            std::cout << *errorSt << std::endl;
+            errorSt = std::next (errorSt, 1);
+        }
+
         return 0;
     }
 

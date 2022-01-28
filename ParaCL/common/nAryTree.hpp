@@ -75,7 +75,6 @@ namespace Tree {
                     childrenSt = std::next (childrenSt, 1);
 
                 }
-
             }
 
             for (int i = queueOnDelete.size () - 1; i >= 0; --i)

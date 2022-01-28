@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <iterator>
 
 #include "compiler.hpp"
 #include "ast.hpp"
@@ -86,11 +87,16 @@ namespace yy {
 
         }
 
-        std::vector<std::string> getErrVec () const {
+        std::vector<std::string>::const_iterator errBegin () const {
 
-            return error_;
-        } 
+            return error_.cbegin ();
+        }
 
+        std::vector<std::string>::const_iterator errEnd () const {
+
+            return error_.cend ();
+        }
+        
         bool parse ()
         {
             parser parser (this);
