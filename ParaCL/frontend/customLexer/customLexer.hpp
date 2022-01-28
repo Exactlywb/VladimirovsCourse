@@ -7,7 +7,7 @@
 
 #include "location.hh"
 
-class ParaCLexer: public yyFlexLexer {
+class ParaCLexer final: public yyFlexLexer {
 
     yy::location location_ {};
 

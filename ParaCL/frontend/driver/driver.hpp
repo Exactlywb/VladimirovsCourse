@@ -18,7 +18,7 @@
 
 namespace yy {
 
-    class FrontendDriver {
+    class FrontendDriver final {
 
         std::unique_ptr<ParaCLexer> lexer_;
         Tree::NAryTree<AST::Node*> tree_;
