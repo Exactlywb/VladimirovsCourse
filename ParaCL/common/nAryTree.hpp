@@ -17,30 +17,35 @@ namespace Tree {
             curNode->nodeDump (out);
             out << "\"]\n";
 
-            std::vector<T> children = curNode->getChildren ();
-            size_t childrenNum = children.size ();
-            for (int i = 0; i < childrenNum; ++i) {
-                T curChild = children[i];
+            for (auto it = curNode->childBegin (); it != curNode->childEnd (); ++it) {
+
+                T curChild = *it;
                 if (curChild)
                     PrintNodeIntoGraphviz (curChild, out);
+
             }
+
         }
 
         void BuildConnectionsInGraphviz (T curNode, std::ostream &out) const
         {
-            std::vector<T> children = curNode->getChildren ();
-            size_t childrenNum = children.size ();
-            for (int i = 0; i < childrenNum; ++i) {
-                T curChild = children[i];
+            
+            for (auto it = curNode->childBegin (); it != curNode->childEnd (); ++it) {
+
+                T curChild = *it;
                 if (curChild)
                     out << "\"" << curNode << "\" -> \"" << curChild << "\"\n";
+
             }
 
-            for (int i = 0; i < childrenNum; ++i) {
-                T curChild = children[i];
+            for (auto it = curNode->childBegin (); it != curNode->childEnd (); ++it) {
+
+                T curChild = *it;
                 if (curChild)
                     BuildConnectionsInGraphviz (curChild, out);
+
             }
+
         }
 
     public:
@@ -61,8 +66,16 @@ namespace Tree {
                 stack.pop ();
                 queueOnDelete.push_back (curNode);
 
-                for (auto &child : curNode->getChildren ())
-                    stack.push (child);
+                auto childrenSt     = curNode->childBegin ();
+                auto childrenFin    = curNode->childEnd ();
+
+                while (childrenSt != childrenFin) {
+
+                    stack.push (*childrenSt);
+                    childrenSt = std::next (childrenSt, 1);
+
+                }
+
             }
 
             for (int i = queueOnDelete.size () - 1; i >= 0; --i)

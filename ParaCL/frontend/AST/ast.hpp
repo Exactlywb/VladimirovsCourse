@@ -43,19 +43,25 @@ namespace AST {
         virtual void nodeDump (std::ostream &out) const = 0;
 
         //Setters and getters
-        std::vector<Node *> getChildren () const
-        {
-            return children_;
-        }
-
         NodeT getType () const
         {
             return type_;
         }
 
-        void setChildren (const std::vector<Node *> &children)
+        template <typename It>
+        void setChildren (It start, It fin)
         {
-            children_ = children;  //!TODO try catch?
+            children_.assign (start, fin);
+        }
+
+        std::vector<Node*>::const_iterator childBegin () const 
+        {
+            return children_.cbegin ();
+        }
+
+        std::vector<Node*>::const_iterator childEnd () const 
+        {
+            return children_.cend ();
         }
 
         void setParent (Node *parent)
