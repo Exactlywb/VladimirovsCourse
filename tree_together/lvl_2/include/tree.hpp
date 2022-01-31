@@ -31,6 +31,8 @@ class SplayTree final {
         using BinNode<T>::right_;
         using BinNode<T>::val_;
 
+        enum class AddSide {LEFT, RIGHT};
+
         int subtreeSize_    = 1;
         SplayNode* parent_  = nullptr;
 
@@ -54,11 +56,11 @@ class SplayTree final {
         }
 
         void graphDump (std::ofstream& out) const {
-            std::cout << "here1" << std::endl;
+
             std::cout << "this = " << this << std::endl;
             out << "\"box" << this << "\" [shape = \"record\", color = \"white\" label = <<font color = \"#242424\">" 
                 << val_ << ", sizeSubtree = " << subtreeSize_ << "</font>>]";
-std::cout << "here2" << std::endl;
+
             if (left_ != nullptr) {
 
                 static_cast<SplayNode*>(left_)->graphDump (out);
@@ -72,6 +74,17 @@ std::cout << "here2" << std::endl;
             }
             
         }
+
+        void addChild (SplayTree *child, AddSide side) {
+
+            child->parent_ = this;
+            if (side == AddSide::LEFT)
+                left_ = child;
+            else 
+                right_ = child;
+
+        }
+
     };
 
     //-----------------------------------------------------------------------------------------------------
@@ -193,8 +206,15 @@ std::cout << "here2" << std::endl;
 
     void insert (SplayNode* node) {
 
-        SplayNode* curNode = NULL;
-        
+        SplayNode* curNode  = nullptr;
+        SplayNode* tmp      = root_;
+
+        while (tmp != nullptr) {
+
+            curNode = tmp;
+            if ()
+
+        }
 
     }
 
