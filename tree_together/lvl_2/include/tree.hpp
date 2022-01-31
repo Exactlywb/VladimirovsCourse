@@ -306,6 +306,8 @@ class SplayTree final {
         while (tmp != nullptr) {
 
             curNode = tmp;
+            ++curNode->subtreeSize_;
+
             if (val < tmp->val_)
                 tmp = static_cast<SplayNode*>(tmp->left_);
             else
@@ -316,7 +318,7 @@ class SplayTree final {
         node->parent_ = curNode;
         if (curNode == nullptr)
             root_ = node;
-        else if (val < curNode->val_)
+        else if (val < curNode->val_) 
             curNode->left_ = node;
         else
             curNode->right_ = node;
