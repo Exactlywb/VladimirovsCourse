@@ -203,14 +203,14 @@ class SplayTree final {
             else    
                 parent->right = right;
 
-        SplayNode tmp = right->left_;
+        SplayNode* tmp = right->left_;
         right->left_ = node;
-        right->right_ = tmp;
+        node->right_ = tmp;
         node->parent_ = right;
         right->parent_ = parent;
 
         if (node->right_)   
-            node->right_->parent_ = right;
+            node->right_->parent_ = node;
 
     }
 
@@ -220,19 +220,19 @@ class SplayTree final {
         SplayNode* left = node->left_;
 
         if (parent) 
-            if (parent->left_ == node)
+            if (parent->right == node)
                 parent->left_ = left;
             else    
                 parent->right = left;
 
-        SplayNode tmp = left->right_;
+        SplayNode* tmp = left->right_;
         left->right_ = node;
-        left->left_ = tmp;
+        node->left_ = tmp;
         node->parent_ = left;
         left->parent_ = parent;
 
         if (node->left_)   
-            node->left_->parent_ = left;
+            node->left_->parent_ = node;
     }
 
     void splay (SplayNode *node)
