@@ -1,12 +1,12 @@
 #
-# Tree implementation
+# Tree implementation (lvl_1 ---> K-th order statistic)
 # if you want see some more you may check github.com/Exactlywb/VladimirovsCourse
 # (c) Ivan Ivanov, Vladislav Belov, Frolov Daniil
 #
 
 cmake_minimum_required(VERSION 3.8)
 
-project("Tree")
+project("Tree. K-th order statistic" VERSION 1.0)
 
 set (GTEST_ROOT ${CMAKE_SOURCE_DIR}/ExternalLibs/gTest)
 find_package(GTest REQUIRED)
