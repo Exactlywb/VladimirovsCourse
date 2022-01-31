@@ -324,6 +324,62 @@ namespace TreeImpl {
 
         //-----------------------------------------------------------------------------------------------------
 
+        MyIterator upperBound (T val) {
+
+            SplayNode *curNode =  root_; 
+            SplayNode *tmp = nullptr;
+
+            while (curNode) {
+
+                if (curNode->val_ < val) {
+                    
+                    curNode = static_cast<SplayNode *> (curNode->right_);
+                }
+                else {
+
+                    tmp = curNode;
+                    curNode = static_cast<SplayNode *> (curNode->left_);
+                }
+
+            }
+
+            return MyIterator (tmp);
+        }
+
+        //-----------------------------------------------------------------------------------------------------
+
+        MyIterator lowerBound (T val) {
+
+            SplayNode *curNode =  root_; 
+            SplayNode *tmp = nullptr;
+
+            while (curNode) {
+
+                if (curNode->val_ == val)
+                    return MyIterator (curNode);
+
+                if (curNode->val_ > val) {
+                    
+                    tmp = curNode;
+                    curNode = static_cast<SplayNode *> (curNode->left_);
+                }
+                else {
+                    curNode = static_cast<SplayNode *> (curNode->right_);
+                }
+
+            }
+
+            return MyIterator (tmp);
+        }
+
+        //-----------------------------------------------------------------------------------------------------      
+
+        long range (T left, T right) {
+
+            return std::distance(upperBound (left), lowerBound (right));
+        }
+
+        //-----------------------------------------------------------------------------------------------------    
         void rotateLeft (SplayNode *node)
         {
             SplayNode *parent = node->parent_;
