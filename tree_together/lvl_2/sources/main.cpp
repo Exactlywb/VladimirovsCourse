@@ -12,14 +12,14 @@ int main ()
         tree.insert (i);
     }
 
-    using it = TreeImpl::SplayTree<int>::MyIterator;
-
     auto first = tree.begin();
     auto end = tree.end();
 
     std::cout << *(tree.find(123)) << std::endl;
 
-
+    for (auto v : tree) {
+        std::cout << v->val_ << " ";
+    }
 
     tree.graphDump ("out.dot");
 

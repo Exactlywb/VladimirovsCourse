@@ -205,7 +205,7 @@ namespace TreeImpl {
         public:
             MyIterator (SplayNode *ptr = nullptr) : ptr_ (ptr) {}
 
-            MyIterator (const MyIterator &rhs) : ptr_ (rhs.ptr) {}
+            MyIterator (const MyIterator &rhs) : ptr_ (rhs.ptr_) {}
 
             MyIterator operator= (const MyIterator &rhs)
             {
@@ -213,7 +213,7 @@ namespace TreeImpl {
                 return *this;
             }
 
-            MyIterator (MyIterator &&rhs)  : ptr_ (rhs.ptr) {}
+            MyIterator (MyIterator &&rhs)  : ptr_ (rhs.ptr_) {}
             MyIterator operator= (MyIterator &&rhs) {
                 std::swap (ptr_, rhs.ptr_);
                 return *this;
@@ -232,15 +232,18 @@ namespace TreeImpl {
             }
 
             MyIterator &operator++ () {
-                if (ptr_->right_)
-                    return MyIterator(static_cast<SplayNode *> (ptr_->right_));
+                if (ptr_->right_) {
+                    *this = MyIterator(static_cast<SplayNode *> (ptr_->right_));
+                    return *this;
+                }
 
                 SplayNode *tmp = ptr_;
 
                 while (tmp->parent_ && tmp->parent_->left_ != tmp)
                     tmp = tmp->parent_;
 
-                return MyIterator(tmp->parent_);
+                *this = MyIterator(tmp->parent_);
+                return *this;
             }
 
             MyIterator operator++ (int) {
@@ -250,15 +253,18 @@ namespace TreeImpl {
             }
 
             MyIterator &operator-- () {
-                if (ptr_->left_)
-                    return MyIterator(static_cast<SplayNode *> (ptr_->left_));
+                if (ptr_->left_){
+                    *this = MyIterator(static_cast<SplayNode *> (ptr_->left_));
+                    return *this;
+                }
 
                 SplayNode *tmp = ptr_;
 
                 while (tmp->parent_ && tmp->parent_->right_ != tmp)
                     tmp = tmp->parent_;
 
-                return MyIterator(tmp->parent_);
+                *this = MyIterator(tmp->parent_);
+                return *this;
             }
 
             MyIterator operator-- (int) {
@@ -267,7 +273,7 @@ namespace TreeImpl {
                 return tmp;
             }
 
-            bool equal (const MyIterator &rhs) {
+            bool equal (const MyIterator &rhs) const {
                 return ptr_ == rhs.ptr_;
             }
         };
@@ -453,12 +459,12 @@ namespace TreeImpl {
         }
     };
 
-    template<typename T>
+    template<typename T = int>
     bool operator== (const typename SplayTree<T>::MyIterator &lhs, const typename SplayTree<T>::MyIterator &rhs) {
         return lhs.equal (rhs);
     }
 
-    template<typename T>
+    template<typename T = int>
     bool operator!= (const typename SplayTree<T>::MyIterator &lhs, const typename SplayTree<T>::MyIterator &rhs) {
         return !lhs.equal (rhs);
     }
