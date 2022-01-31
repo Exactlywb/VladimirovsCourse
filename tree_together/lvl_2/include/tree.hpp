@@ -33,7 +33,6 @@ class SplayTree final {
 
         enum class AddSide {LEFT, RIGHT};
 
-        int subtreeSize_    = 1;
         SplayNode* parent_  = nullptr;
 
         SplayNode () = default;
@@ -209,14 +208,10 @@ class SplayTree final {
         SplayNode* parent = node->parent_;
         SplayNode* right = static_cast<SplayNode*>(node->right_);
 
-        right->subtreeSize = node->subtreeSize;
-        int leftSize = (right->left_) ? right->left_->subtreeSize : 0, rightSize = (node->left_) ? node->left_->subtreeSize : 0;
-        node->subtreeSize = leftSize + rightSize + 1;
-
         if (parent) {
             if (parent->left_ == node)
                 parent->left_ = right;
-            else    
+            else
                 parent->right_ = right;
         }
 
@@ -233,10 +228,6 @@ class SplayTree final {
     void rotateRight (SplayNode* node) {
         SplayNode* parent = node->parent_;
         SplayNode* left = static_cast<SplayNode*>(node->left_);
-
-        left->subtreeSize = node->subtreeSize_;
-        int leftSize = (left->left_) ? left->left_->subtreeSize_ : 0, rightSize = (node->left_) ? node->left_->subtreeSize_ : 0;
-        node->subtreeSize_ = leftSize + rightSize + 1;
 
         if (parent) {
             if (parent->left_ == node)
@@ -306,7 +297,6 @@ class SplayTree final {
         while (tmp != nullptr) {
 
             curNode = tmp;
-            ++curNode->subtreeSize_;
 
             if (val < tmp->val_)
                 tmp = static_cast<SplayNode*>(tmp->left_);
