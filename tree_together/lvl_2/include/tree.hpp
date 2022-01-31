@@ -91,9 +91,22 @@ class SplayTree final {
         SplayNode &operator= (const SplayNode &other) = delete;     //
         SplayNode &operator= (SplayNode &&other) = delete;          //
 
-        void graphDump (const std::ofstream& out) {
+        void graphDump (const std::ofstream& out) const {
+            
+            out << "\"box" << this << "\" [shape = \"record\", color = \"white\" label = <<font color = \"#242424\">" 
+                << val_ << ", sizeSubtree = " << subtreeSize_   << "</font>>]" << std::endl;
 
-            //!TODO
+            if (curNode->left_ != nullptr) {
+
+                left_.graphDump (out);
+                out << "\"box" << this << "\" -> \"box" << left_ << "\"" << std::endl;
+            }
+
+            if (curNode->right_ != nullptr) {
+
+                right_.graphDump (out);
+                out << "\"box" << this << "\" -> \"box" << right_ << "\"" << std::endl;
+            }
             
         }
 
@@ -194,7 +207,6 @@ class SplayTree final {
         dumpOut << "digraph Tree {\n";
 
         root.graphDump (dumpOut);
-        // PrintNodes(dumpOut, root);
 
         dumpOut << "}";
 
