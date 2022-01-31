@@ -191,6 +191,49 @@ class SplayTree final {
 
         return *this;
     }
+      
+    void rotateLeft (SplayNode* node) {
+
+        SplayNode* parent = node->parent_;
+        SplayNode* right = node->right_;
+
+        if (parent) 
+            if (parent->left_ == node)
+                parent->left_ = right;
+            else    
+                parent->right = right;
+
+        SplayNode tmp = right->left_;
+        right->left_ = node;
+        right->right_ = tmp;
+        node->parent_ = right;
+        right->parent_ = parent;
+
+        if (node->right_)   
+            node->right_->parent_ = right;
+
+    }
+
+    void rotateRight (SplayNode* node) {
+
+        SplayNode* parent = node->parent_;
+        SplayNode* left = node->left_;
+
+        if (parent) 
+            if (parent->left_ == node)
+                parent->left_ = left;
+            else    
+                parent->right = left;
+
+        SplayNode tmp = left->right_;
+        left->right_ = node;
+        left->left_ = tmp;
+        node->parent_ = left;
+        left->parent_ = parent;
+
+        if (node->left_)   
+            node->left_->parent_ = left;
+    }
 
     void splay (SplayNode *node)
     {
