@@ -29,26 +29,17 @@ int main () {
 
         std::cin >> minBorder >> maxBorder;
 
-        auto minItInserted = tree.insert (minBorder);
-        auto maxItInserted = tree.insert (maxBorder);
+        if (maxBorder <= minBorder) {
 
-        auto minIt = tree.upper_bound (minBorder);
-        auto maxIt = tree.lower_bound (maxBorder);
-
-        if (minItInserted.first == maxItInserted.first) {
-
-            std::cout << "equal borders!" << std::endl;
             answ.push_back (0);
             continue;
 
         }
 
-        answ.push_back (static_cast<int>(std::distance (minIt, maxIt)));
+        auto minIt = tree.upper_bound (minBorder);
+        auto maxIt = tree.lower_bound (maxBorder);
 
-        if (minItInserted.second)
-            tree.erase (minBorder);
-        if (maxItInserted.second)
-            tree.erase (maxBorder);
+        answ.push_back (static_cast<int>(std::distance (minIt, maxIt)));
 
     }
 
