@@ -204,10 +204,14 @@ class SplayTree final {
         return *this;
     }
       
-    void rotateLeft (SplayNode*& node) {
+    void rotateLeft (SplayNode* node) {
 
         SplayNode* parent = node->parent_;
         SplayNode* right = static_cast<SplayNode*>(node->right_);
+
+        right->subtreeSize = node->subtreeSize;
+        int leftSize = (right->left_) ? right->left_->subtreeSize : 0, rightSize = (node->left_) ? node->left_->subtreeSize : 0;
+        node->subtreeSize = leftSize + rightSize + 1;
 
         if (parent) {
             if (parent->left_ == node)
@@ -226,10 +230,13 @@ class SplayTree final {
             static_cast<SplayNode*>(node->right_)->parent_ = node;
     }
 
-    void rotateRight (SplayNode*& node) {
-
+    void rotateRight (SplayNode* node) {
         SplayNode* parent = node->parent_;
         SplayNode* left = static_cast<SplayNode*>(node->left_);
+
+        left->subtreeSize = node->subtreeSize_;
+        int leftSize = (left->left_) ? left->left_->subtreeSize_ : 0, rightSize = (node->left_) ? node->left_->subtreeSize_ : 0;
+        node->subtreeSize_ = leftSize + rightSize + 1;
 
         if (parent) {
             if (parent->left_ == node)

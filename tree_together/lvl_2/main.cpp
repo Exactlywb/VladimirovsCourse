@@ -4,10 +4,11 @@ int main()
 {
     TreeImpl::SplayTree<int> tree;
 
-    tree.insert (10);
-    tree.insert (5);
-
-    // std::cout << "root = " << tree.getRoot ()->parent_->val_ << std::endl;
+    for (int i = 0; i < 30; ++i) {
+        int x;
+        std::cin >> x;
+        tree.insert (x);
+    }
 
     tree.graphDump ("out.dot");
 
