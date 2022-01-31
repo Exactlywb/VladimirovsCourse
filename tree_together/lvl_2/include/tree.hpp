@@ -248,12 +248,37 @@ namespace TreeImpl {
 
         //-----------------------------------------------------------------------------------------------------
 
-        // MyIterator end() {
-        //     SplayNode *tmp = root_;
-        //     while (tmp->left_)
-        //         tmp = static_cast<SplayNode *>(tmp->left_);
-        //     return MyIterator(tmp);
-        // }
+        MyIterator find (T val)
+        {
+            SplayNode *tmp =  root_; 
+
+            while (tmp) {
+
+                if (tmp->val_ > val) {
+
+                    tmp = static_cast<SplayNode *> (tmp->left_);
+                    if (tmp && tmp->val_ < val)
+                        return MyIterator (nullptr);
+                }
+                else if (tmp->val_ < val) {
+
+                    tmp = static_cast<SplayNode *> (tmp->right_);
+                    if (tmp && tmp->val_ > val)
+                        return MyIterator (nullptr);
+                }
+                else if (tmp->val_ == val)
+                    return MyIterator (tmp);
+            }
+
+            return MyIterator (nullptr);
+        }
+
+        //-----------------------------------------------------------------------------------------------------
+
+        MyIterator end() 
+        {
+            return MyIterator (nullptr);
+        }
 
         //-----------------------------------------------------------------------------------------------------
 
