@@ -29,6 +29,7 @@ class SplayTree final {
     struct SplayNode final: public BinNode<T> {
         using BinNode<T>::left_;
         using BinNode<T>::right_;
+        using BinNode<T>::val_;
 
         int subtreeSize_    = 1;
         SplayNode* parent_  = nullptr;
@@ -52,9 +53,24 @@ class SplayTree final {
                 right_ = nullptr;
         }
 
-        void graphDump (const std::ofstream& out) {
+        void graphDump (std::ofstream& out) const {
+            std::cout << "here1" << std::endl;
+            std::cout << "this = " << this << std::endl;
+            out << "\"box" << this << "\" [shape = \"record\", color = \"white\" label = <<font color = \"#242424\">" 
+                << val_ << ", sizeSubtree = " << subtreeSize_ << "</font>>]";
+            std::cout << "here2" << std::endl;
+            
+            if (left_ != nullptr) {
 
-            //!TODO
+                static_cast<SplayNode*>(left_)->graphDump (out);
+                out << "\"box" << this << "\" -> \"box" << left_ << "\"" << std::endl;
+            }
+
+            if (right_ != nullptr) {
+
+                static_cast<SplayNode*>(right_)->graphDump (out);
+                out << "\"box" << this << "\" -> \"box" << right_ << "\"" << std::endl;
+            }
             
         }
     };
@@ -73,12 +89,12 @@ class SplayTree final {
         SplayNode *toDelete = nullptr;
 
         while (curNode) {
-            if (curNode->left_)                                     //
-                curNode = static_cast<SplayNode *> (curNode->left_);                           // here we go down by our tree
-            else if (curNode->right_)                               //
-                curNode = static_cast<SplayNode *> (curNode->right_);                          //
-            else if (curNode->parent_ && curNode != highestNode) {  // if we have papa &&
-                                                                    // we are not in the highest point
+            if (curNode->left_)                                             //
+                curNode = static_cast<SplayNode *> (curNode->left_);        // here we go down by our tree
+            else if (curNode->right_)                                       //
+                curNode = static_cast<SplayNode *> (curNode->right_);       //
+            else if (curNode->parent_ && curNode != highestNode) {          // if we have papa &&
+                                                                            // we are not in the highest point
 
                 toDelete = curNode;
                 curNode = curNode->parent_;
@@ -159,8 +175,8 @@ class SplayTree final {
 
     SplayTree(SplayTree<T> &&other)                 // move constructor
     {                                                       
-        root_ = other.root_;     //
-        other.root_ = nullptr;  // stolen -_-
+        root_ = other.root_;        //
+        other.root_ = nullptr;      // stolen -_-
     }
 
     SplayTree &operator=(SplayTree<T> &&other)      // move assignment
@@ -169,9 +185,9 @@ class SplayTree final {
         if (this == &other)  // same ptr
             return *this;
 
-        root_->deleteSubtree();  //
-        root_ = other.root_;      // stolen -_-
-        other.root_ = nullptr;   //
+        root_->deleteSubtree();     //
+        root_ = other.root_;        // stolen -_-
+        other.root_ = nullptr;      //
 
         return *this;
     }
@@ -216,13 +232,20 @@ class SplayTree final {
         }
     }
 
+    void insert (SplayNode* node) {
+
+        SplayNode* curNode = NULL;
+        
+
+    }
+
     void graphDump (const char* fileName) const {
 
         std::ofstream dumpOut(fileName, dumpOut.out | dumpOut.trunc);
         dumpOut << "digraph Tree {\n";
 
-        root_.graphDump (dumpOut);
-        // PrintNodes(dumpOut, root);
+        if (root_)
+            root_->graphDump (dumpOut);
 
         dumpOut << "}";
 
