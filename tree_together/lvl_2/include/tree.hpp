@@ -31,11 +31,13 @@ class SplayTree final {
         using BinNode<T>::right_;
         using BinNode<T>::val_;
 
+        enum class AddSide {LEFT, RIGHT};
+
         int subtreeSize_    = 1;
         SplayNode* parent_  = nullptr;
 
         SplayNode () = default;
-        SplayNode (T val, SplayNode* parent): BinNode<T>(val), parent_ (parent) {}
+        SplayNode (T val): BinNode<T>(val) {}
 
         ~SplayNode () = default;
 
@@ -54,12 +56,9 @@ class SplayTree final {
         }
 
         void graphDump (std::ofstream& out) const {
-            std::cout << "here1" << std::endl;
-            std::cout << "this = " << this << std::endl;
+
             out << "\"box" << this << "\" [shape = \"record\", color = \"white\" label = <<font color = \"#242424\">" 
                 << val_ << ", sizeSubtree = " << subtreeSize_ << "</font>>]";
-            std::cout << "here2" << std::endl;
-            
             if (left_ != nullptr) {
 
                 static_cast<SplayNode*>(left_)->graphDump (out);
@@ -73,6 +72,19 @@ class SplayTree final {
             }
             
         }
+
+        void addChild (SplayTree *child, AddSide side) {
+
+            child->parent_ = this;
+            if (side == AddSide::LEFT)
+                left_ = child;
+            else 
+                right_ = child;
+            
+            subtreeSize_++;
+
+        }
+
     };
 
     //-----------------------------------------------------------------------------------------------------
@@ -192,68 +204,68 @@ class SplayTree final {
         return *this;
     }
       
-    void rotateLeft (SplayNode* node) {
+    void rotateLeft (SplayNode*& node) {
 
         SplayNode* parent = node->parent_;
-        SplayNode* right = node->right_;
+        SplayNode* right = static_cast<SplayNode*>(node->right_);
 
-        if (parent) 
+        if (parent) {
             if (parent->left_ == node)
                 parent->left_ = right;
             else    
-                parent->right = right;
+                parent->right_ = right;
+        }
 
-        SplayNode* tmp = right->left_;
+        SplayNode* tmp = static_cast<SplayNode*>(right->left_);
         right->left_ = node;
         node->right_ = tmp;
         node->parent_ = right;
         right->parent_ = parent;
 
         if (node->right_)   
-            node->right_->parent_ = node;
-
+            static_cast<SplayNode*>(node->right_)->parent_ = node;
     }
 
-    void rotateRight (SplayNode* node) {
+    void rotateRight (SplayNode*& node) {
 
         SplayNode* parent = node->parent_;
-        SplayNode* left = node->left_;
+        SplayNode* left = static_cast<SplayNode*>(node->left_);
 
-        if (parent) 
-            if (parent->right == node)
+        if (parent) {
+            if (parent->left_ == node)
                 parent->left_ = left;
             else    
-                parent->right = left;
-
-        SplayNode* tmp = left->right_;
+                parent->right_ = left;
+        }
+        
+        SplayNode* tmp = static_cast<SplayNode*>(left->right_);
         left->right_ = node;
         node->left_ = tmp;
         node->parent_ = left;
         left->parent_ = parent;
 
-        if (node->left_)   
-            node->left_->parent_ = node;
+        if (node->left_)
+            static_cast<SplayNode*>(node->left_)->parent_ = node;
     }
 
     void splay (SplayNode *node)
     {
-        SplayNode *parent = node->parent_;
-        
-        while (parent) {
+        while (node->parent_) {
+            SplayNode *parent = node->parent_;
             SplayNode *grandParent = parent->parent_;
 
-            if (node == parent.left) {
+            if (node == parent->left_) {
                 if (!grandParent) {
                     rotateRight(parent);
                 }
                 else {
                     if (parent == grandParent->left_) {
                         rotateRight (grandParent);
-                        rotateRight (parent);
+                        rotateRight (node->parent_);
                     }
                     else {
                         rotateRight (parent);
-                        rotateLeft (parent);
+                        rotateLeft (node->parent_);
                     }
                 }
             }
@@ -263,22 +275,50 @@ class SplayTree final {
                 }
                 else {
                     if (parent == grandParent->right_) {
-                        rotateLeft (parent);
-                        rotateLeft (parent);
+                        rotateLeft (grandParent);
+                        rotateLeft (node->parent_);
                     }
                     else {
                         rotateLeft (parent);
-                        rotateRight (parent);
+                        rotateRight (node->parent_);
                     }
                 }
             }
         }
     }
 
-    void insert (SplayNode* node) {
+    SplayNode* getRoot () const { return root_; }
 
-        SplayNode* curNode = NULL;
-        
+    void insert (T val) {
+
+        SplayNode* node = new SplayNode (val);
+
+        SplayNode* curNode  = nullptr;
+        SplayNode* tmp      = root_;
+
+        while (tmp != nullptr) {
+
+            curNode = tmp;
+            ++curNode->subtreeSize_;
+
+            if (val < tmp->val_)
+                tmp = static_cast<SplayNode*>(tmp->left_);
+            else
+                tmp = static_cast<SplayNode*>(tmp->right_);
+
+        }
+
+        node->parent_ = curNode;
+        if (curNode == nullptr)
+            root_ = node;
+        else if (val < curNode->val_) 
+            curNode->left_ = node;
+        else
+            curNode->right_ = node;
+
+        splay (node);
+
+        root_ = node;
 
     }
 
