@@ -9,7 +9,11 @@ int main ()
         std::cin >> x;
         tree.insert (x);
     }
-    std::cout << tree.begin ()->val_ << std::endl;
+
+    using it = TreeImpl::SplayTree<int>::MyIterator;
+
+    auto first = tree.begin();
+    auto end = tree.end();
 
     tree.graphDump ("out.dot");
 

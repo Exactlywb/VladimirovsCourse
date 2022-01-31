@@ -203,7 +203,7 @@ namespace TreeImpl {
             SplayNode *ptr_;
 
         public:
-            MyIterator (SplayNode *ptr) : ptr_ (ptr) {}
+            MyIterator (SplayNode *ptr = nullptr) : ptr_ (ptr) {}
 
             MyIterator (const MyIterator &rhs) : ptr_ (rhs.ptr) {}
 
@@ -212,8 +212,12 @@ namespace TreeImpl {
                 ptr_ = rhs.ptr_;
                 return *this;
             }
-            MyIterator (MyIterator &&rhs) = delete;
-            MyIterator operator= (MyIterator &&rhs) = delete;
+
+            MyIterator (MyIterator &&rhs)  : ptr_ (rhs.ptr) {}
+            MyIterator operator= (MyIterator &&rhs) {
+                std::swap (ptr_, rhs.ptr_);
+                return *this;
+            }
 
             ~MyIterator () = default;
 
@@ -227,15 +231,47 @@ namespace TreeImpl {
                 return ptr_;
             }
 
-            MyIterator &operator++ () {}
+            MyIterator &operator++ () {
+                if (ptr_->right_)
+                    return MyIterator(static_cast<SplayNode *> (ptr_->right_));
 
-            MyIterator operator++ (int) {}
+                SplayNode *tmp = ptr_;
 
-            MyIterator &operator-- () {}
+                while (tmp->parent_ && tmp->parent_->left_ != tmp)
+                    tmp = tmp->parent_;
 
-            MyIterator operator-- (int) {}
+                return MyIterator(tmp->parent_);
+            }
+
+            MyIterator operator++ (int) {
+                MyIterator *tmp = *this;
+                ++(*this);
+                return tmp;
+            }
+
+            MyIterator &operator-- () {
+                if (ptr_->left_)
+                    return MyIterator(static_cast<SplayNode *> (ptr_->left_));
+
+                SplayNode *tmp = ptr_;
+
+                while (tmp->parent_ && tmp->parent_->right_ != tmp)
+                    tmp = tmp->parent_;
+
+                return MyIterator(tmp->parent_);
+            }
+
+            MyIterator operator-- (int) {
+                MyIterator *tmp = *this;
+                --(*this);
+                return tmp;
+            }
+
+            bool equal (const MyIterator &rhs) {
+                return ptr_ == rhs.ptr_;
+            }
         };
-
+        
         //-----------------------------------------------------------------------------------------------------
 
         MyIterator begin ()
@@ -248,12 +284,9 @@ namespace TreeImpl {
 
         //-----------------------------------------------------------------------------------------------------
 
-        // MyIterator end() {
-        //     SplayNode *tmp = root_;
-        //     while (tmp->left_)
-        //         tmp = static_cast<SplayNode *>(tmp->left_);
-        //     return MyIterator(tmp);
-        // }
+        MyIterator end() {
+            return MyIterator(nullptr);
+        }
 
         //-----------------------------------------------------------------------------------------------------
 
@@ -391,6 +424,16 @@ namespace TreeImpl {
             dumpOut << "}";
         }
     };
+
+    template<typename T>
+    bool operator== (const typename SplayTree<T>::MyIterator &lhs, const typename SplayTree<T>::MyIterator &rhs) {
+        return lhs.equal (rhs);
+    }
+
+    template<typename T>
+    bool operator!= (const typename SplayTree<T>::MyIterator &lhs, const typename SplayTree<T>::MyIterator &rhs) {
+        return !lhs.equal (rhs);
+    }
 
 }  // namespace TreeImpl
 
