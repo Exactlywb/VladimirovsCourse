@@ -22,7 +22,7 @@ int main (int argc, char **argv)
     std::streambuf *cinbuf = std::cin.rdbuf ();
     std::cin.rdbuf (input.code_.rdbuf ());
 
-    yy::FrontendDriver driver (argv [1]);
+    yy::FrontendDriver driver (argv[1]);
 
     try {
         driver.parse ();
@@ -36,9 +36,7 @@ int main (int argc, char **argv)
     auto errorFin = driver.errEnd ();
 
     if (errorSt != errorFin) {
-
         while (errorSt != errorFin) {
-
             std::cout << *errorSt << std::endl;
             errorSt = std::next (errorSt, 1);
         }
@@ -49,7 +47,7 @@ int main (int argc, char **argv)
     std::cin.rdbuf (cinbuf);
 
     driver.interpret ();
-//    driver.compile ();
+    //    driver.compile ();
 
     return 0;
 }

@@ -67,12 +67,12 @@ namespace interpret {
 
         ~Scope ();  //!TODO
 
-        std::vector<Scope*>::const_iterator childBegin () const 
+        std::vector<Scope *>::const_iterator childBegin () const
         {
             return children_.cbegin ();
         }
 
-        std::vector<Scope*>::const_iterator childEnd () const 
+        std::vector<Scope *>::const_iterator childEnd () const
         {
             return children_.cend ();
         }
@@ -111,9 +111,9 @@ namespace interpret {
 
         //Implementin' functions
     private:
-        int CalcExpr (Scope *curScope, std::vector<AST::Node*>::const_iterator it);
+        int CalcExpr (Scope *curScope, std::vector<AST::Node *>::const_iterator it);
         int CalcVar (Scope *curScope, AST::VarNode *var);
-        int CalcOper (Scope *curScope, AST::OperNode *node);\
+        int CalcOper (Scope *curScope, AST::OperNode *node);
 
         void execScope (Scope *curScope, AST::ScopeNode *node);
 

@@ -10,78 +10,32 @@
 namespace TreeImpl {
 
 template <typename T = int>
-class BinNode {
+struct BinNode {
 
     BinNode *left_  = nullptr;
     BinNode *right_ = nullptr;
 
     T val_ {};
 
-public:
     BinNode () = default;
     BinNode (T val): val_ (val) {}
 
-    virtual ~BinNode () = 0;
-
-    void disactiveChild(const Node *child)
-    {
-        if (left_ == child)
-            left_ = nullptr;
-        else if (right_ == child)
-            right_ = nullptr;
-    }
-
-    void deleteSubtree () 
-    { // |!| WARNING: This function delete the object itself.
-
-        // Generally speaking, the use of the Node class may
-        // not be in one implementation of the tree,
-        // so it is best to leave this method in the Node class.
-
-        BinNode *highestNode = this;
-        BinNode *curNode = this;
-        BinNode *toDelete = nullptr;
-
-        while (curNode) {
-            if (curNode->left_)                                     //
-                curNode = curNode->left_;                           // here we go down by our tree
-            else if (curNode->right_)                               //
-                curNode = curNode->right_;                          //
-            else if (curNode->parent_ && curNode != highestNode) {  // if we have papa &&
-                                                                    // we are not in the highest point
-
-                toDelete = curNode;
-                curNode = curNode->parent_;
-
-                curNode->disactiveChild(toDelete);
-
-                delete toDelete;
-            }
-            else {
-                BinNode *parent = curNode->parent_;
-                if (parent)
-                    parent->disactiveChild(curNode);
-
-                delete curNode;
-                return;
-            }
-        }
-
-    }
-
+    virtual ~BinNode () = default;
 };
 
 template <typename T = int>
 class SplayTree final {
 
-    class SplayNode final: public BinNode<T> {
+    struct SplayNode final: public BinNode<T> {
+        using BinNode<T>::left_;
+        using BinNode<T>::right_;
+        using BinNode<T>::val_;
 
         int subtreeSize_    = 1;
         SplayNode* parent_  = nullptr;
 
-    public:
         SplayNode () = default;
-        SplayNode (T val, SplayNode* parent): val_ (val), parent_ (parent) {}
+        SplayNode (T val, SplayNode* parent): BinNode<T>(val), parent_ (parent) {}
 
         ~SplayNode () = default;
 
@@ -91,26 +45,36 @@ class SplayTree final {
         SplayNode &operator= (const SplayNode &other) = delete;     //
         SplayNode &operator= (SplayNode &&other) = delete;          //
 
-        void graphDump (const std::ofstream& out) const {
-            
+        void disactiveChild(const SplayNode *child)
+        {
+            if (left_ == child)
+                left_ = nullptr;
+            else if (right_ == child)
+                right_ = nullptr;
+        }
+
+        void graphDump (std::ofstream& out) const {
+            std::cout << "here1" << std::endl;
+            std::cout << "this = " << this << std::endl;
             out << "\"box" << this << "\" [shape = \"record\", color = \"white\" label = <<font color = \"#242424\">" 
-                << val_ << ", sizeSubtree = " << subtreeSize_   << "</font>>]" << std::endl;
+                << val_ << ", sizeSubtree = " << subtreeSize_ << "</font>>]";
+std::cout << "here2" << std::endl;
+            if (left_ != nullptr) {
 
-            if (curNode->left_ != nullptr) {
-
-                left_.graphDump (out);
+                static_cast<SplayNode*>(left_)->graphDump (out);
                 out << "\"box" << this << "\" -> \"box" << left_ << "\"" << std::endl;
             }
 
-            if (curNode->right_ != nullptr) {
+            if (right_ != nullptr) {
 
-                right_.graphDump (out);
+                static_cast<SplayNode*>(right_)->graphDump (out);
                 out << "\"box" << this << "\" -> \"box" << right_ << "\"" << std::endl;
             }
             
         }
-
     };
+
+    //-----------------------------------------------------------------------------------------------------
 
     SplayNode *root_ = nullptr;
 
@@ -119,26 +83,53 @@ class SplayTree final {
 
     ~SplayTree()
     {
-        root_->deleteSubtree();
+        SplayNode *highestNode = root_;
+        SplayNode *curNode = root_;
+        SplayNode *toDelete = nullptr;
+
+        while (curNode) {
+            if (curNode->left_)                                             //
+                curNode = static_cast<SplayNode *> (curNode->left_);        // here we go down by our tree
+            else if (curNode->right_)                                       //
+                curNode = static_cast<SplayNode *> (curNode->right_);       //
+            else if (curNode->parent_ && curNode != highestNode) {          // if we have papa &&
+                                                                            // we are not in the highest point
+
+                toDelete = curNode;
+                curNode = curNode->parent_;
+
+                curNode->disactiveChild(toDelete);
+
+                delete toDelete;
+            }
+            else {
+                SplayNode *parent = curNode->parent_;
+                if (parent)
+                    parent->disactiveChild(curNode);
+
+                delete curNode;
+                return;
+            }
+        }
     }
 
-    SplayTree::SplayTree(const Tree &other)                 // copy constructor
+    SplayTree(const SplayTree<T> &other)                 // copy constructor
     {
-        if (other.root == nullptr) {
-            root = nullptr;
+        if (other.root_ == nullptr) {
+            root_ = nullptr;
             return;
         }
 
-        root = new SplayNode<T>;
-        assert(root);
+        root_ = new SplayNode;
+        assert(root_);
 
-        SplayNode<T> *curCopy = root;
-        SplayNode<T> *curOther = other.root;
+        SplayNode *curCopy = root_;
+        SplayNode *curOther = other.root_;
 
-        while ((curOther->left_ || curOther->right_) || root->subtreeSize != other.root->subtreeSize) {
+        while ((curOther->left_ || curOther->right_) || root_->subtreeSize != other.root_->subtreeSize) {
             if (curCopy->left_ == nullptr && curOther->left_) {  // didn't concat the left node of other subtree
 
-                curCopy->left_ = new SplayNode<T>;
+                curCopy->left_ = new SplayNode;
 
                 curCopy->left_->parent_ = curCopy;
 
@@ -147,7 +138,7 @@ class SplayTree final {
             }
             else if (curCopy->right_ == nullptr && curOther->right_) {  // didn't concat the right node of other subtree
 
-                curCopy->right_ = new SplayNode<T>;
+                curCopy->right_ = new SplayNode;
 
                 curCopy->right_->parent_ = curCopy;
 
@@ -160,7 +151,7 @@ class SplayTree final {
                 curCopy->val_ = curOther->val_;
                 curCopy->color_ = curOther->color_;
 
-                if (curCopy != root) {
+                if (curCopy != root_) {
                     curCopy = curCopy->parent_;
                     curOther = curOther->parent_;
                 }
@@ -170,7 +161,7 @@ class SplayTree final {
         }
     }
 
-    SplayTree &SplayTree::operator=(const SplayTree &other) //copy assignment
+    SplayTree &operator=(const SplayTree<T> &other) //copy assignment
     {
         if (this == &other)  // same pointers -_-
             return *this;
@@ -181,24 +172,30 @@ class SplayTree final {
         return *this;
     }
 
-    SplayTree::SplayTree(SplayTree &&other)                 // move constructor
+    SplayTree(SplayTree<T> &&other)                 // move constructor
     {                                                       
-
-        root = other.root;     //
-        other.root = nullptr;  // stolen -_-
+        root_ = other.root_;        //
+        other.root_ = nullptr;      // stolen -_-
     }
 
-    SplayTree &SplayTree::operator=(SplayTree &&other)      // move assignment
+    SplayTree &operator=(SplayTree<T> &&other)      // move assignment
     {                                                       
 
         if (this == &other)  // same ptr
             return *this;
 
-        root->deleteSubtree();  //
-        root = other.root;      // stolen -_-
-        other.root = nullptr;   //
+        root_->deleteSubtree();     //
+        root_ = other.root_;        // stolen -_-
+        other.root_ = nullptr;      //
 
         return *this;
+    }
+
+    void insert (SplayNode* node) {
+
+        SplayNode* curNode = NULL;
+        
+
     }
 
     void graphDump (const char* fileName) const {
@@ -206,16 +203,14 @@ class SplayTree final {
         std::ofstream dumpOut(fileName, dumpOut.out | dumpOut.trunc);
         dumpOut << "digraph Tree {\n";
 
-        root.graphDump (dumpOut);
+        if (root_)
+            root_->graphDump (dumpOut);
 
         dumpOut << "}";
 
     }
-
-    SplayNode* getRoot const () { return root_; }
-
 };
 
 }
 
-#endif TREE_H__
+#endif
