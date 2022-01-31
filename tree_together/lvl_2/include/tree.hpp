@@ -176,6 +176,46 @@ class SplayTree final {
         return *this;
     }
 
+    void splay (SplayNode *node)
+    {
+        SplayNode *parent = node->parent_;
+        
+        while (parent) {
+            SplayNode *grandParent = parent->parent_;
+
+            if (node == parent.left) {
+                if (!grandParent) {
+                    rotateRight(parent);
+                }
+                else {
+                    if (parent == grandParent->left_) {
+                        rotateRight (grandParent);
+                        rotateRight (parent);
+                    }
+                    else {
+                        rotateRight (parent);
+                        rotateLeft (parent);
+                    }
+                }
+            }
+            else {
+                if (!grandParent) {
+                    rotateLeft(parent);
+                }
+                else {
+                    if (parent == grandParent->right_) {
+                        rotateLeft (parent);
+                        rotateLeft (parent);
+                    }
+                    else {
+                        rotateLeft (parent);
+                        rotateRight (parent);
+                    }
+                }
+            }
+        }
+    }
+
     void graphDump (const char* fileName) const {
 
         std::ofstream dumpOut(fileName, dumpOut.out | dumpOut.trunc);
