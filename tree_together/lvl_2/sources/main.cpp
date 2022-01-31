@@ -1,6 +1,6 @@
 #include "tree.hpp"
 
-int main()
+int main ()
 {
     TreeImpl::SplayTree<int> tree;
 
@@ -9,6 +9,7 @@ int main()
         std::cin >> x;
         tree.insert (x);
     }
+    std::cout << tree.begin ()->val_ << std::endl;
 
     tree.graphDump ("out.dot");
 
