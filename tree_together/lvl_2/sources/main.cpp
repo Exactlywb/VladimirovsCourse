@@ -1,10 +1,10 @@
-#include "include/tree.hpp"
+#include "tree.hpp"
 
 int main()
 {
     TreeImpl::SplayTree<int> tree;
 
-    for (int i = 0; i < 30; ++i) {
+    for (int i = 0; i < 100000; ++i) {
         int x;
         std::cin >> x;
         tree.insert (x);

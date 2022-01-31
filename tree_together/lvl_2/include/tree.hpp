@@ -57,7 +57,7 @@ class SplayTree final {
         void graphDump (std::ofstream& out) const {
 
             out << "\"box" << this << "\" [shape = \"record\", color = \"white\" label = <<font color = \"#242424\">" 
-                << val_ << ", sizeSubtree = " << subtreeSize_ << "</font>>]";
+                << val_ << "</font>>]";
             if (left_ != nullptr) {
 
                 static_cast<SplayNode*>(left_)->graphDump (out);
@@ -80,8 +80,6 @@ class SplayTree final {
             else 
                 right_ = child;
             
-            subtreeSize_++;
-
         }
 
     };
@@ -89,6 +87,7 @@ class SplayTree final {
     //-----------------------------------------------------------------------------------------------------
 
     SplayNode *root_ = nullptr;
+    
 
     public:
     SplayTree() = default;
@@ -297,6 +296,13 @@ class SplayTree final {
         while (tmp != nullptr) {
 
             curNode = tmp;
+
+            if (val == tmp->val_) {
+
+                splay (tmp);
+                root_ = tmp;
+                return;
+            }
 
             if (val < tmp->val_)
                 tmp = static_cast<SplayNode*>(tmp->left_);
