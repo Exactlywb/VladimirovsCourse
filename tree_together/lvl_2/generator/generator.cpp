@@ -12,9 +12,32 @@ int main ()
 
     std::normal_distribution<double> distr{0, 10};
 
+    int elemNum = 0;
+    std::cin >> elemNum;
+
+    std::cout << elemNum << " ";
 
     std::vector<int> vec;
 
-    for (int i = 0; i < 100000; ++i)
-        std::cout << std::round(distr(generator)) << " ";
+    int maxGenNum = 0;
+    for (int i = 0; i < elemNum; ++i) {
+
+        int genNum = std::round (distr (generator));
+        if (genNum > maxGenNum)
+            maxGenNum = genNum;
+
+        std::cout << genNum << " ";
+    }
+
+//REQUESTS
+    int requestNum = 0;
+    std::cin >> requestNum;
+
+    std::cout << requestNum << " ";
+
+    std::uniform_int_distribution<int> reqDistr {-maxGenNum, maxGenNum};
+
+    for (int i = 0; i < requestNum; ++i)
+        std::cout << reqDistr (generator) << " " << reqDistr (generator) << " ";
+
 }
