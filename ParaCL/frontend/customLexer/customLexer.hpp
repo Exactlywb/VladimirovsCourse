@@ -7,19 +7,17 @@
 
 #include "location.hh"
 
-class ParaCLexer final: public yyFlexLexer {
-
-    yy::location location_ {};
+class ParaCLexer final : public yyFlexLexer {
+    yy::location location_{};
 
 public:
     ParaCLexer () = default;
-    
+
     void setLocation ();
-    
+
     yy::location getLocation () const { return location_; }
 
     int yylex () override;
-
 };
 
 #endif

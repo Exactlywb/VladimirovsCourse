@@ -54,12 +54,12 @@ namespace AST {
             children_.assign (start, fin);
         }
 
-        std::vector<Node*>::const_iterator childBegin () const 
+        std::vector<Node *>::const_iterator childBegin () const
         {
             return children_.cbegin ();
         }
 
-        std::vector<Node*>::const_iterator childEnd () const 
+        std::vector<Node *>::const_iterator childEnd () const
         {
             return children_.cend ();
         }
@@ -127,20 +127,20 @@ namespace AST {
             DIV,  // a / b
             MOD,  // a % b
 
-            UNARY_M, // -a
-            UNARY_P, // +a
+            UNARY_M,  // -a
+            UNARY_P,  // +a
 
             ASSIGN,  // a = b
 
             MORE,  // a > b
-            LESS,  // a < b 
+            LESS,  // a < b
             EQ,    // a == b
             NEQ,   // a != b
             GTE,   // a >= b
             LTE,   // a <= b
 
             AND,  // a && b
-            OR,   // a || b 
+            OR,   // a || b
 
             SCAN,  // a = ?
             PRINT  // print (a)

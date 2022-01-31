@@ -18,34 +18,25 @@ namespace Tree {
             out << "\"]\n";
 
             for (auto it = curNode->childBegin (); it != curNode->childEnd (); ++it) {
-
                 T curChild = *it;
                 if (curChild)
                     PrintNodeIntoGraphviz (curChild, out);
-
             }
-
         }
 
         void BuildConnectionsInGraphviz (T curNode, std::ostream &out) const
         {
-            
             for (auto it = curNode->childBegin (); it != curNode->childEnd (); ++it) {
-
                 T curChild = *it;
                 if (curChild)
                     out << "\"" << curNode << "\" -> \"" << curChild << "\"\n";
-
             }
 
             for (auto it = curNode->childBegin (); it != curNode->childEnd (); ++it) {
-
                 T curChild = *it;
                 if (curChild)
                     BuildConnectionsInGraphviz (curChild, out);
-
             }
-
         }
 
     public:
@@ -66,14 +57,12 @@ namespace Tree {
                 stack.pop ();
                 queueOnDelete.push_back (curNode);
 
-                auto childrenSt     = curNode->childBegin ();
-                auto childrenFin    = curNode->childEnd ();
+                auto childrenSt = curNode->childBegin ();
+                auto childrenFin = curNode->childEnd ();
 
                 while (childrenSt != childrenFin) {
-
                     stack.push (*childrenSt);
                     childrenSt = std::next (childrenSt, 1);
-
                 }
             }
 
@@ -91,7 +80,7 @@ namespace Tree {
         {
             if (!root_)
                 return;
-            
+
             out << "digraph tree {\n"
                    "rankdir = \"LR\"\n"
                    "node [fontsize=10, shape=box, height=0.5]\n"
