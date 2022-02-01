@@ -233,7 +233,12 @@ namespace TreeImpl {
 
             MyIterator &operator++ () {
                 if (ptr_->right_) {
-                    *this = MyIterator(static_cast<SplayNode *> (ptr_->right_));
+                    
+                    ptr_ = static_cast<SplayNode *> (ptr_->right_);
+                    while (ptr_->left_)
+                        ptr_ = static_cast<SplayNode *> (ptr_->left_);
+
+                    *this = MyIterator(static_cast<SplayNode *> (ptr_));
                     return *this;
                 }
 
@@ -254,7 +259,12 @@ namespace TreeImpl {
 
             MyIterator &operator-- () {
                 if (ptr_->left_){
-                    *this = MyIterator(static_cast<SplayNode *> (ptr_->left_));
+
+                    ptr_ = static_cast<SplayNode *> (ptr_->left_);
+
+                    while (ptr_->right_)
+                        ptr_ = static_cast<SplayNode *> (ptr_->right_);
+                    *this = MyIterator(static_cast<SplayNode *> (ptr_));
                     return *this;
                 }
 
@@ -331,6 +341,11 @@ namespace TreeImpl {
 
             while (curNode) {
 
+                if (curNode->val_ == val) {
+
+                    curNode = static_cast<SplayNode *> (curNode->right_);
+                    continue;
+                }
                 if (curNode->val_ < val) {
                     
                     curNode = static_cast<SplayNode *> (curNode->right_);
