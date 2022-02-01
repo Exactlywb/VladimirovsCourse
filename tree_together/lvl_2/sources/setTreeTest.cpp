@@ -46,4 +46,5 @@ int main () {
     for (auto v: answ)
         std::cout << v << std::endl;
 
+    return 0;
 }

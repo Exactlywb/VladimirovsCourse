@@ -357,7 +357,8 @@ namespace TreeImpl {
                 }
 
             }
-
+            splay (tmp);
+        
             return MyIterator (tmp);
         }
 
@@ -370,8 +371,10 @@ namespace TreeImpl {
 
             while (curNode) {
 
-                if (curNode->val_ == val)
+                if (curNode->val_ == val){
+                    splay (curNode);
                     return MyIterator (curNode);
+                }
 
                 if (curNode->val_ > val) {
                     
@@ -383,6 +386,7 @@ namespace TreeImpl {
                 }
 
             }
+            splay (tmp);
 
             return MyIterator (tmp);
         }
@@ -390,7 +394,6 @@ namespace TreeImpl {
         //-----------------------------------------------------------------------------------------------------      
 
         long range (T left, T right) {
-
             return std::distance(upperBound (left), lowerBound (right));
         }
 
@@ -441,6 +444,9 @@ namespace TreeImpl {
 
         void splay (SplayNode *node)
         {
+            if (!node)
+                return;
+            
             while (node->parent_) {
                 SplayNode *parent = node->parent_;
                 SplayNode *grandParent = parent->parent_;
@@ -476,6 +482,8 @@ namespace TreeImpl {
                     }
                 }
             }
+
+            root_ = node;
         }
 
         SplayNode *getRoot () const
@@ -495,7 +503,6 @@ namespace TreeImpl {
 
                 if (val == tmp->val_) {
                     splay (tmp);
-                    root_ = tmp;
                     return;
                 }
 
@@ -515,7 +522,6 @@ namespace TreeImpl {
 
             splay (node);
 
-            root_ = node;
         }
 
         void graphDump (const char *fileName) const

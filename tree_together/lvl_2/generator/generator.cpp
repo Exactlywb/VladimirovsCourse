@@ -10,7 +10,7 @@ int main ()
     unsigned seed = std::chrono::system_clock::now ().time_since_epoch ().count ();
     std::mt19937 generator (seed);
 
-    std::normal_distribution<double> distr{0, 10};
+    std::normal_distribution<double> distr{0, 50000};
 
     int elemNum = 0;
     std::cin >> elemNum;
@@ -35,9 +35,16 @@ int main ()
 
     std::cout << requestNum << " ";
 
-    std::uniform_int_distribution<int> reqDistr {-maxGenNum, maxGenNum};
+    std::normal_distribution<double> reqDistr {0, 250};
 
-    for (int i = 0; i < requestNum; ++i)
-        std::cout << reqDistr (generator) << " " << reqDistr (generator) << " ";
+    for (int i = 0; i < requestNum; ++i) {
+        int min = std::round (reqDistr (generator));
+        int max = std::round (reqDistr (generator));
 
-}
+        if (min > max)
+            std::swap (min, max);
+
+        std::cout << min << " " << max << " ";
+    }
+
+} 
