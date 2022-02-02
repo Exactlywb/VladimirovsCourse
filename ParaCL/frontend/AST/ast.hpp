@@ -185,7 +185,8 @@ namespace AST {
             SCAN,  // a = ?
             PRINT, // print (a)
 
-            RETURN // return ...
+            RETURN,// return ...
+            CALL
 
         };
 
@@ -256,6 +257,9 @@ namespace AST {
                     break;
                 case OperType::RETURN:
                     out << "RETURN";
+                    break;
+                case OperType::CALL:
+                    out << "CALL";
                     break;
                 default:
                     out << "Unexpected operator type!";

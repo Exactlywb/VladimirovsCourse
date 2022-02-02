@@ -113,6 +113,10 @@ namespace yy {
 
 %type <std::vector<AST::Node*>*>    argsList
 %type <std::vector<AST::Node*>*>    args
+
+%type <std::vector<AST::Node*>*>    exprList
+%type <std::vector<AST::Node*>*>    expA
+
 %type <std::vector<AST::Node*>*>    statementHandler
 
 %start translationStart
@@ -206,6 +210,17 @@ args                        :   ID                              {
                             |   args COMMA ID                   {
                                                                     AST::VarNode* newParam = new AST::VarNode ($3);
                                                                     $1->push_back (newParam);
+                                                                    $$ = $1;
+                                                                };
+
+exprList                    :   OPCIRCBRACK expA CLCIRCBRACK    {   $$ = $2;    };
+
+expA                        :   lvl15                           {
+                                                                    $$ = new std::vector<AST::Node*>;
+                                                                    $$->push_back ($1);
+                                                                }
+                            |   args COMMA lvl15                {
+                                                                    $1->push_back ($3);
                                                                     $$ = $1;
                                                                 };
 
@@ -436,6 +451,19 @@ term                        :   atomic                          {   $$ = $1;    
 
 atomic                      :   NUMBER                          {   $$ = new AST::NumNode   ($1);                               }
                             |   SCAN                            {   $$ = new AST::OperNode  (AST::OperNode::OperType::SCAN);    }
+                            |   ID exprList                     {
+                                                                    $$ = new AST::OperNode  (AST::OperNode::OperType::CALL);
+                                                                    AST::VarNode* funcName  = new AST::VarNode ($1);
+
+                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS);
+                                                                    for (auto v: *($2))
+                                                                        funcArgs->addChild (v);
+                                                                    delete $2;
+
+                                                                    $$->addChild (funcName);
+                                                                    $$->addChild (funcArgs);
+
+                                                                }
                             |   ID                              {   $$ = new AST::VarNode   ($1);                               };
 
 %%
