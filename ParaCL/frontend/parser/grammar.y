@@ -68,9 +68,14 @@ namespace yy {
 %token                      COMMA       ","
 %token                      SEMICOLON   ";"
 
+%token                      COLON       ":"
+
 %token                      SCAN        "?"
 
 %token                      END         0   "end of file"
+
+%token                      FUNC_DECL   "func"
+%token                      RET         "return"
 
 %token                      LEXERR
 
@@ -103,8 +108,11 @@ namespace yy {
 
 %type <AST::Node*>                  printStatement
 
-// %type <std::vector<AST::Node*>*>    argsList
-// %type <std::vector<AST::Node*>*>    args
+%type <AST::Node*>                  func
+%type <AST::Node*>                  returnStatement
+
+%type <std::vector<AST::Node*>*>    argsList
+%type <std::vector<AST::Node*>*>    args
 %type <std::vector<AST::Node*>*>    statementHandler
 
 %start translationStart
@@ -126,7 +134,7 @@ translationStart            :   statementHandler                {
                                                                         delete $1;
                                                                     }
                                                                     driver->setRoot (globalScope);
-                                                                    #if 0
+                                                                    #if 1
                                                                         driver->callDump (std::cout);
                                                                     #endif
                                                                 };
@@ -158,6 +166,7 @@ statement                   :   assignment                      {   $$ = $1;    
                             |   ifStatement                     {   $$ = $1;    }
                             |   whileStatement                  {   $$ = $1;    }
                             |   printStatement                  {   $$ = $1;    }
+                            |   returnStatement                 {   $$ = $1;    }
                             |   error SEMICOLON                 {
                                                                     driver->pushError (@1, "Undefined statement");
                                                                     $$ = nullptr;
@@ -165,6 +174,12 @@ statement                   :   assignment                      {   $$ = $1;    
                             |   error END                       {
                                                                     driver->pushError (@1, "Undefined statement");
                                                                     $$ = nullptr;
+                                                                };
+
+returnStatement             :   RET lvl15 SEMICOLON             {
+                                                                    AST::OperNode* retNode = new AST::OperNode (AST::OperNode::OperType::RETURN);
+                                                                    retNode->addChild ($2);
+                                                                    $$ = retNode;
                                                                 };
 
 printStatement              :   PRINT lvl15 SEMICOLON           {
@@ -181,20 +196,18 @@ printStatement              :   PRINT lvl15 SEMICOLON           {
                                                                     $$ = nullptr;
                                                                 };
 
-// argsList                    :   OPCIRCBRACK args CLCIRCBRACK    {   $$ = $2;    }
-//                             |   error                           {   
-//                                                                     driver->pushError ("Undefined expression in argsList");
-//                                                                     $$ = nullptr;
-//                                                                 };
+argsList                    :   OPCIRCBRACK args CLCIRCBRACK    {   $$ = $2;    };
 
-// args                        :   lvl15                           {
-//                                                                     $$ = new std::vector<AST::Node*>;
-//                                                                     $$->push_back ($1);
-//                                                                 }
-//                             |   args COMMA lvl15                {
-//                                                                     $1->push_back ($3);
-//                                                                     $$ = $1;
-//                                                                 };
+args                        :   ID                              {
+                                                                    $$ = new std::vector<AST::Node*>;
+                                                                    AST::VarNode* newParam = new AST::VarNode ($1);
+                                                                    $$->push_back (newParam);
+                                                                }
+                            |   args COMMA ID                   {
+                                                                    AST::VarNode* newParam = new AST::VarNode ($3);
+                                                                    $1->push_back (newParam);
+                                                                    $$ = $1;
+                                                                };
 
 ifStatement                 :   IF conditionExpression body     {
                                                                     if ($2 && $3) {
@@ -249,6 +262,20 @@ assignment                  :   ID ASSIGN lvl15 SEMICOLON       {
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
                                                                 }
+                            |   ID ASSIGN func SEMICOLON        {
+                                                                    AST::OperNode* newNode  = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
+                                                                    AST::VarNode* newVar    = new AST::VarNode ($1);
+                                                                    newNode->addChild (newVar);                     //!TODO: remove copypaste
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
+                                                                }
+                            |   ID ASSIGN func                  {
+                                                                    AST::OperNode* newNode  = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
+                                                                    AST::VarNode* newVar    = new AST::VarNode ($1);
+                                                                    newNode->addChild (newVar);
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
+                                                                }
                             |   ID SEMICOLON                    {   
                                                                     AST::OperNode*  newNode = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
                                                                     AST::VarNode*   newVar  = new AST::VarNode ($1);
@@ -264,6 +291,33 @@ assignment                  :   ID ASSIGN lvl15 SEMICOLON       {
                             |   ID error SEMICOLON              {
                                                                     $$ = nullptr;
                                                                     driver->pushError (@1, "Unexpected operation with variable");
+                                                                };
+
+func                        :   FUNC_DECL argsList body         {
+                                                                    AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL);
+                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS);
+                                                                    for (auto v: *($2))
+                                                                        funcArgs->addChild (v);
+                                                                    delete $2;
+                                                                    funcDecl->addChild (funcArgs);
+                                                                    funcDecl->addChild ($3);
+                                                                    $$ = funcDecl;
+                                                                }
+                            |   FUNC_DECL argsList COLON ID body{
+                                                                    AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL);
+                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS);
+                                                                    for (auto v: *($2))
+                                                                        funcArgs->addChild (v);
+                                                                    delete $2;
+
+                                                                    AST::FuncNode* funcName = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_NAME);
+                                                                    AST::VarNode*  funcID   = new AST::VarNode ($4);
+                                                                    funcName->addChild (funcID);
+
+                                                                    funcDecl->addChild (funcName);
+                                                                    funcDecl->addChild (funcArgs);
+                                                                    funcDecl->addChild ($5);
+                                                                    $$ = funcDecl;
                                                                 };
 
 lvl15                       :   lvl14                           {   $$ = $1;        }

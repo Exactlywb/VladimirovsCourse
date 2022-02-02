@@ -62,6 +62,10 @@ ONE_LINE_COMMENT        "//".*
 "||"                    {   return yy::parser::token_type::OR;          }
 
 "="                     {   return yy::parser::token_type::ASSIGN;      }
+":"                     {   return yy::parser::token_type::COLON;       }
+
+"func"                  {   return yy::parser::token_type::FUNC_DECL;   }
+"return"                {   return yy::parser::token_type::RET;         }
 
 {WORD}                  {   return yy::parser::token_type::ID;          }
 

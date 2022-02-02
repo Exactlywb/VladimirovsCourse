@@ -17,6 +17,7 @@ namespace AST {
         OPERATOR,
 
         CONDITION,
+        FUNCTION,
 
         SCOPE
 
@@ -111,6 +112,45 @@ namespace AST {
         }
     };
 
+    class FuncNode final : public Node {
+
+    public:
+        enum class FuncComponents {
+
+            FUNC_DECL,
+            FUNC_ARGS,
+            FUNC_NAME
+
+        };
+    
+    private:
+        FuncComponents compType_;
+    public:
+        FuncNode (const FuncComponents compType, Node *parent = nullptr) : Node (NodeT::FUNCTION, parent),
+                                                                           compType_ (compType) {}
+
+        FuncComponents getFuncCompType () const 
+        {
+            return compType_;
+        }
+
+        void nodeDump (std::ostream &out) const override
+        {
+            switch (compType_) {
+                case FuncComponents::FUNC_DECL:
+                    out << "FUNC_DECL";
+                    break;
+                case FuncComponents::FUNC_ARGS:
+                    out << "FUNC_ARGS";
+                    break;
+                case FuncComponents::FUNC_NAME:
+                    out << "FUNC_NAME";
+                    break;
+            }
+        }
+
+    };
+
     class OperNode final : public Node {
     public:
         enum class OperType;
@@ -143,7 +183,9 @@ namespace AST {
             OR,   // a || b
 
             SCAN,  // a = ?
-            PRINT  // print (a)
+            PRINT, // print (a)
+
+            RETURN // return ...
 
         };
 
@@ -211,6 +253,9 @@ namespace AST {
                     break;
                 case OperType::PRINT:
                     out << "PRINT [print ()]";
+                    break;
+                case OperType::RETURN:
+                    out << "RETURN";
                     break;
                 default:
                     out << "Unexpected operator type!";
