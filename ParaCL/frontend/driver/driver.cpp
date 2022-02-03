@@ -35,7 +35,6 @@ int main (int argc, char **argv)
 
     driver.semantic ();
     driver.printWarnings ();
-    driver.callDump (std::cout);
 
     auto errorSt = driver.errBegin ();
     auto errorFin = driver.errEnd ();
@@ -51,7 +50,7 @@ int main (int argc, char **argv)
 
     std::cin.rdbuf (cinbuf);
 
-//    driver.interpret ();
+    driver.interpret ();
     //    driver.compile ();
 
     return 0;

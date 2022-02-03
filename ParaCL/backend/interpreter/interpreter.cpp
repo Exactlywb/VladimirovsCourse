@@ -11,7 +11,7 @@ namespace interpret {
             delete i.second;
     }
 
-    VarWrapper *Scope::lookup (const std::string &name) const
+    Wrapper *Scope::lookup (const std::string &name) const
     {
         const Scope *curScope = this;
         while (curScope) {
@@ -25,8 +25,8 @@ namespace interpret {
         return nullptr;
     }
 
-    void Scope::add (const std::string &name, VarWrapper *var)
-    {
+    void Scope::add (const std::string &name, Wrapper *var)
+    {   
         tbl_.insert ({name, var});
     }
 
@@ -79,6 +79,8 @@ namespace interpret {
                 return -CalcExpr (curScope, childrenSt);
             case AST::OperNode::OperType::UNARY_P:
                 return +CalcExpr (curScope, childrenSt);
+            case AST::OperNode::OperType::CALL: 
+                return execCall  (curScope, node);
             case AST::OperNode::OperType::ASSIGN:
                 return assignment (curScope, node);
             case AST::OperNode::OperType::SCAN: {
@@ -91,6 +93,83 @@ namespace interpret {
             }
         }
     }
+
+    int Interpreter::execCall (Scope *curScope, AST::OperNode* callNode) {
+
+        AST::VarNode*  varNode  = static_cast<AST::VarNode*>(*(callNode->childBegin()));
+
+        Wrapper*       obj      = curScope->lookup(varNode->getName());
+        if (obj->type_ == DataType::FUNC) {
+
+            FuncObject* funcObj = static_cast<FuncObject*> (obj);
+            AST::FuncNode* funcDecl = funcObj->getNode();
+
+            Tree::NAryTree<Scope *> scopeTree;
+            Scope* newScope = new Scope;
+            scopeTree.setRoot (newScope);
+
+            AST::FuncNode* funcArgs = nullptr;
+            AST::FuncNode* funcName = nullptr;
+
+            auto funcSt  = funcDecl->childBegin();
+            auto funcFin = funcDecl->childEnd();
+
+            while (funcSt != funcFin) {
+                
+                if ((*funcSt)->getType() == AST::NodeT::FUNCTION) {
+
+                    switch (static_cast<AST::FuncNode*>(*funcSt)->getFuncCompType()) {
+
+                        case AST::FuncNode::FuncComponents::FUNC_ARGS:
+                            funcArgs = static_cast<AST::FuncNode*>(*funcSt);
+                            break;
+                        case AST::FuncNode::FuncComponents::FUNC_NAME:
+                            funcName = static_cast<AST::FuncNode*>(*funcSt);
+                            break;
+                    }
+                }
+                ++funcSt;
+            }
+
+            if (funcName) {
+                
+                const std::string &insideName = static_cast<AST::VarNode*>(funcName->getRightChild())->getName();
+                FuncObject* insideFunc = new FuncObject{funcDecl};
+
+                newScope->add (insideName, insideFunc);
+            }
+
+            auto argsSt = funcArgs->childBegin(); //TODO
+            auto argsFin = funcArgs->childEnd();
+
+            AST::FuncNode* funcArgsVal = static_cast<AST::FuncNode*>(callNode->getRightChild());
+
+            auto childSt  = funcArgsVal->childBegin();
+            auto childFin = funcArgsVal->childEnd();
+
+            while (argsSt != argsFin) { //TODO compare sizes
+
+                AST::VarNode* forGetName = static_cast<AST::VarNode*>(*argsSt);
+                const std::string &name = forGetName->getName();
+
+                Variable<int>* newVar = new Variable<int>{CalcExpr(curScope, childSt)};
+
+                newScope->add (name, newVar); //FALL
+
+                ++argsSt;
+                ++childSt;
+            }
+
+            execScope (newScope, static_cast<AST::ScopeNode*>(funcDecl->getRightChild()));
+            int retRes = callStack_.top ();
+            callStack_.pop ();
+            return retRes;
+        }
+        else {
+
+            //TODO ERROR
+        }
+    }  
 
     int Interpreter::CalcExpr (Scope *curScope, std::vector<AST::Node *>::const_iterator it)
     {
@@ -107,32 +186,76 @@ namespace interpret {
         }
     }
 
+    AST::FuncNode *FuncNodeLookUp (AST::OperNode *node) {
+
+        AST::Node *rightChild = node;
+        while (node->getOpType() == AST::OperNode::OperType::ASSIGN) {
+
+            rightChild = node->getRightChild();
+            if (rightChild->getType() == AST::NodeT::OPERATOR)
+                node = static_cast<AST::OperNode*> (rightChild);
+            else    
+                break;
+        }
+        
+        if (rightChild->getType() == AST::NodeT::FUNCTION) 
+            return static_cast<AST::FuncNode*>(rightChild);
+        else 
+            return nullptr;
+    }
+
     int Interpreter::assignment (Scope *curScope, AST::OperNode *node)
     {
         // std::vector<AST::Node *> children = node->getChildren ();
         auto childrenSt = node->childBegin ();
-
         AST::VarNode *leftN = static_cast<AST::VarNode *> (*childrenSt);
-        int val = CalcExpr (curScope, std::next (childrenSt, 1));  //Now we have only int type... In the near future it shall be template
-
         const std::string &name = leftN->getName ();
-        VarWrapper *findVar = curScope->lookup (name);
-        if (!findVar) {
-            Variable<int> *newVar = new Variable<int> (val);
-            curScope->add (name, newVar);
-        }
+
+        Wrapper *findObj = curScope->lookup (name);
+
+        AST::FuncNode* funcNodeDecl = FuncNodeLookUp (node);
+        if (funcNodeDecl) {
+            
+            
+            if (!findObj) {
+                FuncObject *newFuncObj = new FuncObject (funcNodeDecl);
+                curScope->add (name, newFuncObj);
+            }
+            else {
+                
+                //TODO Redefenition ? 
+            }
+        }   
         else {
-            Variable<int> *clearVar = static_cast<Variable<int> *> (findVar);  //Only int type...
-            clearVar->setVal (val);
+
+            int val = CalcExpr (curScope, std::next (childrenSt, 1));  //Now we have only int type... In the near future it shall be template
+
+            
+            if (!findObj) {
+                Variable<int> *newVar = new Variable<int> (val);
+                curScope->add (name, newVar);
+            }
+            else { //TODO: Checking for a type
+                Variable<int> *clearVar = static_cast<Variable<int> *> (findObj);  //Only int type...
+                clearVar->setVal (val);
+            }
+            return val;
         }
-        return val;
+
+        
     }
 
     void Interpreter::print (Scope *curScope, AST::OperNode *node)
     {
-        // std::vector<AST::Node *> children = node->getChildren ();
         auto childrenSt = node->childBegin ();
         std::cout << CalcExpr (curScope, childrenSt) << std::endl;
+    }
+
+    void Interpreter::ret (Scope *curScope, AST::OperNode *node)
+    {
+        auto expr = node->childBegin ();
+        callStack_.push (CalcExpr (curScope, expr));
+        scopeExecution_ = false;
     }
 
     void Interpreter::execOper (Scope *curScope, AST::OperNode *node)
@@ -140,6 +263,10 @@ namespace interpret {
         switch (node->getOpType ()) {
             case AST::OperNode::OperType::ASSIGN: {
                 assignment (curScope, node);
+                break;
+            }
+            case AST::OperNode::OperType::RETURN: {
+                ret (curScope, node);
                 break;
             }
             case AST::OperNode::OperType::PRINT: {
@@ -186,11 +313,11 @@ namespace interpret {
     }
 
     void Interpreter::execScope (Scope *curScope, AST::ScopeNode *node)
-    {
+    {   
         // std::vector<AST::Node *> curNodes = node->getChildren ();
         auto childrenSt = node->childBegin ();
         auto childrenFin = node->childEnd ();
-        while (childrenSt != childrenFin) {
+        while (scopeExecution_ && childrenSt != childrenFin) {
             AST::Node *nodeToExec = *childrenSt;
             switch (nodeToExec->getType ()) {
                 case AST::NodeT::OPERATOR: {
@@ -206,6 +333,8 @@ namespace interpret {
             }
             childrenSt = std::next (childrenSt, 1);
         }
+
+        scopeExecution_ = true;
     }
 
     void Interpreter::run ()

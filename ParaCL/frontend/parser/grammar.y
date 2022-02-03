@@ -226,7 +226,7 @@ expA                        :   lvl15                           {
                                                                     $$ = new std::vector<AST::Node*>;
                                                                     $$->push_back ($1);
                                                                 }
-                            |   args COMMA lvl15                {
+                            |   expA COMMA lvl15                {
                                                                     $1->push_back ($3);
                                                                     $$ = $1;
                                                                 };
