@@ -92,7 +92,6 @@ namespace yy {
 %type <AST::Node*>                  lvl5
 %type <AST::Node*>                  lvl3
 
-%type <AST::Node*>                  hiddenReturn
 %type <AST::Node*>                  term
 %type <AST::Node*>                  atomic
 
@@ -278,6 +277,7 @@ body                        :   OPCURVBRACK statementHandler CLCURVBRACK
                                                                 }
                             |   OPCURVBRACK CLCURVBRACK         {   $$ = new AST::ScopeNode ();   };
 
+
 assignment                  :   ID ASSIGN lvl15 SEMICOLON       {
                                                                     AST::OperNode* newNode  = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
                                                                     AST::VarNode* newVar    = new AST::VarNode  ($1);
@@ -302,6 +302,13 @@ assignment                  :   ID ASSIGN lvl15 SEMICOLON       {
                             |   ID ASSIGN error SEMICOLON       {
                                                                     $$ = nullptr;
                                                                     driver->pushError (@3, "Bad expression after assignment");
+                                                                }
+                            |   ID ASSIGN   body                {
+                                                                    AST::OperNode* newNode  = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
+                                                                    AST::VarNode* newVar    = new AST::VarNode ($1);
+                                                                    newNode->addChild (newVar);
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
                                                                 }
                             |   ID error SEMICOLON              {
                                                                     $$ = nullptr;
