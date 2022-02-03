@@ -49,6 +49,7 @@ add_executable (${PROJECT_NAME}
     backend/compiler/compiler.cpp
     frontend/driver/driver.cpp
     frontend/customLexer/customLexer.cpp
+    frontend/SemanticAnalyzer/semantic.cpp
     ${BISON_parser_OUTPUTS}
     ${FLEX_scanner_OUTPUTS}
 
@@ -72,6 +73,7 @@ target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/common/
 target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/common/InputHandler/")
 target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/backend/interpreter/")
 target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/backend/compiler/")
+target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/frontend/SemanticAnalyzer/")
 
 find_program(CLANG_FORMAT "clang-format")
 if(CLANG_FORMAT)

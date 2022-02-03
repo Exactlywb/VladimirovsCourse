@@ -32,6 +32,9 @@ int main (int argc, char **argv)
         return 0;
     }
 
+    driver.semantic ();
+    driver.callDump (std::cout);
+
     auto errorSt = driver.errBegin ();
     auto errorFin = driver.errEnd ();
 

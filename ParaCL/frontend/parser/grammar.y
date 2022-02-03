@@ -110,6 +110,7 @@ namespace yy {
 
 %type <AST::Node*>                  func
 %type <AST::Node*>                  returnStatement
+%type <AST::Node*>                  hiddenReturn
 
 %type <std::vector<AST::Node*>*>    argsList
 %type <std::vector<AST::Node*>*>    args
@@ -138,7 +139,7 @@ translationStart            :   statementHandler                {
                                                                         delete $1;
                                                                     }
                                                                     driver->setRoot (globalScope);
-                                                                    #if 1
+                                                                    #if 0
                                                                         driver->callDump (std::cout);
                                                                     #endif
                                                                 };
@@ -171,6 +172,7 @@ statement                   :   assignment                      {   $$ = $1;    
                             |   whileStatement                  {   $$ = $1;    }
                             |   printStatement                  {   $$ = $1;    }
                             |   returnStatement                 {   $$ = $1;    }
+                            |   hiddenReturn                    {   $$ = $1;    }
                             |   error SEMICOLON                 {
                                                                     driver->pushError (@1, "Undefined statement");
                                                                     $$ = nullptr;
@@ -178,6 +180,12 @@ statement                   :   assignment                      {   $$ = $1;    
                             |   error END                       {
                                                                     driver->pushError (@1, "Undefined statement");
                                                                     $$ = nullptr;
+                                                                };
+
+hiddenReturn                :   lvl14 SEMICOLON                 {
+                                                                    AST::OperNode* retNode = new AST::OperNode (AST::OperNode::OperType::RETURN);
+                                                                    retNode->addChild ($1);
+                                                                    $$ = retNode;
                                                                 };
 
 returnStatement             :   RET lvl15 SEMICOLON             {
@@ -289,14 +297,6 @@ assignment                  :   ID ASSIGN lvl15 SEMICOLON       {
                                                                     AST::VarNode* newVar    = new AST::VarNode ($1);
                                                                     newNode->addChild (newVar);
                                                                     newNode->addChild ($3);
-                                                                    $$ = newNode;
-                                                                }
-                            |   ID SEMICOLON                    {   
-                                                                    AST::OperNode*  newNode = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
-                                                                    AST::VarNode*   newVar  = new AST::VarNode ($1);
-                                                                    AST::NumNode*   defaultVal = new AST::NumNode (0);
-                                                                    newNode->addChild (newVar);
-                                                                    newNode->addChild (defaultVal);
                                                                     $$ = newNode;
                                                                 }
                             |   ID ASSIGN error SEMICOLON       {

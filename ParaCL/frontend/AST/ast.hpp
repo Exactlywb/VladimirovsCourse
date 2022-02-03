@@ -65,6 +65,16 @@ namespace AST {
             return children_.cend ();
         }
 
+        Node* getRightChild () const
+        {
+            return children_ [children_.size () - 1];
+        }
+
+        size_t getChildrenNum () const 
+        {
+            return children_.size ();
+        }
+
         void setParent (Node *parent)
         {
             parent_ = parent;

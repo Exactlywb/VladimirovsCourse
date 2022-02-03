@@ -15,18 +15,21 @@
 #include "grammar.tab.hh"
 #include "interpreter.hpp"
 #include "nAryTree.hpp"
+#include "semantic.hpp"
 
 namespace yy {
 
     class FrontendDriver final {
         std::unique_ptr<ParaCLexer> lexer_;
         Tree::NAryTree<AST::Node *> tree_;
+        std::unique_ptr<SemanticAnalyzer> analyzer_;
 
         std::vector<std::string> error_;
         std::vector<std::string> code_;
 
     public:
         FrontendDriver (const char *input) : lexer_ (std::unique_ptr<ParaCLexer>{new ParaCLexer}),
+                                             analyzer_ (std::unique_ptr<SemanticAnalyzer>{new SemanticAnalyzer}),
                                              tree_ ()
         {
             std::fstream inputFile (input, std::ios_base::in);
@@ -59,6 +62,10 @@ namespace yy {
             *location = lexer_->getLocation ();
 
             return tokenT;
+        }
+
+        void semantic () {
+            analyzer_->run (&tree_);
         }
 
         int getLineNo () const noexcept { return lexer_->lineno (); }
