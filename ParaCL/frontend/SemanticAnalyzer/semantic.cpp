@@ -13,19 +13,19 @@ namespace {
 
     }
 
-    void HiddenReturnNodesAnalyze (AST::Node* curNode) {
+    void HiddenReturnNodesAnalyze (SemanticAnalyzer* analyzer_, AST::Node* curNode) {
 
         AST::Node* rightNode = curNode->getRightChild ();
 
         if (rightNode == nullptr) {
-            //WARNINGS
+            analyzer_->pushWarning ("empty scope");
             SetPoisonReturn (curNode);
         } else {
 
             switch (rightNode->getType ()) {
 
                 case AST::NodeT::CONDITION: {
-                    //WARNINGS
+                    analyzer_->pushWarning ("can't find return after condition statement");
                     SetPoisonReturn (curNode);
                     break;
                 }
@@ -39,7 +39,7 @@ namespace {
                         curNode->eraseChild (curNode->getChildrenNum () - 1);
                         curNode->addChild (returnNode);
                     } else {
-                        //WARNINGS
+                        analyzer_->pushWarning ("unexpected statement in the scope end");
                         SetPoisonReturn (curNode);
                     }
 
@@ -50,23 +50,10 @@ namespace {
 
         }
 
-    }
-    
-    void CheckingForImplicitAssignment (AST::Node* curNode) {
 
-        auto childrenSt = curNode->childBegin ();
-        auto childrenFin = curNode->childEnd ();
-
-        while (childrenSt != childrenFin) {
-
-            if ((*childrenSt)->getType() == AST::NodeT::OPERATOR) {
-
-                
-            }
-        }
     }
 
-    void AnalyzeHiddenReturn (Tree::NAryTree<AST::Node*>* tree) {
+    void AnalyzeHiddenReturn (SemanticAnalyzer* analyzer_, Tree::NAryTree<AST::Node*>* tree) {
 
         AST::Node* curNode = tree->getRoot ();
         if (!curNode)
@@ -80,11 +67,9 @@ namespace {
             stack.pop ();
 
             AST::NodeT curType = curNode->getType ();
-            if (curType == AST::NodeT::SCOPE) {
-                
-                CheckingForImplicitAssignment (curNode);
-                HiddenReturnNodesAnalyze (curNode);
-            }
+            if (curType == AST::NodeT::SCOPE) 
+                HiddenReturnNodesAnalyze (analyzer_, curNode);
+            
 
 //next          
             auto childrenSt = curNode->childBegin ();
@@ -102,6 +87,6 @@ namespace {
 
 void SemanticAnalyzer::run (Tree::NAryTree<AST::Node*>* tree) {
 
-    AnalyzeHiddenReturn (tree);
+    AnalyzeHiddenReturn (this, tree);
 
 }

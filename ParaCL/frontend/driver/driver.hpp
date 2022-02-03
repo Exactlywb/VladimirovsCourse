@@ -68,6 +68,10 @@ namespace yy {
             analyzer_->run (&tree_);
         }
 
+        void printWarnings () const {
+            analyzer_->printWarnings ();
+        }
+
         int getLineNo () const noexcept { return lexer_->lineno (); }
 
         std::string getYYText () const noexcept { return lexer_->YYText (); }

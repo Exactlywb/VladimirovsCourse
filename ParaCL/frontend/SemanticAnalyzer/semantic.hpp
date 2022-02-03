@@ -15,6 +15,7 @@ struct SemanticAnalyzer {
 
 private:
     ContextType context_ = ContextType::UsualContext;
+    std::vector<std::string> warnings_;
 
 public:
     void setContext (ContextType context) {
@@ -34,6 +35,20 @@ public:
     SemanticAnalyzer &operator= (SemanticAnalyzer &&other) = delete;
 
     void run (Tree::NAryTree<AST::Node*>* tree);
+
+    void pushWarning (const std::string &err) 
+    {
+
+        std::string errMsg = std::string ("Warning: ") + err;
+        warnings_.push_back (errMsg + std::string ("\n"));
+
+    }
+
+    void printWarnings () const 
+    {
+        for (auto v: warnings_)
+            std::cout << v;
+    }
 
 };
 

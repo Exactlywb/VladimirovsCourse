@@ -33,6 +33,7 @@ int main (int argc, char **argv)
     }
 
     driver.semantic ();
+    driver.printWarnings ();
     driver.callDump (std::cout);
 
     auto errorSt = driver.errBegin ();
