@@ -51,6 +51,20 @@ namespace {
         }
 
     }
+    
+    void CheckingForImplicitAssignment (AST::Node* curNode) {
+
+        auto childrenSt = curNode->childBegin ();
+        auto childrenFin = curNode->childEnd ();
+
+        while (childrenSt != childrenFin) {
+
+            if ((*childrenSt)->getType() == AST::NodeT::OPERATOR) {
+
+                
+            }
+        }
+    }
 
     void AnalyzeHiddenReturn (Tree::NAryTree<AST::Node*>* tree) {
 
@@ -66,10 +80,13 @@ namespace {
             stack.pop ();
 
             AST::NodeT curType = curNode->getType ();
-            if (curType == AST::NodeT::SCOPE)
+            if (curType == AST::NodeT::SCOPE) {
+                
+                CheckingForImplicitAssignment (curNode);
                 HiddenReturnNodesAnalyze (curNode);
+            }
 
-//next
+//next          
             auto childrenSt = curNode->childBegin ();
             auto childrenFin = curNode->childEnd ();
 
