@@ -92,6 +92,7 @@ namespace yy {
 %type <AST::Node*>                  lvl5
 %type <AST::Node*>                  lvl3
 
+%type <AST::Node*>                  hiddenReturn
 %type <AST::Node*>                  term
 %type <AST::Node*>                  atomic
 
@@ -187,12 +188,11 @@ hiddenReturn                :   lvl14 SEMICOLON                 {
                                                                     retNode->addChild ($1);
                                                                     $$ = retNode;
                                                                 };
-
 returnStatement             :   RET lvl15 SEMICOLON             {
                                                                     AST::OperNode* retNode = new AST::OperNode (AST::OperNode::OperType::RETURN);
                                                                     retNode->addChild ($2);
                                                                     $$ = retNode;
-                                                                };
+                                                                };                                    
 
 printStatement              :   PRINT lvl15 SEMICOLON           {
                                                                     AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::PRINT);
