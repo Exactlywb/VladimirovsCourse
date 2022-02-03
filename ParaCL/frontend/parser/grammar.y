@@ -92,6 +92,7 @@ namespace yy {
 %type <AST::Node*>                  lvl5
 %type <AST::Node*>                  lvl3
 
+%type <AST::Node*>                  hiddenReturn
 %type <AST::Node*>                  term
 %type <AST::Node*>                  atomic
 
@@ -171,6 +172,7 @@ statement                   :   assignment                      {   $$ = $1;    
                             |   whileStatement                  {   $$ = $1;    }
                             |   printStatement                  {   $$ = $1;    }
                             |   returnStatement                 {   $$ = $1;    }
+                            |   hiddenReturn                    {   $$ = $1;    }
                             |   error SEMICOLON                 {
                                                                     driver->pushError (@1, "Undefined statement");
                                                                     $$ = nullptr;
@@ -180,11 +182,17 @@ statement                   :   assignment                      {   $$ = $1;    
                                                                     $$ = nullptr;
                                                                 };
 
+hiddenReturn                :  lvl14 SEMICOLON                  {
+                                                                    AST::OperNode* retNode = new AST::OperNode (AST::OperNode::OperType::RETURN);
+                                                                    retNode->addChild ($1);
+                                                                    $$ = retNode;
+                                                                };
+             
 returnStatement             :   RET lvl15 SEMICOLON             {
                                                                     AST::OperNode* retNode = new AST::OperNode (AST::OperNode::OperType::RETURN);
                                                                     retNode->addChild ($2);
                                                                     $$ = retNode;
-                                                                };
+                                                                };                                    
 
 printStatement              :   PRINT lvl15 SEMICOLON           {
                                                                     AST::OperNode* newNode = new AST::OperNode (AST::OperNode::OperType::PRINT);
@@ -289,14 +297,6 @@ assignment                  :   ID ASSIGN lvl15 SEMICOLON       {
                                                                     AST::VarNode* newVar    = new AST::VarNode ($1);
                                                                     newNode->addChild (newVar);
                                                                     newNode->addChild ($3);
-                                                                    $$ = newNode;
-                                                                }
-                            |   ID SEMICOLON                    {   
-                                                                    AST::OperNode*  newNode = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
-                                                                    AST::VarNode*   newVar  = new AST::VarNode ($1);
-                                                                    AST::NumNode*   defaultVal = new AST::NumNode (0);
-                                                                    newNode->addChild (newVar);
-                                                                    newNode->addChild (defaultVal);
                                                                     $$ = newNode;
                                                                 }
                             |   ID ASSIGN error SEMICOLON       {
