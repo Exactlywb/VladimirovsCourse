@@ -310,6 +310,13 @@ assignment                  :   ID ASSIGN lvl15 SEMICOLON       {
                                                                     newNode->addChild ($3);
                                                                     $$ = newNode;
                                                                 }
+                            |   ID ASSIGN   body SEMICOLON      {
+                                                                    AST::OperNode* newNode  = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
+                                                                    AST::VarNode* newVar    = new AST::VarNode ($1);
+                                                                    newNode->addChild (newVar);
+                                                                    newNode->addChild ($3);
+                                                                    $$ = newNode;
+                                                                }
                             |   ID error SEMICOLON              {
                                                                     $$ = nullptr;
                                                                     driver->pushError (@1, "Unexpected operation with variable");

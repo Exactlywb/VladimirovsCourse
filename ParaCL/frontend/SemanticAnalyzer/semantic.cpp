@@ -67,8 +67,15 @@ namespace {
             stack.pop ();
 
             AST::NodeT curType = curNode->getType ();
-            if (curType == AST::NodeT::SCOPE) 
-                HiddenReturnNodesAnalyze (analyzer_, curNode);
+            if (curType == AST::NodeT::FUNCTION) {
+                
+                AST::FuncNode* funcNode = static_cast<AST::FuncNode*> (curNode);
+                if (funcNode->getFuncCompType() == AST::FuncNode::FuncComponents::FUNC_DECL) {
+
+                    AST::Node* scopeNode = funcNode->getRightChild();
+                    HiddenReturnNodesAnalyze (analyzer_, scopeNode); 
+                }
+            }
             
 
 //next          
