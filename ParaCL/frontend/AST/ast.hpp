@@ -67,6 +67,11 @@ namespace AST {
 
         Node* getRightChild () const
         {
+            
+            size_t vecSize = children_.size ();
+            if (vecSize == 0)
+                return nullptr;
+
             return children_ [children_.size () - 1];
         }
 

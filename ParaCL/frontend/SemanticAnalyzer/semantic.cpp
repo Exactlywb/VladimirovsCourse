@@ -13,6 +13,45 @@ namespace {
 
     }
 
+    void HiddenReturnNodesAnalyze (AST::Node* curNode) {
+
+        AST::Node* rightNode = curNode->getRightChild ();
+
+        if (rightNode == nullptr) {
+            //WARNINGS
+            SetPoisonReturn (curNode);
+        } else {
+
+            switch (rightNode->getType ()) {
+
+                case AST::NodeT::CONDITION: {
+                    //WARNINGS
+                    SetPoisonReturn (curNode);
+                    break;
+                }
+                case AST::NodeT::OPERATOR: {
+                    AST::OperNode* oper = static_cast<AST::OperNode*> (rightNode);
+                    if (oper->getOpType () == AST::OperNode::OperType::RETURN)
+                        break;
+                    else if (oper->getOpType () == AST::OperNode::OperType::ASSIGN) {
+                        AST::OperNode*  returnNode  = new AST::OperNode (AST::OperNode::OperType::RETURN);
+                        returnNode->addChild (oper);
+                        curNode->eraseChild (curNode->getChildrenNum () - 1);
+                        curNode->addChild (returnNode);
+                    } else {
+                        //WARNINGS
+                        SetPoisonReturn (curNode);
+                    }
+
+                    break;
+                }
+                
+            }
+
+        }
+
+    }
+
     void AnalyzeHiddenReturn (Tree::NAryTree<AST::Node*>* tree) {
 
         AST::Node* curNode = tree->getRoot ();
@@ -27,37 +66,8 @@ namespace {
             stack.pop ();
 
             AST::NodeT curType = curNode->getType ();
-            if (curType == AST::NodeT::SCOPE) {
-
-                AST::Node* rightNode = curNode->getRightChild ();
-
-                switch (rightNode->getType ()) {
-
-                    case AST::NodeT::CONDITION: {
-                        //WARNINGS
-                        SetPoisonReturn (curNode);
-                        break;
-                    }
-                    case AST::NodeT::OPERATOR: {
-                        AST::OperNode* oper = static_cast<AST::OperNode*> (rightNode);
-                        if (oper->getOpType () == AST::OperNode::OperType::RETURN)
-                            break;
-                        else if (oper->getOpType () == AST::OperNode::OperType::ASSIGN) {
-                            AST::OperNode*  returnNode  = new AST::OperNode (AST::OperNode::OperType::RETURN);
-                            returnNode->addChild (oper);
-                            curNode->eraseChild (curNode->getChildrenNum () - 1);
-                            curNode->addChild (returnNode);
-                        } else {
-                            //WARNINGS
-                            SetPoisonReturn (curNode);
-                        }
-
-                        break;
-                    }
-                    
-                }
-
-            }
+            if (curType == AST::NodeT::SCOPE)
+                HiddenReturnNodesAnalyze (curNode);
 
 //next
             auto childrenSt = curNode->childBegin ();
