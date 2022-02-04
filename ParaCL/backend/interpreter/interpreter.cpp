@@ -163,6 +163,7 @@ namespace interpret {
             execScope (newScope, static_cast<AST::ScopeNode*>(funcDecl->getRightChild()));
             int retRes = callStack_.top ();
             callStack_.pop ();
+            scopeExecution_ = true;
             return retRes;
         }
         else {
@@ -333,7 +334,7 @@ namespace interpret {
             childrenSt = std::next (childrenSt, 1);
         }
 
-        scopeExecution_ = true;
+        //scopeExecution_ = true;
     }
 
     void Interpreter::run ()
