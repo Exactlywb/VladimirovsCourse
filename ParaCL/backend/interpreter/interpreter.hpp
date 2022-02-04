@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <utility>
 
 #include "ast.hpp"
 #include "nAryTree.hpp"
@@ -100,7 +101,7 @@ namespace interpret {
             out << "it is for compile";  //TODO: something with it
         }
 
-        Wrapper *lookup (const std::string &name) const;
+        std::pair<Scope *, Wrapper *> smartLookup (const std::string &name);
         void add (const std::string &name, Wrapper *var);
         void add (Scope *scope);
     };
@@ -142,7 +143,7 @@ namespace interpret {
         int execCallUsingStack (Scope *newScope, AST::ScopeNode *ASTScope);
         int CalcScope (AST::ScopeNode *node);
 
-        int createNewScope (Scope *newScope, AST::FuncNode *funcName, AST::FuncNode *funcArgs, AST::FuncNode *funcDecl, AST::OperNode *callNode, Scope *curScope);
+        void createNewScope (Scope *newScope, AST::FuncNode *funcName, AST::FuncNode *funcArgs, AST::FuncNode *funcDecl, AST::OperNode *callNode, Scope *curScope);
         int execCall (Scope *curScope, AST::OperNode *callNode);
 
         void execOper (Scope *curScope, AST::OperNode *node);

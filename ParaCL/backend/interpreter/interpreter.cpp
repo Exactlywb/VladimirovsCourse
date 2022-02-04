@@ -1,8 +1,5 @@
 #include "interpreter.hpp"
 
-#include <stack>
-#include <vector>
-
 namespace interpret {
 
     Scope::~Scope ()
@@ -11,18 +8,18 @@ namespace interpret {
             delete i.second;
     }
 
-    Wrapper *Scope::lookup (const std::string &name) const
+    std::pair<Scope *, Wrapper *> Scope::smartLookup (const std::string &name)
     {
-        const Scope *curScope = this;
+        Scope *curScope = this;
         while (curScope) {
             auto elem = curScope->tbl_.find (name);
             if (elem != curScope->tbl_.end ())
-                return elem->second;
+                return {curScope, elem->second};
 
             curScope = curScope->parent_;
         }
 
-        return nullptr;
+        return {nullptr, nullptr};
     }
 
     void Scope::add (const std::string &name, Wrapper *var)
@@ -38,7 +35,7 @@ namespace interpret {
 
     int Interpreter::CalcVar (Scope *curScope, AST::VarNode *var)
     {
-        Variable<int> *clearVar = static_cast<Variable<int> *> (curScope->lookup (var->getName ()));
+        Variable<int> *clearVar = static_cast<Variable<int> *> (curScope->smartLookup (var->getName ()).second);
         if (clearVar)
             return clearVar->getVal ();
         else
@@ -147,7 +144,7 @@ namespace interpret {
         return nullptr;
     }
 
-    int Interpreter::createNewScope (Scope *newScope, AST::FuncNode *funcName, AST::FuncNode *funcArgs, AST::FuncNode *funcDecl, AST::OperNode *callNode, Scope *curScope)
+    void Interpreter::createNewScope (Scope *newScope, AST::FuncNode *funcName, AST::FuncNode *funcArgs, AST::FuncNode *funcDecl, AST::OperNode *callNode, Scope *curScope)
     {
         if (funcName) {
             const std::string &insideName = static_cast<AST::VarNode *> (funcName->getRightChild ())->getName ();
@@ -199,12 +196,13 @@ namespace interpret {
     {
         AST::VarNode *varNode = static_cast<AST::VarNode *> (*(callNode->childBegin ()));
 
-        Wrapper *obj = curScope->lookup (varNode->getName ());
+        Wrapper *obj = curScope->smartLookup (varNode->getName ()).second; // not found ?
         if (obj->type_ == DataType::FUNC)
             return execRealCall (curScope, obj, callNode);
-        else {
-            //TODO ERROR
-        }
+        
+        //TODO ERROR
+        std::cout << "I'm the evil" << std::endl;
+        
     }
 
     int Interpreter::CalcScope (AST::ScopeNode *node)
@@ -256,15 +254,19 @@ namespace interpret {
         AST::VarNode *leftN = static_cast<AST::VarNode *> (*childrenSt);
         const std::string &name = leftN->getName ();
 
-        Wrapper *findObj = curScope->lookup (name);
 
+        std::pair <Scope *, Wrapper *> findObj = curScope->smartLookup (name);
+        Wrapper *obj = findObj.second;
         AST::FuncNode *funcNodeDecl = FuncNodeLookUp (node);
         if (funcNodeDecl) {
-            if (!findObj) {
+            if (!obj) {
                 FuncObject *newFuncObj = new FuncObject (funcNodeDecl);
                 curScope->add (name, newFuncObj);
             }
             else {
+                if (obj->type_ == DataType::VAR){
+                    throw ErrorDetecter
+                }
             }
         }
         else {
@@ -274,7 +276,8 @@ namespace interpret {
                 Variable<int> *newVar = new Variable<int> (val);
                 curScope->add (name, newVar);
             }
-            else {                                                                 //TODO: Checking for a type
+            else {                     
+                std::cout << "HERE" << std::endl;                                            //TODO: Checking for a type
                 Variable<int> *clearVar = static_cast<Variable<int> *> (findObj);  //Only int type...
                 clearVar->setVal (val);
             }

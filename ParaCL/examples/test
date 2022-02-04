@@ -1,13 +1,7 @@
-t = {
-    a = 3;
-    a + a;
-    b = func () {
-        if (3 > 2) {
-            print 5 || 8;
-        }
-        9 + 0;
-    }
+b = func (x) {print 3; return x;}
 
-    b;
-}
-print t;
+b = b(3);
+b = 8;
+
+b = func (x) {x * 2;}
+print b(b);
