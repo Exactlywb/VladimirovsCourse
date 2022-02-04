@@ -119,7 +119,7 @@ namespace {
 %type <AST::Node*>                  term
 %type <AST::Node*>                  atomic
 
-%type <AST::Node*>                  assignment
+// %type <AST::Node*>                  assignment
 
 %type <AST::Node*>                  statement
 
@@ -134,7 +134,6 @@ namespace {
 
 %type <AST::Node*>                  func
 %type <AST::Node*>                  returnStatement
-%type <AST::Node*>                  hiddenReturn
 
 %type <std::vector<AST::Node*>*>    argsList
 %type <std::vector<AST::Node*>*>    args
@@ -191,16 +190,13 @@ statementHandler            :   statement                       {
                                                                 };
 
 
-statement                   :   assignment                      {   $$ = $1;    }
+statement                   :   assignStatement                     {   $$ = $1;    }
                             |   ifStatement                     {   $$ = $1;    }
                             |   whileStatement                  {   $$ = $1;    }
                             |   printStatement                  {   $$ = $1;    }
                             |   returnStatement                 {   $$ = $1;    }
-                            |   hiddenReturn                    {   $$ = $1;    }
                             |   error SEMICOLON                 {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   }
                             |   error END                       {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   };
-
-hiddenReturn                :   orStatement SEMICOLON           {   $$ = makeNode<AST::OperNode::OperType, AST::OperNode> (AST::OperNode::OperType::RETURN, $1);    };
 
 returnStatement             :   RET assignStatement SEMICOLON   {   $$ = makeNode<AST::OperNode::OperType, AST::OperNode> (AST::OperNode::OperType::RETURN, $2);    };                                    
 
@@ -266,8 +262,8 @@ body                        :   OPCURVBRACK statementHandler CLCURVBRACK
                                                                 }
                             |   OPCURVBRACK CLCURVBRACK         {   $$ = new AST::ScopeNode ();   };
 
-
-assignment                  :   ID ASSIGN assignStatement SEMICOLON       
+/*
+ assignment                  :   ID ASSIGN assignStatement SEMICOLON       
                                                                 {   $$ = makeAssign ($1, $3);   }
                             |   ID ASSIGN func SEMICOLON        {   $$ = makeAssign ($1, $3);   }
                             |   ID ASSIGN func                  {   $$ = makeAssign ($1, $3);   }
@@ -275,6 +271,7 @@ assignment                  :   ID ASSIGN assignStatement SEMICOLON
                             |   ID ASSIGN   body                {   $$ = makeAssign ($1, $3);  }
                             |   ID ASSIGN   body SEMICOLON      {   $$ = makeAssign ($1, $3);  }
                             |   ID error SEMICOLON              {   driver->pushError (@1, "Unexpected operation with variable");   $$ = nullptr;   };
+*/
 
 func                        :   FUNC_DECL argsList body         {
                                                                     AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL);
