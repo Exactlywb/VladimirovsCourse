@@ -217,7 +217,6 @@ namespace interpret {
 
     int Interpreter::assignment (Scope *curScope, AST::OperNode *node)
     {
-        // std::vector<AST::Node *> children = node->getChildren ();
         auto childrenSt = node->childBegin ();
         AST::VarNode *leftN = static_cast<AST::VarNode *> (*childrenSt);
         const std::string &name = leftN->getName ();

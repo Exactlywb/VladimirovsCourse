@@ -10,3 +10,5 @@ fact = func(x) : factorial {
 }
 
 print fact(10);
+
+b = 3;
