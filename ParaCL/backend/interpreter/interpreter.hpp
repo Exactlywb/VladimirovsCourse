@@ -15,7 +15,7 @@ namespace interpret {
     enum class DataType {
 
         VAR,
-        FUNC // ???
+        FUNC
 
     };
 
@@ -137,6 +137,8 @@ namespace interpret {
         int CalcOper (Scope *curScope, AST::OperNode *node);
 
         void execScope (Scope *curScope, AST::ScopeNode *node);
+        int execRealCall (Scope *curScope, Wrapper* obj, AST::OperNode* callNode);
+        int execCallUsingStack (Scope *newScope, AST::FuncNode* funcDecl) ;
         int execCall (Scope *curScope, AST::OperNode* callNode);
 
         void execOper (Scope *curScope, AST::OperNode *node);
