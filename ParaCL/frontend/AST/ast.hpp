@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
 #include "locator.hpp"
 
 //*****************************************************************************
@@ -67,17 +68,16 @@ namespace AST {
             return children_.cend ();
         }
 
-        Node* getRightChild () const
+        Node *getRightChild () const
         {
-            
             size_t vecSize = children_.size ();
             if (vecSize == 0)
                 return nullptr;
 
-            return children_ [children_.size () - 1];
+            return children_[children_.size () - 1];
         }
 
-        size_t getChildrenNum () const 
+        size_t getChildrenNum () const
         {
             return children_.size ();
         }
@@ -131,7 +131,6 @@ namespace AST {
     };
 
     class FuncNode final : public Node, public NodeLocator {
-
     public:
         enum class FuncComponents {
 
@@ -140,15 +139,16 @@ namespace AST {
             FUNC_NAME
 
         };
-    
+
     private:
         FuncComponents compType_;
+
     public:
         FuncNode (const FuncComponents compType, yy::location loc, Node *parent = nullptr) : Node (NodeT::FUNCTION, parent),
                                                                                              NodeLocator (loc),
                                                                                              compType_ (compType) {}
 
-        FuncComponents getFuncCompType () const 
+        FuncComponents getFuncCompType () const
         {
             return compType_;
         }
@@ -167,7 +167,6 @@ namespace AST {
                     break;
             }
         }
-
     };
 
     class OperNode final : public Node, public NodeLocator {
@@ -201,10 +200,10 @@ namespace AST {
             AND,  // a && b
             OR,   // a || b
 
-            SCAN,  // a = ?
-            PRINT, // print (a)
+            SCAN,   // a = ?
+            PRINT,  // print (a)
 
-            RETURN,// return ...
+            RETURN,  // return ...
             CALL
 
         };
@@ -291,7 +290,6 @@ namespace AST {
     };
 
     class NumNode final : public Node {
-
         int value_;
 
     public:

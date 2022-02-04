@@ -9,7 +9,6 @@ int yyFlexLexer::yywrap () { return 1; }
 
 int main (int argc, char **argv)
 {
-
     InputHandler input;
 
     try {
@@ -35,11 +34,11 @@ int main (int argc, char **argv)
 
     driver.semantic ();
     driver.printWarnings ();
-    
-    #if 1
+
+#if 0
         driver.callDump (std::cout);
-    #endif
-    
+#endif
+
     auto errorSt = driver.errBegin ();
     auto errorFin = driver.errEnd ();
 

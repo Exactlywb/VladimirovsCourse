@@ -2,11 +2,11 @@
 #define SEMANTIC_HPP__
 
 #include <functional>
-#include "nAryTree.hpp"
+
 #include "ast.hpp"
+#include "nAryTree.hpp"
 
 struct SemanticAnalyzer {
-
     enum class ContextType {
 
         UsualContext,
@@ -18,11 +18,13 @@ private:
     ContextType context_ = ContextType::UsualContext;
 
 public:
-    void setContext (ContextType context) {
+    void setContext (ContextType context)
+    {
         context_ = context;
     }
 
-    ContextType getContext () const {
+    ContextType getContext () const
+    {
         return context_;
     }
 
@@ -34,17 +36,16 @@ public:
     SemanticAnalyzer &operator= (const SemanticAnalyzer &other) = delete;
     SemanticAnalyzer &operator= (SemanticAnalyzer &&other) = delete;
 
-    void run (Tree::NAryTree<AST::Node*>* tree, 
-              const std::function<void(yy::location, const std::string&)> pushWarning);
+    void run (Tree::NAryTree<AST::Node *> *tree,
+              const std::function<void (yy::location, const std::string &)> pushWarning);
 
-    // void pushWarning (const std::string &err) 
+    // void pushWarning (const std::string &err)
     // {
 
     //     std::string errMsg = std::string ("Warning: ") + err;
     //     warnings_.push_back (errMsg + std::string ("\n"));
 
     // }
-
 };
 
 #endif

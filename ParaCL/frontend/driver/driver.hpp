@@ -4,11 +4,11 @@
 #include <FlexLexer.h>
 
 #include <fstream>
+#include <functional>
 #include <iterator>
 #include <memory>
 #include <string>
 #include <vector>
-#include <functional>
 
 #include "ast.hpp"
 #include "compiler.hpp"
@@ -66,16 +66,17 @@ namespace yy {
             return tokenT;
         }
 
-        void semantic () {
-            std::function<void(yy::location, const std::string&)> pushWarningFunc = [=, this](yy::location loc, const std::string& warn) 
-                                                                                    {
-                                                                                        this->pushWarning (loc, warn);
-                                                                                    };
+        void semantic ()
+        {
+            std::function<void (yy::location, const std::string &)> pushWarningFunc = [=, this] (yy::location loc, const std::string &warn) {
+                this->pushWarning (loc, warn);
+            };
             analyzer_->run (&tree_, pushWarningFunc);
         }
 
-        void printWarnings () const {
-            for (auto w: warnings_)
+        void printWarnings () const
+        {
+            for (auto w : warnings_)
                 std::cout << w << std::endl;
         }
 
@@ -98,8 +99,7 @@ namespace yy {
 
         void pushWarning (yy::location curLocation, const std::string &warn)
         {
-            std::string warnPos = std::string ("WARNING::#") + std::to_string (curLocation.begin.line) + std::string (", ") 
-                                 + std::to_string (curLocation.begin.column) + std::string (": ");
+            std::string warnPos = std::string ("WARNING::#") + std::to_string (curLocation.begin.line) + std::string (", ") + std::to_string (curLocation.begin.column) + std::string (": ");
             std::string warnMsg = warn + std::string (": ");
             std::string codePart = code_[curLocation.begin.line - 1];
 

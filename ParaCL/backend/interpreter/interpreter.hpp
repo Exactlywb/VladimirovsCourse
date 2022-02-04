@@ -2,10 +2,10 @@
 #define INTERPRET_H__
 
 #include <iostream>
+#include <stack>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <stack>
 
 #include "ast.hpp"
 #include "nAryTree.hpp"
@@ -30,19 +30,19 @@ namespace interpret {
     };
 
     class FuncObject final : public Wrapper {
-        AST::FuncNode* node_; // TODO: Template pointer 
+        AST::FuncNode *node_;  // TODO: Template pointer
 
     public:
-        FuncObject (AST::FuncNode* node) : node_ (node), Wrapper (DataType::FUNC) {}
+        FuncObject (AST::FuncNode *node) : node_ (node), Wrapper (DataType::FUNC) {}
 
         ~FuncObject () = default;
 
-        void setNode (AST::FuncNode* node)
+        void setNode (AST::FuncNode *node)
         {
             node_ = node;
         }
 
-        AST::FuncNode* getNode () const
+        AST::FuncNode *getNode () const
         {
             return node_;
         }
@@ -137,12 +137,13 @@ namespace interpret {
         int CalcOper (Scope *curScope, AST::OperNode *node);
 
         void execScope (Scope *curScope, AST::ScopeNode *node);
-        int execRealCall (Scope *curScope, Wrapper* obj, AST::OperNode* callNode);
-        int execCallUsingStack (Scope *newScope, AST::FuncNode* funcDecl) ;
-        int createNewScope (Scope* newScope, AST::FuncNode* funcName, 
-                                         AST::FuncNode* funcArgs, AST::FuncNode* funcDecl,
-                                         AST::OperNode* callNode, Scope *curScope);
-        int execCall (Scope *curScope, AST::OperNode* callNode);
+        int execRealCall (Scope *curScope, Wrapper *obj, AST::OperNode *callNode);
+        int execCallUsingStack (Scope *newScope, AST::FuncNode *funcDecl);
+        int execCallUsingStack (Scope *newScope, AST::ScopeNode *ASTScope);
+        int CalcScope (AST::ScopeNode *node);
+
+        int createNewScope (Scope *newScope, AST::FuncNode *funcName, AST::FuncNode *funcArgs, AST::FuncNode *funcDecl, AST::OperNode *callNode, Scope *curScope);
+        int execCall (Scope *curScope, AST::OperNode *callNode);
 
         void execOper (Scope *curScope, AST::OperNode *node);
         void execCond (Scope *curScope, AST::CondNode *node);
