@@ -42,7 +42,7 @@ namespace interpret {
         if (clearVar)
             return clearVar->getVal ();
         else
-            throw std::runtime_error ("Undeclared variable in an expression\n");
+            throw ErrorDetector ("Undeclared variable in an expression", var->getLocation ());
     }
 
     int Interpreter::CalcOper (Scope *curScope, AST::OperNode *node)
@@ -89,7 +89,7 @@ namespace interpret {
                 return tmp;
             }
             default: {
-                throw std::runtime_error ("Unexpected operator type in calculation");
+                throw ErrorDetector ("Unexpected operator type in calculation", node->getLocation ());
             }
         }
     }
@@ -228,8 +228,6 @@ namespace interpret {
                 return CalcOper (curScope, static_cast<AST::OperNode *> (node));
             case AST::NodeT::SCOPE:
                 return CalcScope (static_cast<AST::ScopeNode *> (node));
-            default:
-                throw std::runtime_error ("Unexpected node type");
         }
     }
 
@@ -343,7 +341,7 @@ namespace interpret {
                 execWhile (curScope, node);
                 break;
             default:
-                throw std::runtime_error ("Unexpected condition statement type");
+                throw ErrorDetector ("Unexpected condition statement type", node->getLocation ());
         }
     }
 
@@ -362,8 +360,6 @@ namespace interpret {
                     execCond (curScope, static_cast<AST::CondNode *> (nodeToExec));
                     break;
                 }
-                default:
-                    throw std::runtime_error ("Unexpected node to execute");
             }
             childrenSt = std::next (childrenSt, 1);
         }

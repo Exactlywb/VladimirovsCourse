@@ -39,21 +39,12 @@ int main (int argc, char **argv)
         driver.callDump (std::cout);
 #endif
 
-    auto errorSt = driver.errBegin ();
-    auto errorFin = driver.errEnd ();
-
-    if (errorSt != errorFin) {
-        while (errorSt != errorFin) {
-            std::cout << *errorSt << std::endl;
-            errorSt = std::next (errorSt, 1);
-        }
-
-        return 0;
-    }
+    driver.printError ();
 
     std::cin.rdbuf (cinbuf);
 
     driver.interpret ();
+    driver.printError ();
     //    driver.compile ();
 
     return 0;
