@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "locator.hpp"
 
 //*****************************************************************************
 //************************* AST NODE DESCRIPTION HERE *************************
@@ -26,7 +27,7 @@ namespace AST {
     class Node {
         Node *parent_;
         std::vector<Node *> children_;
-        const NodeT type_;  //!TODO const or no?
+        const NodeT type_;
 
     public:
         Node (const NodeT type, Node *parent = nullptr) : type_ (type),
@@ -44,6 +45,7 @@ namespace AST {
         virtual void nodeDump (std::ostream &out) const = 0;
 
         //Setters and getters
+
         NodeT getType () const
         {
             return type_;
@@ -109,12 +111,13 @@ namespace AST {
 //*****************************************************************************
 namespace AST {
 
-    class VarNode final : public Node {
+    class VarNode final : public Node, public NodeLocator {
         std::string name_;
 
     public:
-        VarNode (const std::string &name, Node *parent = nullptr) : Node (NodeT::VARIABLE, parent),
-                                                                    name_ (name) {}
+        VarNode (const std::string &name, yy::location loc, Node *parent = nullptr) : Node (NodeT::VARIABLE, parent),
+                                                                                      NodeLocator (loc),
+                                                                                      name_ (name) {}
 
         void nodeDump (std::ostream &out) const override
         {
@@ -127,7 +130,7 @@ namespace AST {
         }
     };
 
-    class FuncNode final : public Node {
+    class FuncNode final : public Node, public NodeLocator {
 
     public:
         enum class FuncComponents {
@@ -141,8 +144,9 @@ namespace AST {
     private:
         FuncComponents compType_;
     public:
-        FuncNode (const FuncComponents compType, Node *parent = nullptr) : Node (NodeT::FUNCTION, parent),
-                                                                           compType_ (compType) {}
+        FuncNode (const FuncComponents compType, yy::location loc, Node *parent = nullptr) : Node (NodeT::FUNCTION, parent),
+                                                                                             NodeLocator (loc),
+                                                                                             compType_ (compType) {}
 
         FuncComponents getFuncCompType () const 
         {
@@ -166,7 +170,7 @@ namespace AST {
 
     };
 
-    class OperNode final : public Node {
+    class OperNode final : public Node, public NodeLocator {
     public:
         enum class OperType;
 
@@ -204,6 +208,10 @@ namespace AST {
             CALL
 
         };
+
+        OperNode (const OperType opType, yy::location loc, Node *parent = nullptr) : Node (NodeT::OPERATOR, parent),
+                                                                                     NodeLocator (loc),
+                                                                                     opType_ (opType) {}
 
         OperNode (const OperType opType, Node *parent = nullptr) : Node (NodeT::OPERATOR, parent),
                                                                    opType_ (opType) {}
@@ -282,7 +290,7 @@ namespace AST {
         }
     };
 
-    class NumNode final : public Node {  //Do we need it?
+    class NumNode final : public Node {
 
         int value_;
 
@@ -311,7 +319,7 @@ namespace AST {
         }
     };
 
-    class CondNode final : public Node {
+    class CondNode final : public Node, public NodeLocator {
     public:
         enum class ConditionType {
 
@@ -324,8 +332,9 @@ namespace AST {
         ConditionType condType_;
 
     public:
-        CondNode (const ConditionType condType, Node *parent = nullptr) : Node (NodeT::CONDITION, parent),
-                                                                          condType_ (condType) {}
+        CondNode (const ConditionType condType, yy::location loc, Node *parent = nullptr) : Node (NodeT::CONDITION, parent),
+                                                                                            NodeLocator (loc),
+                                                                                            condType_ (condType) {}
 
         ConditionType getConditionType () const
         {
