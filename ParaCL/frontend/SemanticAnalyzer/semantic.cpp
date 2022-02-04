@@ -56,7 +56,7 @@ namespace {
                     AST::OperNode* oper = static_cast<AST::OperNode*> (rightNode);
                     if (oper->getOpType () == AST::OperNode::OperType::RETURN)
                         break;
-                    else if (oper->getOpType () == AST::OperNode::OperType::ASSIGN) {
+                    else if (oper->getOpType () != AST::OperNode::OperType::PRINT) {
                         AST::OperNode*  returnNode  = new AST::OperNode (AST::OperNode::OperType::RETURN);
                         returnNode->addChild (oper);
                         curNode->eraseChild (curNode->getChildrenNum () - 1);
