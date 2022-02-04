@@ -215,6 +215,8 @@ namespace interpret {
 
     int Interpreter::CalcExpr (Scope *curScope, std::vector<AST::Node *>::const_iterator it)
     {
+        int tmp;
+        Scope *newScope;
         AST::Node *node = *it;
         switch (node->getType ()) {
             case AST::NodeT::VARIABLE:
@@ -223,6 +225,13 @@ namespace interpret {
                 return static_cast<AST::NumNode *> (node)->getValue ();
             case AST::NodeT::OPERATOR:
                 return CalcOper (curScope, static_cast<AST::OperNode *> (node));
+            case AST::NodeT::SCOPE:
+                newScope = new Scope;
+                curScope->add (newScope);
+                execScope(newScope, static_cast<AST::ScopeNode *> (node));
+                tmp = callStack_.top();
+                callStack_.pop();
+                return tmp;
             default:
                 throw std::runtime_error ("Unexpected node type");
         }
@@ -266,9 +275,9 @@ namespace interpret {
             }
         }   
         else {
-
-            int val = CalcExpr (curScope, std::next (childrenSt, 1));  //Now we have only int type... In the near future it shall be template
             
+            int val = CalcExpr (curScope, std::next (childrenSt, 1));  //Now we have only int type... In the near future it shall be template
+            printf("val = %d", val);
             if (!findObj) {
                 Variable<int> *newVar = new Variable<int> (val);
                 curScope->add (name, newVar);
@@ -279,12 +288,11 @@ namespace interpret {
             }
             return val;
         }
-
-        
     }
 
     void Interpreter::print (Scope *curScope, AST::OperNode *node)
     {
+        std::cout << "ahhah" << std::endl;
         auto childrenSt = node->childBegin ();
         std::cout << CalcExpr (curScope, childrenSt) << std::endl;
     }
@@ -316,7 +324,6 @@ namespace interpret {
 
     void Interpreter::execIf (Scope *curScope, AST::CondNode *node)
     {
-
         auto childrenSt = node->childBegin ();
         if (CalcExpr (curScope, childrenSt)) {
             Scope *newScope = new Scope;
@@ -352,7 +359,6 @@ namespace interpret {
 
     void Interpreter::execScope (Scope *curScope, AST::ScopeNode *node)
     {
-
         auto childrenSt = node->childBegin ();
         auto childrenFin = node->childEnd ();
         while (scopeExecution_ && childrenSt != childrenFin) {

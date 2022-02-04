@@ -1,5 +1,8 @@
-t = func (){
+if (6){
+    
+}
+t = {
     a = 3;
     a + a;
 }
-print t();
+print t;
