@@ -147,17 +147,9 @@ namespace interpret {
         
     }
 
-    int Interpreter::execRealCall (Scope *curScope, Wrapper* obj, AST::OperNode* callNode) {
-
-        FuncObject* funcObj = static_cast<FuncObject*> (obj);
-        AST::FuncNode* funcDecl = funcObj->getNode();
-
-        Tree::NAryTree<Scope *> scopeTree;
-        Scope* newScope = new Scope;
-        scopeTree.setRoot (newScope);
-
-        AST::FuncNode* funcArgs = getFuncArgsASTNode (funcDecl);
-        AST::FuncNode* funcName = getFuncNameASTNode (funcDecl);
+    int Interpreter::createNewScope (Scope* newScope, AST::FuncNode* funcName, 
+                                     AST::FuncNode* funcArgs, AST::FuncNode* funcDecl,
+                                     AST::OperNode* callNode, Scope *curScope) {
 
         if (funcName) {
             
@@ -187,6 +179,22 @@ namespace interpret {
             ++argsSt;
             ++childSt;
         }
+
+    }
+
+    int Interpreter::execRealCall (Scope *curScope, Wrapper* obj, AST::OperNode* callNode) {
+
+        FuncObject* funcObj = static_cast<FuncObject*> (obj);
+        AST::FuncNode* funcDecl = funcObj->getNode();
+
+        Tree::NAryTree<Scope *> scopeTree;
+        Scope* newScope = new Scope;
+        scopeTree.setRoot (newScope);
+
+        AST::FuncNode* funcArgs = getFuncArgsASTNode (funcDecl);
+        AST::FuncNode* funcName = getFuncNameASTNode (funcDecl);
+
+        createNewScope (newScope, funcName, funcArgs, funcDecl, callNode, curScope);
 
         return execCallUsingStack (newScope, funcDecl);
 

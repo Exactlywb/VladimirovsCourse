@@ -139,6 +139,9 @@ namespace interpret {
         void execScope (Scope *curScope, AST::ScopeNode *node);
         int execRealCall (Scope *curScope, Wrapper* obj, AST::OperNode* callNode);
         int execCallUsingStack (Scope *newScope, AST::FuncNode* funcDecl) ;
+        int Interpreter::createNewScope (Scope* newScope, AST::FuncNode* funcName, 
+                                         AST::FuncNode* funcArgs, AST::FuncNode* funcDecl,
+                                         AST::OperNode* callNode, Scope *curScope);
         int execCall (Scope *curScope, AST::OperNode* callNode);
 
         void execOper (Scope *curScope, AST::OperNode *node);
