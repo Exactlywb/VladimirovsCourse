@@ -309,9 +309,10 @@ namespace AST {
         }
     };
 
-    class ScopeNode final : public Node {
+    class ScopeNode final : public Node, public NodeLocator {
     public:
         ScopeNode (Node *parent = nullptr) : Node (NodeT::SCOPE, parent) {}
+        ScopeNode (yy::location loc, Node *parent = nullptr) : Node (NodeT::SCOPE, parent), NodeLocator (loc) {}
 
         void nodeDump (std::ostream &out) const override
         {
