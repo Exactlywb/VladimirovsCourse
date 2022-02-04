@@ -205,7 +205,8 @@ printStatement              :   PRINT assignStatement SEMICOLON {   $$ = makeNod
                             |   PRINT error SEMICOLON           {   driver->pushError (@2, "Undefined expression in print");    $$ = nullptr;   }
                             |   PRINT error END                 {   driver->pushError (@2, "Undefined expression in print");    $$ = nullptr;   };
 
-argsList                    :   OPCIRCBRACK args CLCIRCBRACK    {   $$ = $2;    };
+argsList                    :   OPCIRCBRACK args CLCIRCBRACK    {   $$ = $2;        }
+                            |   OPCIRCBRACK CLCIRCBRACK         {   $$ = nullptr;   };
 
 args                        :   ID                              {
                                                                     $$ = new std::vector<AST::Node*>;
@@ -218,7 +219,8 @@ args                        :   ID                              {
                                                                     $$ = $1;
                                                                 };
 
-exprList                    :   OPCIRCBRACK expA CLCIRCBRACK    {   $$ = $2;    };
+exprList                    :   OPCIRCBRACK expA CLCIRCBRACK    {   $$ = $2;        }
+                            |   OPCIRCBRACK CLCIRCBRACK         {   $$ = nullptr;   };
 
 expA                        :   assignStatement                 {
                                                                     $$ = new std::vector<AST::Node*>;
@@ -273,13 +275,14 @@ assignment                  :   ID ASSIGN assignStatement SEMICOLON
                             |   ID ASSIGN   body SEMICOLON      {   $$ = makeAssign ($1, $3);  }
                             |   ID error SEMICOLON              {   driver->pushError (@1, "Unexpected operation with variable");   $$ = nullptr;   };
 
-
 func                        :   FUNC_DECL argsList body         {
                                                                     AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL);
                                                                     AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS);
-                                                                    for (auto v: *($2))
-                                                                        funcArgs->addChild (v);
-                                                                    delete $2;
+                                                                    if ($2) {
+                                                                        for (auto v: *($2))
+                                                                            funcArgs->addChild (v);
+                                                                        delete $2;
+                                                                    }
                                                                     funcDecl->addChild (funcArgs);
                                                                     funcDecl->addChild ($3);
                                                                     $$ = funcDecl;
@@ -288,9 +291,11 @@ func                        :   FUNC_DECL argsList body         {
                                                                 {
                                                                     AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL);
                                                                     AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS);
-                                                                    for (auto v: *($2))
-                                                                        funcArgs->addChild (v);
-                                                                    delete $2;
+                                                                    if ($2) {
+                                                                        for (auto v: *($2))
+                                                                            funcArgs->addChild (v);
+                                                                        delete $2;
+                                                                    }
 
                                                                     AST::FuncNode* funcName = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_NAME);
                                                                     AST::VarNode*  funcID   = new AST::VarNode ($4);
@@ -346,9 +351,11 @@ atomic                      :   NUMBER                          {   $$ = new AST
                                                                     AST::VarNode* funcName  = new AST::VarNode ($1);
 
                                                                     AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS);
-                                                                    for (auto v: *($2))
-                                                                        funcArgs->addChild (v);
-                                                                    delete $2;
+                                                                    if ($2) {
+                                                                        for (auto v: *($2))
+                                                                            funcArgs->addChild (v);
+                                                                        delete $2;
+                                                                    }
 
                                                                     $$->addChild (funcName);
                                                                     $$->addChild (funcArgs);
