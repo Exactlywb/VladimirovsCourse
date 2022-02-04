@@ -1,6 +1,7 @@
 #ifndef SEMANTIC_HPP__
 #define SEMANTIC_HPP__
 
+#include <functional>
 #include "nAryTree.hpp"
 #include "ast.hpp"
 
@@ -15,7 +16,6 @@ struct SemanticAnalyzer {
 
 private:
     ContextType context_ = ContextType::UsualContext;
-    std::vector<std::string> warnings_;
 
 public:
     void setContext (ContextType context) {
@@ -34,21 +34,16 @@ public:
     SemanticAnalyzer &operator= (const SemanticAnalyzer &other) = delete;
     SemanticAnalyzer &operator= (SemanticAnalyzer &&other) = delete;
 
-    void run (Tree::NAryTree<AST::Node*>* tree);
+    void run (Tree::NAryTree<AST::Node*>* tree, 
+              const std::function<void(yy::location, const std::string&)> pushWarning);
 
-    void pushWarning (const std::string &err) 
-    {
+    // void pushWarning (const std::string &err) 
+    // {
 
-        std::string errMsg = std::string ("Warning: ") + err;
-        warnings_.push_back (errMsg + std::string ("\n"));
+    //     std::string errMsg = std::string ("Warning: ") + err;
+    //     warnings_.push_back (errMsg + std::string ("\n"));
 
-    }
-
-    void printWarnings () const 
-    {
-        for (auto v: warnings_)
-            std::cout << v;
-    }
+    // }
 
 };
 

@@ -30,24 +30,36 @@ namespace yy {
 }
 
 namespace {
-    template <typename ENUM, typename T>
-    T* makeNode (ENUM type, AST::Node* child) {
-        T* retNode = new T (type);
-        retNode->addChild (child);
-        return retNode;
+
+    AST::OperNode* makeUnaryOperNode (AST::OperNode::OperType type, AST::Node* child, yy::location loc) {
+
+        AST::OperNode* newOperNode = new AST::OperNode (type, loc);
+        newOperNode->addChild (child);
+        return newOperNode;
     }
 
-    template <typename ENUM, typename T>
-    T* makeNode (ENUM type, AST::Node* firstChild, AST::Node* secondChild) {
-        T* retNode = new T (type);
-        retNode->addChild (firstChild);
-        retNode->addChild (secondChild);
-        return retNode;
+    AST::OperNode* makeBinOperNode (AST::OperNode::OperType type, 
+                                    AST::Node* firstChild, AST::Node* secondChild, yy::location loc) {
+
+        AST::OperNode* newOperNode = new AST::OperNode (type, loc);
+        newOperNode->addChild (firstChild);
+        newOperNode->addChild (secondChild);
+        return newOperNode;
     }
 
-    AST::OperNode* makeAssign (const std::string &firstChild, AST::Node* secondChild) {
-        AST::OperNode* newNode  = new AST::OperNode (AST::OperNode::OperType::ASSIGN);
-        newNode->addChild (new AST::VarNode (firstChild));
+    AST::CondNode* makeCondNode (AST::CondNode::ConditionType type, AST::Node* expr, 
+                                 AST::Node* body, yy::location loc) {
+
+        AST::CondNode* newCondNode = new AST::CondNode (type, loc);
+        newCondNode->addChild (expr);
+        newCondNode->addChild (body);
+        return newCondNode;
+    }
+
+    AST::OperNode* makeAssign (const std::string &firstChild, AST::Node* secondChild, 
+                               yy::location assignLoc, yy::location varLoc) {
+        AST::OperNode* newNode  = new AST::OperNode (AST::OperNode::OperType::ASSIGN, assignLoc);
+        newNode->addChild (new AST::VarNode (firstChild, varLoc));
         newNode->addChild (secondChild);
         return newNode;
     }
@@ -199,9 +211,9 @@ statement                   :   assignment                      {   $$ = $1;    
                             |   error SEMICOLON                 {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   }
                             |   error END                       {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   };
 
-returnStatement             :   RET assignStatement SEMICOLON   {   $$ = makeNode<AST::OperNode::OperType, AST::OperNode> (AST::OperNode::OperType::RETURN, $2);    };                                    
+returnStatement             :   RET assignStatement SEMICOLON   {   $$ = makeUnaryOperNode (AST::OperNode::OperType::RETURN, $2, @1);   };                                    
 
-printStatement              :   PRINT assignStatement SEMICOLON {   $$ = makeNode<AST::OperNode::OperType, AST::OperNode> (AST::OperNode::OperType::PRINT, $2);     }
+printStatement              :   PRINT assignStatement SEMICOLON {   $$ = makeUnaryOperNode (AST::OperNode::OperType::PRINT, $2, @1);     }
                             |   PRINT error SEMICOLON           {   driver->pushError (@2, "Undefined expression in print");    $$ = nullptr;   }
                             |   PRINT error END                 {   driver->pushError (@2, "Undefined expression in print");    $$ = nullptr;   };
 
@@ -210,11 +222,11 @@ argsList                    :   OPCIRCBRACK args CLCIRCBRACK    {   $$ = $2;    
 
 args                        :   ID                              {
                                                                     $$ = new std::vector<AST::Node*>;
-                                                                    AST::VarNode* newParam = new AST::VarNode ($1);
+                                                                    AST::VarNode* newParam = new AST::VarNode ($1, @1);
                                                                     $$->push_back (newParam);
                                                                 }
                             |   args COMMA ID                   {
-                                                                    AST::VarNode* newParam = new AST::VarNode ($3);
+                                                                    AST::VarNode* newParam = new AST::VarNode ($3, @3);
                                                                     $1->push_back (newParam);
                                                                     $$ = $1;
                                                                 };
@@ -230,7 +242,7 @@ expA                        :   assignStatement                 {
 
 ifStatement                 :   IF conditionExpression body     {
                                                                     if ($2 && $3) {
-                                                                        $$ = makeNode<AST::CondNode::ConditionType, AST::CondNode> (AST::CondNode::ConditionType::IF, $2, $3);
+                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::IF, $2, $3, @1);
                                                                     } else {
                                                                         $$ = nullptr;
                                                                         delete $2;
@@ -240,7 +252,7 @@ ifStatement                 :   IF conditionExpression body     {
 
 whileStatement              :   WHILE conditionExpression body  {
                                                                     if ($2 && $3) {
-                                                                        $$ = makeNode<AST::CondNode::ConditionType, AST::CondNode> (AST::CondNode::ConditionType::WHILE, $2, $3);
+                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::WHILE, $2, $3, @1);
                                                                     } else {
                                                                         $$ = nullptr;
                                                                         delete $2;
@@ -267,17 +279,17 @@ body                        :   OPCURVBRACK statementHandler CLCURVBRACK
 
 
 assignment                  :   ID ASSIGN assignStatement SEMICOLON       
-                                                                {   $$ = makeAssign ($1, $3);   }
-                            |   ID ASSIGN func SEMICOLON        {   $$ = makeAssign ($1, $3);   }
-                            |   ID ASSIGN func                  {   $$ = makeAssign ($1, $3);   }
+                                                                {   $$ = makeAssign ($1, $3, @2, @1);   }
+                            |   ID ASSIGN func SEMICOLON        {   $$ = makeAssign ($1, $3, @2, @1);   }
+                            |   ID ASSIGN func                  {   $$ = makeAssign ($1, $3, @2, @1);   }
                             |   ID ASSIGN error SEMICOLON       {   driver->pushError (@3, "Bad expression after assignment");  $$ = nullptr;   }
-                            |   ID ASSIGN   body                {   $$ = makeAssign ($1, $3);  }
-                            |   ID ASSIGN   body SEMICOLON      {   $$ = makeAssign ($1, $3);  }
+                            |   ID ASSIGN   body                {   $$ = makeAssign ($1, $3, @2, @1);  }
+                            |   ID ASSIGN   body SEMICOLON      {   $$ = makeAssign ($1, $3, @2, @1);  }
                             |   ID error SEMICOLON              {   driver->pushError (@1, "Unexpected operation with variable");   $$ = nullptr;   };
 
 func                        :   FUNC_DECL argsList body         {
-                                                                    AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL);
-                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS);
+                                                                    AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL, @1);
+                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS, @2);
                                                                     if ($2) {
                                                                         for (auto v: *($2))
                                                                             funcArgs->addChild (v);
@@ -289,16 +301,16 @@ func                        :   FUNC_DECL argsList body         {
                                                                 }
                             |   FUNC_DECL argsList COLON ID body
                                                                 {
-                                                                    AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL);
-                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS);
+                                                                    AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL, @1);
+                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS, @2);
                                                                     if ($2) {
                                                                         for (auto v: *($2))
                                                                             funcArgs->addChild (v);
                                                                         delete $2;
                                                                     }
 
-                                                                    AST::FuncNode* funcName = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_NAME);
-                                                                    AST::VarNode*  funcID   = new AST::VarNode ($4);
+                                                                    AST::FuncNode* funcName = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_NAME, @4);
+                                                                    AST::VarNode*  funcID   = new AST::VarNode ($4, @4);
                                                                     funcName->addChild (funcID);
 
                                                                     funcDecl->addChild (funcName);
@@ -308,49 +320,49 @@ func                        :   FUNC_DECL argsList body         {
                                                                 };
 
 assignStatement             :   orStatement                     {   $$ = $1;        }
-                            |   ID ASSIGN assignStatement       {   $$ = makeAssign ($1, $3);  };
+                            |   ID ASSIGN assignStatement       {   $$ = makeAssign ($1, $3, @2, @1);  };
 
 orStatement                 :   andStatement                    {   $$ = $1;        }
-                            |   orStatement OR andStatement     {   $$ = makeNode<AST::OperNode::OperType, AST::OperNode> (AST::OperNode::OperType::OR, $1, $3);    };
+                            |   orStatement OR andStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::OR, $1, $3, @2);     };
 
 
 andStatement                :   eqStatement                     {   $$ = $1;        }
-                            |   andStatement AND eqStatement    {   $$ = makeNode<AST::OperNode::OperType, AST::OperNode> (AST::OperNode::OperType::AND, $1, $3);   };
+                            |   andStatement AND eqStatement    {   $$ = makeBinOperNode (AST::OperNode::OperType::AND, $1, $3, @2);    };
 
 eqStatement                 :   cmpStatement                    {   $$ = $1;        }
-                            |   eqStatement EQ cmpStatement     {   $$ = makeNode<AST::OperNode::OperType, AST::OperNode> (AST::OperNode::OperType::EQ, $1, $3);    }
-                            |   eqStatement NEQ cmpStatement    {   $$ = makeNode<AST::OperNode::OperType, AST::OperNode> (AST::OperNode::OperType::NEQ, $1, $3);   };
+                            |   eqStatement EQ cmpStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::EQ, $1, $3, @2);     }
+                            |   eqStatement NEQ cmpStatement    {   $$ = makeBinOperNode (AST::OperNode::OperType::NEQ, $1, $3, @2);    };
 
 cmpStatement                :   addStatement                    {   $$ = $1;        }
-                            |   cmpStatement MORE addStatement  {   $$ = makeNode<AST::OperNode::OperType, AST::OperNode> (AST::OperNode::OperType::MORE, $1, $3);  }
-                            |   cmpStatement LESS addStatement  {   $$ = makeNode<AST::OperNode::OperType, AST::OperNode> (AST::OperNode::OperType::LESS, $1, $3);  }
-                            |   cmpStatement GTE addStatement   {   $$ = makeNode<AST::OperNode::OperType, AST::OperNode> (AST::OperNode::OperType::GTE, $1, $3);   }
-                            |   cmpStatement LTE addStatement   {   $$ = makeNode<AST::OperNode::OperType, AST::OperNode> (AST::OperNode::OperType::LTE, $1, $3);   };
+                            |   cmpStatement MORE addStatement  {   $$ = makeBinOperNode (AST::OperNode::OperType::MORE, $1, $3, @2);  }
+                            |   cmpStatement LESS addStatement  {   $$ = makeBinOperNode (AST::OperNode::OperType::LESS, $1, $3, @2);  }
+                            |   cmpStatement GTE addStatement   {   $$ = makeBinOperNode (AST::OperNode::OperType::GTE, $1, $3, @2);   }
+                            |   cmpStatement LTE addStatement   {   $$ = makeBinOperNode (AST::OperNode::OperType::LTE, $1, $3, @2);   };
 
 addStatement                :   mulStatement                    {   $$ = $1;        }
-                            |   addStatement ADD mulStatement   {   $$ = makeNode<AST::OperNode::OperType, AST::OperNode> (AST::OperNode::OperType::ADD, $1, $3);   }
-                            |   addStatement SUB mulStatement   {   $$ = makeNode<AST::OperNode::OperType, AST::OperNode> (AST::OperNode::OperType::SUB, $1, $3);   };
+                            |   addStatement ADD mulStatement   {   $$ = makeBinOperNode (AST::OperNode::OperType::ADD, $1, $3, @2);   }
+                            |   addStatement SUB mulStatement   {   $$ = makeBinOperNode (AST::OperNode::OperType::SUB, $1, $3, @2);   };
 
 mulStatement                :   unaryStatement                  {   $$ = $1;        }
-                            |   mulStatement MUL unaryStatement {   $$ = makeNode<AST::OperNode::OperType, AST::OperNode> (AST::OperNode::OperType::MUL, $1, $3);   }
-                            |   mulStatement DIV unaryStatement {   $$ = makeNode<AST::OperNode::OperType, AST::OperNode> (AST::OperNode::OperType::DIV, $1, $3);   }
-                            |   mulStatement MOD unaryStatement {   $$ = makeNode<AST::OperNode::OperType, AST::OperNode> (AST::OperNode::OperType::MOD, $1, $3);   };
+                            |   mulStatement MUL unaryStatement {   $$ = makeBinOperNode (AST::OperNode::OperType::MUL, $1, $3, @2);   }
+                            |   mulStatement DIV unaryStatement {   $$ = makeBinOperNode (AST::OperNode::OperType::DIV, $1, $3, @2);   }
+                            |   mulStatement MOD unaryStatement {   $$ = makeBinOperNode (AST::OperNode::OperType::MOD, $1, $3, @2);   };
 
 unaryStatement              :   term                            {   $$ = $1;        }
-                            |   SUB unaryStatement              {   $$ = makeNode<AST::OperNode::OperType, AST::OperNode> (AST::OperNode::OperType::UNARY_M, $2);   }
-                            |   ADD unaryStatement              {   $$ = makeNode<AST::OperNode::OperType, AST::OperNode> (AST::OperNode::OperType::UNARY_P, $2);   };
+                            |   SUB unaryStatement              {   $$ = makeUnaryOperNode (AST::OperNode::OperType::UNARY_M, $2, @1); }
+                            |   ADD unaryStatement              {   $$ = makeUnaryOperNode (AST::OperNode::OperType::UNARY_P, $2, @1); };
 
 term                        :   atomic                          {   $$ = $1;    }
                             |   OPCIRCBRACK assignStatement CLCIRCBRACK
                                                                 {   $$ = $2;    };
 
-atomic                      :   NUMBER                          {   $$ = new AST::NumNode   ($1);                               }
-                            |   SCAN                            {   $$ = new AST::OperNode  (AST::OperNode::OperType::SCAN);    }
+atomic                      :   NUMBER                          {   $$ = new AST::NumNode   ($1);                                   }
+                            |   SCAN                            {   $$ = new AST::OperNode  (AST::OperNode::OperType::SCAN, @1);    }
                             |   ID exprList                     {
-                                                                    $$ = new AST::OperNode  (AST::OperNode::OperType::CALL);
-                                                                    AST::VarNode* funcName  = new AST::VarNode ($1);
+                                                                    $$ = new AST::OperNode  (AST::OperNode::OperType::CALL, @1);
+                                                                    AST::VarNode* funcName  = new AST::VarNode ($1, @1);
 
-                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS);
+                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS, @2);
                                                                     if ($2) {
                                                                         for (auto v: *($2))
                                                                             funcArgs->addChild (v);
@@ -361,7 +373,7 @@ atomic                      :   NUMBER                          {   $$ = new AST
                                                                     $$->addChild (funcArgs);
 
                                                                 }
-                            |   ID                              {   $$ = new AST::VarNode   ($1);                               };
+                            |   ID                              {   $$ = new AST::VarNode   ($1, @1);                               };
 
 %%
 

@@ -2,23 +2,22 @@
 
 namespace {
 
-    void uselessFinder (SemanticAnalyzer* analyzer_, AST::Node* curNode) {
+    void uselessFinder (SemanticAnalyzer* analyzer_, AST::Node* curNode,
+                        const std::function<void(yy::location, const std::string&)> pushWarning) {
         AST::Node* rightNode = curNode->getRightChild ();
 
         for (auto i = curNode->childBegin (); i != curNode->childEnd (); ++i) {
             if ((*i)->getType() == AST::NodeT::OPERATOR)
             {
-                switch (static_cast <AST::OperNode *>(*i)->getOpType()){
+                AST::OperNode* operNode = static_cast <AST::OperNode *>(*i);
+                switch (operNode->getOpType()){
                     case AST::OperNode::OperType::PRINT:
                     case AST::OperNode::OperType::SCAN:
                     case AST::OperNode::OperType::ASSIGN:
                     case AST::OperNode::OperType::RETURN:
                         break;
                     default:
-                        analyzer_->pushWarning ("useless statement");
-                        
-                        static_cast <AST::OperNode *>(*i)->nodeDump(std::cout);
-                        std::cout << std::endl;
+                        pushWarning (operNode->getLocation (), "useless statement");
                         break;
                 }
             }
@@ -36,19 +35,20 @@ namespace {
 
     }
 
-    void HiddenReturnNodesAnalyze (SemanticAnalyzer* analyzer_, AST::Node* curNode) {
+    void HiddenReturnNodesAnalyze (SemanticAnalyzer* analyzer_, AST::Node* curNode, 
+                                   const std::function<void(yy::location, const std::string&)> pushWarning) {
 
         AST::Node* rightNode = curNode->getRightChild ();
 
         if (rightNode == nullptr) {
-            analyzer_->pushWarning ("empty scope");
+            pushWarning (static_cast<AST::ScopeNode*>(curNode)->getLocation (), "empty scope");
             SetPoisonReturn (curNode);
         } else {
 
             switch (rightNode->getType ()) {
 
                 case AST::NodeT::CONDITION: {
-                    analyzer_->pushWarning ("can't find return after condition statement");
+                    pushWarning (static_cast<AST::CondNode*>(rightNode)->getLocation (), "can't find return after condition statement");
                     SetPoisonReturn (curNode);
                     break;
                 }
@@ -62,7 +62,7 @@ namespace {
                         curNode->eraseChild (curNode->getChildrenNum () - 1);
                         curNode->addChild (returnNode);
                     } else {
-                        analyzer_->pushWarning ("unexpected statement in the scope end");
+                        pushWarning (oper->getLocation (), "unexpected statement in the scope end");
                         SetPoisonReturn (curNode);
                     }
 
@@ -76,7 +76,8 @@ namespace {
 
     }
 
-    void AnalyzeHiddenReturn (SemanticAnalyzer* analyzer_, Tree::NAryTree<AST::Node*>* tree) {
+    void AnalyzeHiddenReturn (SemanticAnalyzer* analyzer_, Tree::NAryTree<AST::Node*>* tree,
+                              const std::function<void(yy::location, const std::string&)> pushWarning) {
 
         AST::Node* curNode = tree->getRoot ();
         if (!curNode)
@@ -97,15 +98,15 @@ namespace {
                 if (funcNode->getFuncCompType() == AST::FuncNode::FuncComponents::FUNC_DECL) {
 
                     AST::Node* scopeNode = funcNode->getRightChild();
-                    HiddenReturnNodesAnalyze (analyzer_, scopeNode);
+                    HiddenReturnNodesAnalyze (analyzer_, scopeNode, pushWarning);
                 }
             }
             if (curType == AST::NodeT::SCOPE) {
                 if (parent && parent->getType() == AST::NodeT::OPERATOR)
                     if (static_cast <AST::OperNode *>(parent)->getOpType() == AST::OperNode::OperType::ASSIGN)
-                        HiddenReturnNodesAnalyze (analyzer_, curNode);
+                        HiddenReturnNodesAnalyze (analyzer_, curNode, pushWarning);
 
-                uselessFinder (analyzer_, curNode);
+                uselessFinder (analyzer_, curNode, pushWarning);
             }
 //next          
             auto childrenSt = curNode->childBegin ();
@@ -121,8 +122,8 @@ namespace {
 
 }
 
-void SemanticAnalyzer::run (Tree::NAryTree<AST::Node*>* tree) {
+void SemanticAnalyzer::run (Tree::NAryTree<AST::Node*>* tree, const std::function<void(yy::location, const std::string&)> pushWarning) {
 
-    AnalyzeHiddenReturn (this, tree);
+    AnalyzeHiddenReturn (this, tree, pushWarning);
 
 }
