@@ -1,4 +1,6 @@
-x = 0;
-y = 8;
-x + y;
-x - y;
+foo = func(x, y) {
+    x + y;
+    x - y;
+}
+
+print foo(7, 9);

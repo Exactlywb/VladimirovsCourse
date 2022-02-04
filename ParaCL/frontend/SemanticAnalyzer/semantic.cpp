@@ -2,6 +2,29 @@
 
 namespace {
 
+    void uselessFinder (SemanticAnalyzer* analyzer_, AST::Node* curNode) {
+        AST::Node* rightNode = curNode->getRightChild ();
+
+        for (auto i = curNode->childBegin (); i != curNode->childEnd (); ++i) {
+            if ((*i)->getType() == AST::NodeT::OPERATOR)
+            {
+                switch (static_cast <AST::OperNode *>(*i)->getOpType()){
+                    case AST::OperNode::OperType::PRINT:
+                    case AST::OperNode::OperType::SCAN:
+                    case AST::OperNode::OperType::ASSIGN:
+                    case AST::OperNode::OperType::RETURN:
+                        break;
+                    default:
+                        analyzer_->pushWarning ("useless statement");
+                        
+                        static_cast <AST::OperNode *>(*i)->nodeDump(std::cout);
+                        std::cout << std::endl;
+                        break;
+                }
+            }
+        }
+    }
+
     void SetPoisonReturn (AST::Node* curNode) {
 
         const int poison = -666;
@@ -76,8 +99,9 @@ namespace {
                     HiddenReturnNodesAnalyze (analyzer_, scopeNode); 
                 }
             }
-            
-
+            if (curType == AST::NodeT::SCOPE){
+                uselessFinder (analyzer_, curNode);
+            }
 //next          
             auto childrenSt = curNode->childBegin ();
             auto childrenFin = curNode->childEnd ();
