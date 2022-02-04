@@ -62,7 +62,14 @@ namespace {
                         pushWarning (oper->getLocation (), "unexpected statement in the scope end");
                         SetPoisonReturn (curNode);
                     }
-
+                    break;
+                }
+                case AST::NodeT::NUMBER:
+                case AST::NodeT::VARIABLE: {
+                    AST::OperNode *returnNode = new AST::OperNode (AST::OperNode::OperType::RETURN);
+                    returnNode->addChild (rightNode);
+                    curNode->eraseChild (curNode->getChildrenNum () - 1);
+                    curNode->addChild (returnNode);
                     break;
                 }
             }

@@ -80,13 +80,24 @@ namespace yy {
                 std::cout << w << std::endl;
         }
 
+        void printError () const
+        {
+            for (auto e: error_)
+                std::cout << e << std::endl;
+        }
+
+        void cleanError ()
+        {
+            error_.clear ();
+        }
+
         int getLineNo () const noexcept { return lexer_->lineno (); }
 
         std::string getYYText () const noexcept { return lexer_->YYText (); }
 
         void pushError (yy::location curLocation, const std::string &err)
         {
-            std::string errPos = std::string ("#") + std::to_string (curLocation.begin.line) + std::string (", ") + std::to_string (curLocation.begin.column) + std::string (": ");
+            std::string errPos = std::string ("ERROR::#") + std::to_string (curLocation.begin.line) + std::string (", ") + std::to_string (curLocation.begin.column) + std::string (": ");
             std::string errMsg = err + std::string (": ");
             std::string codePart = code_[curLocation.begin.line - 1];
 
@@ -145,8 +156,8 @@ namespace yy {
             try {
                 interpret.run ();
             }
-            catch (const std::runtime_error &err) {
-                std::cout << "Runtime error: " << err.what () << std::endl;
+            catch (const interpret::ErrorDetector &err) {
+                pushError (err.getLocation (), err.what ());
             }
         }
 

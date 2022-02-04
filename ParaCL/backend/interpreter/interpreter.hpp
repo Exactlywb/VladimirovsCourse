@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <vector>
 #include <utility>
+#include "location.hh"
 
 #include "ast.hpp"
 #include "nAryTree.hpp"
@@ -73,6 +74,7 @@ namespace interpret {
         std::vector<Scope *> children_;
         Scope *parent_ = nullptr;
         std::unordered_map<std::string, Wrapper *> tbl_;
+        using tblIt = std::unordered_map<std::string, Wrapper *>::iterator;
 
     public:
         Scope () = default;
@@ -101,9 +103,20 @@ namespace interpret {
             out << "it is for compile";  //TODO: something with it
         }
 
-        std::pair<Scope *, Wrapper *> smartLookup (const std::string &name);
+        std::pair<Scope *, tblIt> smartLookup (const std::string &name);
         void add (const std::string &name, Wrapper *var);
         void add (Scope *scope);
+    };
+
+    class ErrorDetector final: public std::runtime_error {
+
+        yy::location location_;
+    public:
+        ErrorDetector (const char* err, yy::location loc):  std::runtime_error (err),
+                                                            location_ (loc) {}
+        
+        yy::location getLocation () const { return location_; }
+
     };
 
     class Interpreter final {

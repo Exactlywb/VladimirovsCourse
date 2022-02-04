@@ -1,7 +1,8 @@
-b = func (x) {print 3; return x;}
-
-b = b(3);
-b = 8;
-
-b = func (x) {x * 2;}
-print b(b);
+b = func (x) {
+    { x = 5;
+    y = 4;
+    x + y;};
+}
+print b(4);
+c = {4;}
+print 3 + {7;};

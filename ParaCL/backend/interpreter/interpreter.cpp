@@ -1,6 +1,7 @@
 #include "interpreter.hpp"
 
 namespace interpret {
+    using tblIt = std::unordered_map<std::string, Wrapper *>::iterator;
 
     Scope::~Scope ()
     {
@@ -8,18 +9,18 @@ namespace interpret {
             delete i.second;
     }
 
-    std::pair<Scope *, Wrapper *> Scope::smartLookup (const std::string &name)
+    std::pair<Scope *, tblIt> Scope::smartLookup (const std::string &name)
     {
         Scope *curScope = this;
         while (curScope) {
             auto elem = curScope->tbl_.find (name);
             if (elem != curScope->tbl_.end ())
-                return {curScope, elem->second};
+                return {curScope, elem};
 
             curScope = curScope->parent_;
         }
 
-        return {nullptr, nullptr};
+        return {nullptr, tbl_.end ()};
     }
 
     void Scope::add (const std::string &name, Wrapper *var)
@@ -35,11 +36,11 @@ namespace interpret {
 
     int Interpreter::CalcVar (Scope *curScope, AST::VarNode *var)
     {
-        Variable<int> *clearVar = static_cast<Variable<int> *> (curScope->smartLookup (var->getName ()).second);
+        Variable<int> *clearVar = static_cast<Variable<int> *> ((*(curScope->smartLookup (var->getName ()).second)).second);
         if (clearVar)
             return clearVar->getVal ();
         else
-            throw std::runtime_error ("Undeclared variable in an expression\n");
+            throw ErrorDetector ("Undeclared variable in an expression", var->getLocation ());
     }
 
     int Interpreter::CalcOper (Scope *curScope, AST::OperNode *node)
@@ -86,7 +87,7 @@ namespace interpret {
                 return tmp;
             }
             default: {
-                throw std::runtime_error ("Unexpected operator type in calculation");
+                throw ErrorDetector ("Unexpected operator type in calculation", node->getLocation ());
             }
         }
     }
@@ -196,13 +197,11 @@ namespace interpret {
     {
         AST::VarNode *varNode = static_cast<AST::VarNode *> (*(callNode->childBegin ()));
 
-        Wrapper *obj = curScope->smartLookup (varNode->getName ()).second; // not found ?
+        Wrapper *obj = (*(curScope->smartLookup (varNode->getName ()).second)).second; // not found ?
         if (obj->type_ == DataType::FUNC)
             return execRealCall (curScope, obj, callNode);
         
         //TODO ERROR
-        std::cout << "I'm the evil" << std::endl;
-        
     }
 
     int Interpreter::CalcScope (AST::ScopeNode *node)
@@ -226,8 +225,6 @@ namespace interpret {
                 return CalcOper (curScope, static_cast<AST::OperNode *> (node));
             case AST::NodeT::SCOPE:
                 return CalcScope (static_cast<AST::ScopeNode *> (node));
-            default:
-                throw std::runtime_error ("Unexpected node type");
         }
     }
 
@@ -255,30 +252,35 @@ namespace interpret {
         const std::string &name = leftN->getName ();
 
 
-        std::pair <Scope *, Wrapper *> findObj = curScope->smartLookup (name);
-        Wrapper *obj = findObj.second;
+        std::pair <Scope *, Scope::tblIt> findObj = curScope->smartLookup (name);
+        Scope::tblIt obj = findObj.second;
         AST::FuncNode *funcNodeDecl = FuncNodeLookUp (node);
         if (funcNodeDecl) {
-            if (!obj) {
+            if (obj == curScope->tbl_.end ()) {
                 FuncObject *newFuncObj = new FuncObject (funcNodeDecl);
                 curScope->add (name, newFuncObj);
             }
             else {
-                if (obj->type_ == DataType::VAR){
-                    throw ErrorDetecter
+                if ((*obj).second->type_ == DataType::VAR){
+                    throw ErrorDetector ("Type conflicts", node->getLocation());
                 }
+                findObj.first->tbl_.erase(obj);
+                FuncObject *newFuncObj = new FuncObject (funcNodeDecl);
+                curScope->add (name, newFuncObj);
             }
         }
         else {
             int val = CalcExpr (curScope, std::next (childrenSt, 1));  //Now we have only int type... In the near future it shall be template
 
-            if (!findObj) {
+            if (obj == curScope->tbl_.end ()) {
                 Variable<int> *newVar = new Variable<int> (val);
                 curScope->add (name, newVar);
             }
-            else {                     
-                std::cout << "HERE" << std::endl;                                            //TODO: Checking for a type
-                Variable<int> *clearVar = static_cast<Variable<int> *> (findObj);  //Only int type...
+            else {
+                if ((*obj).second->type_ == DataType::FUNC){
+                    throw ErrorDetector ("Type conflicts", node->getLocation());
+                }
+                Variable<int> *clearVar = static_cast<Variable<int> *> ((*obj).second);  //Only int type...
                 clearVar->setVal (val);
             }
             return val;
@@ -346,7 +348,7 @@ namespace interpret {
                 execWhile (curScope, node);
                 break;
             default:
-                throw std::runtime_error ("Unexpected condition statement type");
+                throw ErrorDetector ("Unexpected condition statement type", node->getLocation ());
         }
     }
 
@@ -365,8 +367,6 @@ namespace interpret {
                     execCond (curScope, static_cast<AST::CondNode *> (nodeToExec));
                     break;
                 }
-                default:
-                    throw std::runtime_error ("Unexpected node to execute");
             }
             childrenSt = std::next (childrenSt, 1);
         }
