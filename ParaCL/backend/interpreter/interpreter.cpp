@@ -104,6 +104,49 @@ namespace interpret {
         
     }
 
+    AST::FuncNode* getFuncNameASTNode (AST::FuncNode* funcDecl) {
+
+        auto funcSt  = funcDecl->childBegin();
+        auto funcFin = funcDecl->childEnd();
+
+        while (funcSt != funcFin) {
+
+            if ((*funcSt)->getType() == AST::NodeT::FUNCTION) {
+                AST::FuncNode* funcStNode = static_cast<AST::FuncNode*>(*funcSt);
+                if (funcStNode->getFuncCompType() 
+                    == AST::FuncNode::FuncComponents::FUNC_NAME)
+                    return funcStNode;
+            }
+
+            ++funcSt;
+
+        }
+
+        return nullptr;
+
+    }
+
+    AST::FuncNode* getFuncArgsASTNode (AST::FuncNode* funcDecl) {
+
+        auto funcSt  = funcDecl->childBegin();
+        auto funcFin = funcDecl->childEnd();
+
+        while (funcSt != funcFin) {
+
+            if ((*funcSt)->getType() == AST::NodeT::FUNCTION) {
+                AST::FuncNode* funcStNode = static_cast<AST::FuncNode*>(*funcSt);
+                if (funcStNode->getFuncCompType() 
+                    == AST::FuncNode::FuncComponents::FUNC_ARGS)
+                    return funcStNode;
+            }
+
+            ++funcSt;
+        }
+
+        return nullptr;
+        
+    }
+
     int Interpreter::execRealCall (Scope *curScope, Wrapper* obj, AST::OperNode* callNode) {
 
         FuncObject* funcObj = static_cast<FuncObject*> (obj);
@@ -113,28 +156,8 @@ namespace interpret {
         Scope* newScope = new Scope;
         scopeTree.setRoot (newScope);
 
-        AST::FuncNode* funcArgs = nullptr;
-        AST::FuncNode* funcName = nullptr;
-
-        auto funcSt  = funcDecl->childBegin();
-        auto funcFin = funcDecl->childEnd();
-
-        while (funcSt != funcFin) {
-            
-            if ((*funcSt)->getType() == AST::NodeT::FUNCTION) {
-
-                switch (static_cast<AST::FuncNode*>(*funcSt)->getFuncCompType()) {
-
-                    case AST::FuncNode::FuncComponents::FUNC_ARGS:
-                        funcArgs = static_cast<AST::FuncNode*>(*funcSt);
-                        break;
-                    case AST::FuncNode::FuncComponents::FUNC_NAME:
-                        funcName = static_cast<AST::FuncNode*>(*funcSt);
-                        break;
-                }
-            }
-            ++funcSt;
-        }
+        AST::FuncNode* funcArgs = getFuncArgsASTNode (funcDecl);
+        AST::FuncNode* funcName = getFuncNameASTNode (funcDecl);
 
         if (funcName) {
             
