@@ -288,8 +288,8 @@ assignment                  :   ID ASSIGN assignStatement SEMICOLON
                             |   ID error SEMICOLON              {   driver->pushError (@1, "Unexpected operation with variable");   $$ = nullptr;   };
 
 func                        :   FUNC_DECL argsList body         {
-                                                                    AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL);
-                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS);
+                                                                    AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL, @1);
+                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS, @2);
                                                                     if ($2) {
                                                                         for (auto v: *($2))
                                                                             funcArgs->addChild (v);
@@ -301,8 +301,8 @@ func                        :   FUNC_DECL argsList body         {
                                                                 }
                             |   FUNC_DECL argsList COLON ID body
                                                                 {
-                                                                    AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL);
-                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS);
+                                                                    AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL, @1);
+                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS, @2);
                                                                     if ($2) {
                                                                         for (auto v: *($2))
                                                                             funcArgs->addChild (v);
@@ -362,7 +362,7 @@ atomic                      :   NUMBER                          {   $$ = new AST
                                                                     $$ = new AST::OperNode  (AST::OperNode::OperType::CALL, @1);
                                                                     AST::VarNode* funcName  = new AST::VarNode ($1, @1);
 
-                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS);
+                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS, @2);
                                                                     if ($2) {
                                                                         for (auto v: *($2))
                                                                             funcArgs->addChild (v);
