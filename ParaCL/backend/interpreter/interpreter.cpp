@@ -94,78 +94,119 @@ namespace interpret {
         }
     }
 
+    int Interpreter::execCallUsingStack (Scope *newScope, AST::FuncNode* funcDecl) {
+
+        execScope (newScope, static_cast<AST::ScopeNode*>(funcDecl->getRightChild()));
+        int retRes = callStack_.top ();
+        callStack_.pop ();
+        scopeExecution_ = true;
+        return retRes;
+        
+    }
+
+    AST::FuncNode* getFuncNameASTNode (AST::FuncNode* funcDecl) {
+
+        auto funcSt  = funcDecl->childBegin();
+        auto funcFin = funcDecl->childEnd();
+
+        while (funcSt != funcFin) {
+
+            if ((*funcSt)->getType() == AST::NodeT::FUNCTION) {
+                AST::FuncNode* funcStNode = static_cast<AST::FuncNode*>(*funcSt);
+                if (funcStNode->getFuncCompType() 
+                    == AST::FuncNode::FuncComponents::FUNC_NAME)
+                    return funcStNode;
+            }
+
+            ++funcSt;
+
+        }
+
+        return nullptr;
+
+    }
+
+    AST::FuncNode* getFuncArgsASTNode (AST::FuncNode* funcDecl) {
+
+        auto funcSt  = funcDecl->childBegin();
+        auto funcFin = funcDecl->childEnd();
+
+        while (funcSt != funcFin) {
+
+            if ((*funcSt)->getType() == AST::NodeT::FUNCTION) {
+                AST::FuncNode* funcStNode = static_cast<AST::FuncNode*>(*funcSt);
+                if (funcStNode->getFuncCompType() 
+                    == AST::FuncNode::FuncComponents::FUNC_ARGS)
+                    return funcStNode;
+            }
+
+            ++funcSt;
+        }
+
+        return nullptr;
+        
+    }
+
+    int Interpreter::createNewScope (Scope* newScope, AST::FuncNode* funcName, 
+                                     AST::FuncNode* funcArgs, AST::FuncNode* funcDecl,
+                                     AST::OperNode* callNode, Scope *curScope) {
+
+        if (funcName) {
+            
+            const std::string &insideName = static_cast<AST::VarNode*>(funcName->getRightChild())->getName();
+            FuncObject* insideFunc = new FuncObject{funcDecl};
+
+            newScope->add (insideName, insideFunc);
+        }
+
+        auto argsSt = funcArgs->childBegin(); //TODO
+        auto argsFin = funcArgs->childEnd();
+
+        AST::FuncNode* funcArgsVal = static_cast<AST::FuncNode*>(callNode->getRightChild());
+
+        auto childSt  = funcArgsVal->childBegin();
+        auto childFin = funcArgsVal->childEnd();
+
+        while (argsSt != argsFin) { //TODO compare sizes
+
+            AST::VarNode* forGetName = static_cast<AST::VarNode*>(*argsSt);
+            const std::string &name = forGetName->getName();
+
+            Variable<int>* newVar = new Variable<int>{CalcExpr(curScope, childSt)};
+
+            newScope->add (name, newVar);
+
+            ++argsSt;
+            ++childSt;
+        }
+
+    }
+
+    int Interpreter::execRealCall (Scope *curScope, Wrapper* obj, AST::OperNode* callNode) {
+
+        FuncObject* funcObj = static_cast<FuncObject*> (obj);
+        AST::FuncNode* funcDecl = funcObj->getNode();
+
+        Tree::NAryTree<Scope *> scopeTree;
+        Scope* newScope = new Scope;
+        scopeTree.setRoot (newScope);
+
+        AST::FuncNode* funcArgs = getFuncArgsASTNode (funcDecl);
+        AST::FuncNode* funcName = getFuncNameASTNode (funcDecl);
+
+        createNewScope (newScope, funcName, funcArgs, funcDecl, callNode, curScope);
+
+        return execCallUsingStack (newScope, funcDecl);
+
+    }
+
     int Interpreter::execCall (Scope *curScope, AST::OperNode* callNode) {
 
         AST::VarNode*  varNode  = static_cast<AST::VarNode*>(*(callNode->childBegin()));
 
         Wrapper*       obj      = curScope->lookup(varNode->getName());
-        if (obj->type_ == DataType::FUNC) {
-
-            FuncObject* funcObj = static_cast<FuncObject*> (obj);
-            AST::FuncNode* funcDecl = funcObj->getNode();
-
-            Tree::NAryTree<Scope *> scopeTree;
-            Scope* newScope = new Scope;
-            scopeTree.setRoot (newScope);
-
-            AST::FuncNode* funcArgs = nullptr;
-            AST::FuncNode* funcName = nullptr;
-
-            auto funcSt  = funcDecl->childBegin();
-            auto funcFin = funcDecl->childEnd();
-
-            while (funcSt != funcFin) {
-                
-                if ((*funcSt)->getType() == AST::NodeT::FUNCTION) {
-
-                    switch (static_cast<AST::FuncNode*>(*funcSt)->getFuncCompType()) {
-
-                        case AST::FuncNode::FuncComponents::FUNC_ARGS:
-                            funcArgs = static_cast<AST::FuncNode*>(*funcSt);
-                            break;
-                        case AST::FuncNode::FuncComponents::FUNC_NAME:
-                            funcName = static_cast<AST::FuncNode*>(*funcSt);
-                            break;
-                    }
-                }
-                ++funcSt;
-            }
-
-            if (funcName) {
-                
-                const std::string &insideName = static_cast<AST::VarNode*>(funcName->getRightChild())->getName();
-                FuncObject* insideFunc = new FuncObject{funcDecl};
-
-                newScope->add (insideName, insideFunc);
-            }
-
-            auto argsSt = funcArgs->childBegin(); //TODO
-            auto argsFin = funcArgs->childEnd();
-
-            AST::FuncNode* funcArgsVal = static_cast<AST::FuncNode*>(callNode->getRightChild());
-
-            auto childSt  = funcArgsVal->childBegin();
-            auto childFin = funcArgsVal->childEnd();
-
-            while (argsSt != argsFin) { //TODO compare sizes
-
-                AST::VarNode* forGetName = static_cast<AST::VarNode*>(*argsSt);
-                const std::string &name = forGetName->getName();
-
-                Variable<int>* newVar = new Variable<int>{CalcExpr(curScope, childSt)};
-
-                newScope->add (name, newVar); //FALL
-
-                ++argsSt;
-                ++childSt;
-            }
-
-            execScope (newScope, static_cast<AST::ScopeNode*>(funcDecl->getRightChild()));
-            int retRes = callStack_.top ();
-            callStack_.pop ();
-            scopeExecution_ = true;
-            return retRes;
-        }
+        if (obj->type_ == DataType::FUNC)
+            return execRealCall (curScope, obj, callNode);
         else {
 
             //TODO ERROR
@@ -216,20 +257,17 @@ namespace interpret {
         AST::FuncNode* funcNodeDecl = FuncNodeLookUp (node);
         if (funcNodeDecl) {
             
-            
             if (!findObj) {
                 FuncObject *newFuncObj = new FuncObject (funcNodeDecl);
                 curScope->add (name, newFuncObj);
             }
             else {
                 
-                //TODO Redefenition ? 
             }
         }   
         else {
 
             int val = CalcExpr (curScope, std::next (childrenSt, 1));  //Now we have only int type... In the near future it shall be template
-
             
             if (!findObj) {
                 Variable<int> *newVar = new Variable<int> (val);
@@ -278,7 +316,7 @@ namespace interpret {
 
     void Interpreter::execIf (Scope *curScope, AST::CondNode *node)
     {
-        // std::vector<AST::Node *> children = node->getChildren ();
+
         auto childrenSt = node->childBegin ();
         if (CalcExpr (curScope, childrenSt)) {
             Scope *newScope = new Scope;
@@ -289,7 +327,7 @@ namespace interpret {
 
     void Interpreter::execWhile (Scope *curScope, AST::CondNode *node)
     {
-        // std::vector<AST::Node *> children = node->getChildren ();
+
         auto childrenSt = node->childBegin ();
         while (CalcExpr (curScope, childrenSt)) {
             Scope *newScope = new Scope;
@@ -313,8 +351,8 @@ namespace interpret {
     }
 
     void Interpreter::execScope (Scope *curScope, AST::ScopeNode *node)
-    {   
-        // std::vector<AST::Node *> curNodes = node->getChildren ();
+    {
+
         auto childrenSt = node->childBegin ();
         auto childrenFin = node->childEnd ();
         while (scopeExecution_ && childrenSt != childrenFin) {
@@ -334,7 +372,6 @@ namespace interpret {
             childrenSt = std::next (childrenSt, 1);
         }
 
-        //scopeExecution_ = true;
     }
 
     void Interpreter::run ()
