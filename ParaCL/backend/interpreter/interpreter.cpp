@@ -257,20 +257,17 @@ namespace interpret {
         AST::FuncNode* funcNodeDecl = FuncNodeLookUp (node);
         if (funcNodeDecl) {
             
-            
             if (!findObj) {
                 FuncObject *newFuncObj = new FuncObject (funcNodeDecl);
                 curScope->add (name, newFuncObj);
             }
             else {
                 
-                //TODO Redefenition ? 
             }
         }   
         else {
 
             int val = CalcExpr (curScope, std::next (childrenSt, 1));  //Now we have only int type... In the near future it shall be template
-
             
             if (!findObj) {
                 Variable<int> *newVar = new Variable<int> (val);
@@ -319,7 +316,7 @@ namespace interpret {
 
     void Interpreter::execIf (Scope *curScope, AST::CondNode *node)
     {
-        // std::vector<AST::Node *> children = node->getChildren ();
+
         auto childrenSt = node->childBegin ();
         if (CalcExpr (curScope, childrenSt)) {
             Scope *newScope = new Scope;
@@ -330,7 +327,7 @@ namespace interpret {
 
     void Interpreter::execWhile (Scope *curScope, AST::CondNode *node)
     {
-        // std::vector<AST::Node *> children = node->getChildren ();
+
         auto childrenSt = node->childBegin ();
         while (CalcExpr (curScope, childrenSt)) {
             Scope *newScope = new Scope;
@@ -354,8 +351,8 @@ namespace interpret {
     }
 
     void Interpreter::execScope (Scope *curScope, AST::ScopeNode *node)
-    {   
-        // std::vector<AST::Node *> curNodes = node->getChildren ();
+    {
+
         auto childrenSt = node->childBegin ();
         auto childrenFin = node->childEnd ();
         while (scopeExecution_ && childrenSt != childrenFin) {
@@ -375,7 +372,6 @@ namespace interpret {
             childrenSt = std::next (childrenSt, 1);
         }
 
-        //scopeExecution_ = true;
     }
 
     void Interpreter::run ()
