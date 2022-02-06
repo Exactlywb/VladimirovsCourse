@@ -33,6 +33,7 @@ namespace TreeImpl {
             enum class AddSide { LEFT, RIGHT };
 
             SplayNode *parent_ = nullptr;
+            int subtreeSize = 1;
 
             SplayNode () = default;
             SplayNode (T val) : BinNode<T> (val) {}
@@ -58,7 +59,7 @@ namespace TreeImpl {
                 out << "\"box" << this
                     << "\" [shape = \"record\", color = \"white\" label = <<font color = "
                        "\"#242424\">"
-                    << val_ << "</font>>]";
+                    << val_ << " subtreeSize = " << subtreeSize << "</font>>]";
                 if (left_ != nullptr) {
                     static_cast<SplayNode *> (left_)->graphDump (out);
                     out << "\"box" << this << "\" -> \"box" << left_ << "\"" << std::endl;
@@ -213,8 +214,9 @@ namespace TreeImpl {
                 return *this;
             }
 
-            MyIterator (MyIterator &&rhs)  : ptr_ (rhs.ptr_) {}
-            MyIterator operator= (MyIterator &&rhs) {
+            MyIterator (MyIterator &&rhs) : ptr_ (rhs.ptr_) {}
+            MyIterator operator= (MyIterator &&rhs)
+            {
                 std::swap (ptr_, rhs.ptr_);
                 return *this;
             }
@@ -231,14 +233,14 @@ namespace TreeImpl {
                 return ptr_;
             }
 
-            MyIterator &operator++ () {
+            MyIterator &operator++ ()
+            {
                 if (ptr_->right_) {
-                    
                     ptr_ = static_cast<SplayNode *> (ptr_->right_);
                     while (ptr_->left_)
                         ptr_ = static_cast<SplayNode *> (ptr_->left_);
 
-                    *this = MyIterator(static_cast<SplayNode *> (ptr_));
+                    *this = MyIterator (static_cast<SplayNode *> (ptr_));
                     return *this;
                 }
 
@@ -247,24 +249,25 @@ namespace TreeImpl {
                 while (tmp->parent_ && tmp->parent_->left_ != tmp)
                     tmp = tmp->parent_;
 
-                *this = MyIterator(tmp->parent_);
+                *this = MyIterator (tmp->parent_);
                 return *this;
             }
 
-            MyIterator operator++ (int) {
+            MyIterator operator++ (int)
+            {
                 MyIterator *tmp = *this;
                 ++(*this);
                 return tmp;
             }
 
-            MyIterator &operator-- () {
-                if (ptr_->left_){
-
+            MyIterator &operator-- ()
+            {
+                if (ptr_->left_) {
                     ptr_ = static_cast<SplayNode *> (ptr_->left_);
 
                     while (ptr_->right_)
                         ptr_ = static_cast<SplayNode *> (ptr_->right_);
-                    *this = MyIterator(static_cast<SplayNode *> (ptr_));
+                    *this = MyIterator (static_cast<SplayNode *> (ptr_));
                     return *this;
                 }
 
@@ -273,21 +276,23 @@ namespace TreeImpl {
                 while (tmp->parent_ && tmp->parent_->right_ != tmp)
                     tmp = tmp->parent_;
 
-                *this = MyIterator(tmp->parent_);
+                *this = MyIterator (tmp->parent_);
                 return *this;
             }
 
-            MyIterator operator-- (int) {
+            MyIterator operator-- (int)
+            {
                 MyIterator *tmp = *this;
                 --(*this);
                 return tmp;
             }
 
-            bool equal (const MyIterator &rhs) const {
+            bool equal (const MyIterator &rhs) const
+            {
                 return ptr_ == rhs.ptr_;
             }
         };
-        
+
         //-----------------------------------------------------------------------------------------------------
 
         MyIterator begin ()
@@ -302,21 +307,14 @@ namespace TreeImpl {
 
         MyIterator find (T val)
         {
-            SplayNode *tmp =  root_; 
+            SplayNode *tmp = root_;
 
             while (tmp) {
-
                 if (tmp->val_ > val) {
-
                     tmp = static_cast<SplayNode *> (tmp->left_);
-                    if (tmp && tmp->val_ < val)
-                        return MyIterator (nullptr);
                 }
                 else if (tmp->val_ < val) {
-
                     tmp = static_cast<SplayNode *> (tmp->right_);
-                    if (tmp && tmp->val_ > val)
-                        return MyIterator (nullptr);
                 }
                 else if (tmp->val_ == val)
                     return MyIterator (tmp);
@@ -327,81 +325,101 @@ namespace TreeImpl {
 
         //-----------------------------------------------------------------------------------------------------
 
-        MyIterator end() 
+        MyIterator end ()
         {
             return MyIterator (nullptr);
         }
 
         //-----------------------------------------------------------------------------------------------------
 
-        MyIterator upperBound (T val) {
-
-            SplayNode *curNode =  root_; 
+        MyIterator upperBound (T val)
+        {
+            SplayNode *curNode = root_;
             SplayNode *tmp = nullptr;
 
             while (curNode) {
-
                 if (curNode->val_ == val) {
-
                     curNode = static_cast<SplayNode *> (curNode->right_);
                     continue;
                 }
                 if (curNode->val_ < val) {
-                    
                     curNode = static_cast<SplayNode *> (curNode->right_);
                 }
                 else {
-
                     tmp = curNode;
                     curNode = static_cast<SplayNode *> (curNode->left_);
                 }
-
             }
             splay (tmp);
-        
+
             return MyIterator (tmp);
         }
 
         //-----------------------------------------------------------------------------------------------------
 
-        MyIterator lowerBound (T val) {
-
-            SplayNode *curNode =  root_; 
+        MyIterator lowerBound (T val)
+        {
+            SplayNode *curNode = root_;
             SplayNode *tmp = nullptr;
 
             while (curNode) {
-
-                if (curNode->val_ == val){
+                if (curNode->val_ == val) {
                     splay (curNode);
                     return MyIterator (curNode);
                 }
 
                 if (curNode->val_ > val) {
-                    
                     tmp = curNode;
                     curNode = static_cast<SplayNode *> (curNode->left_);
                 }
                 else {
                     curNode = static_cast<SplayNode *> (curNode->right_);
                 }
-
             }
             splay (tmp);
 
             return MyIterator (tmp);
         }
 
-        //-----------------------------------------------------------------------------------------------------      
+        //-----------------------------------------------------------------------------------------------------
 
-        long range (T left, T right) {
-            return std::distance(upperBound (left), lowerBound (right));
+        long getNLessThan (T border)
+        {
+            SplayNode *curNode = root_;
+            long amount{};
+
+            while (curNode) {
+                if (border > curNode->val_) {
+                    if (curNode->left_)
+                        amount += static_cast<SplayNode *> (curNode->left_)->subtreeSize + 1;
+                    else
+                        ++amount;
+
+                    curNode = static_cast<SplayNode *> (curNode->right_);
+                }
+                else
+                    curNode = static_cast<SplayNode *> (curNode->left_);
+            }
+            return amount;
         }
 
-        //-----------------------------------------------------------------------------------------------------    
+        //-----------------------------------------------------------------------------------------------------
+
+        long range (T left, T right)
+        {
+            long maybeLen = getNLessThan (right) - getNLessThan (left);
+            return (find (left) == MyIterator (nullptr)) ? maybeLen : maybeLen - 1;
+        }
+
+        //-----------------------------------------------------------------------------------------------------
         void rotateLeft (SplayNode *node)
         {
             SplayNode *parent = node->parent_;
             SplayNode *right = static_cast<SplayNode *> (node->right_);
+
+            right->subtreeSize = node->subtreeSize;
+            int leftSize = (right->left_) ? static_cast<SplayNode *> (right->left_)->subtreeSize : 0, rightSize = (node->left_) ? static_cast<SplayNode *> (node->left_)->subtreeSize : 0;
+            node->subtreeSize = leftSize + rightSize + 1;
 
             if (parent) {
                 if (parent->left_ == node)
@@ -425,6 +443,10 @@ namespace TreeImpl {
             SplayNode *parent = node->parent_;
             SplayNode *left = static_cast<SplayNode *> (node->left_);
 
+            left->subtreeSize = node->subtreeSize;
+            int leftSize = (left->right_) ? static_cast<SplayNode *> (left->right_)->subtreeSize : 0, rightSize = (node->right_) ? static_cast<SplayNode *> (node->right_)->subtreeSize : 0;
+            node->subtreeSize = leftSize + rightSize + 1;
+
             if (parent) {
                 if (parent->left_ == node)
                     parent->left_ = left;
@@ -446,7 +468,7 @@ namespace TreeImpl {
         {
             if (!node)
                 return;
-            
+
             while (node->parent_) {
                 SplayNode *parent = node->parent_;
                 SplayNode *grandParent = parent->parent_;
@@ -500,8 +522,14 @@ namespace TreeImpl {
 
             while (tmp != nullptr) {
                 curNode = tmp;
+                ++curNode->subtreeSize;
 
                 if (val == tmp->val_) {
+                    while (curNode->parent_) {
+                        --curNode->subtreeSize;
+                        curNode = curNode->parent_;
+                    }
+                    --curNode->subtreeSize;
                     splay (tmp);
                     return;
                 }
@@ -521,7 +549,6 @@ namespace TreeImpl {
                 curNode->right_ = node;
 
             splay (node);
-
         }
 
         void graphDump (const char *fileName) const
@@ -536,13 +563,15 @@ namespace TreeImpl {
         }
     };
 
-    template<typename T = int>
-    bool operator== (const typename SplayTree<T>::MyIterator &lhs, const typename SplayTree<T>::MyIterator &rhs) {
+    template <typename T = int>
+    bool operator== (const typename SplayTree<T>::MyIterator &lhs, const typename SplayTree<T>::MyIterator &rhs)
+    {
         return lhs.equal (rhs);
     }
 
-    template<typename T = int>
-    bool operator!= (const typename SplayTree<T>::MyIterator &lhs, const typename SplayTree<T>::MyIterator &rhs) {
+    template <typename T = int>
+    bool operator!= (const typename SplayTree<T>::MyIterator &lhs, const typename SplayTree<T>::MyIterator &rhs)
+    {
         return !lhs.equal (rhs);
     }
 

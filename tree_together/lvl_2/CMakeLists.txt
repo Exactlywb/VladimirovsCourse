@@ -32,7 +32,8 @@ endif()
 ##############################################################################
 
 set (EXEC_FILE "splay-tree")
-set (GEN_FILE  "generator")
+set (GEN_FILE "generator")
+set (SET_TEST_EXEC "setTest")
 
 #uncomment it after adding GTests
 ##############################################################################
@@ -42,6 +43,10 @@ set (GEN_FILE  "generator")
 
 set (SOURCES
     sources/main.cpp
+)
+
+set (SET_SOURCES
+    sources/setTreeTest.cpp
 )
 
 set (GENERATOR
@@ -54,6 +59,7 @@ set (HEADERS
 
 add_executable(${EXEC_FILE} ${SOURCES})
 add_executable(${GEN_FILE}  ${GENERATOR})
+add_executable(${SET_TEST_EXEC} ${SET_SOURCES})
 
 target_include_directories(${EXEC_FILE} PRIVATE include)
 
@@ -83,3 +89,4 @@ set (COMPILER_SETTINGS
 
 target_compile_options(${EXEC_FILE} PRIVATE ${COMPILER_SETTINGS})
 target_compile_options(${GEN_FILE}  PRIVATE ${COMPILER_SETTINGS})
+target_compile_options(${SET_TEST_EXEC}  PRIVATE ${COMPILER_SETTINGS})

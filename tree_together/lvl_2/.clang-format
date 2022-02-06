@@ -21,9 +21,9 @@ ConstructorInitializerAllOnOneLineOrOnePerLine: true
 Cpp11BracedListStyle: true
 DerivePointerAlignment: false
 FixNamespaceComments: true
-# EmptyLineBeforeAccessModifier: Always
+EmptyLineBeforeAccessModifier: Always
 AccessModifierOffset: -4
-# IndentAccessModifiers: false
+IndentAccessModifiers: false
 IndentWidth: 4
 NamespaceIndentation: All
 PointerAlignment: Right
