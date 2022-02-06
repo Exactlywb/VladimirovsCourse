@@ -9,6 +9,5 @@ fact = func(x) : factorial {
     res;
 }
 
-print fact(10);
+print fact(?);
 
-b = 3;

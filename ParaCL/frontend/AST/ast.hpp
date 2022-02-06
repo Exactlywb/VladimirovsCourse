@@ -68,6 +68,15 @@ namespace AST {
             return children_.cend ();
         }
 
+        Node *getLeftChild () const
+        {
+            size_t vecSize = children_.size ();
+            if (vecSize == 0)
+                return nullptr;
+
+            return children_[0];
+        }
+
         Node *getRightChild () const
         {
             size_t vecSize = children_.size ();

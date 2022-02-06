@@ -47,7 +47,6 @@ namespace yy {
             parser::token_type tokenT = static_cast<parser::token_type> (lexer_->yylex ());
 
             switch (tokenT) {
-                //!TODO try catch
                 case yy::parser::token_type::NUMBER: {
                     yylval->build<int> () = std::stoi (lexer_->YYText ());
                     break;
@@ -82,7 +81,7 @@ namespace yy {
 
         void printError () const
         {
-            for (auto e: error_)
+            for (auto e : error_)
                 std::cout << e << std::endl;
         }
 

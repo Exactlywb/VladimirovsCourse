@@ -5,14 +5,16 @@
 #include <stack>
 #include <string>
 #include <unordered_map>
-#include <vector>
 #include <utility>
-#include "location.hh"
+#include <vector>
 
 #include "ast.hpp"
+#include "location.hh"
 #include "nAryTree.hpp"
 
 namespace interpret {
+
+    using vecASTIt = std::vector<AST::Node *>::const_iterator;
 
     enum class DataType {
 
@@ -75,6 +77,7 @@ namespace interpret {
         Scope *parent_ = nullptr;
         std::unordered_map<std::string, Wrapper *> tbl_;
         using tblIt = std::unordered_map<std::string, Wrapper *>::iterator;
+        using constScopeIt = std::vector<Scope *>::const_iterator;
 
     public:
         Scope () = default;
@@ -88,12 +91,12 @@ namespace interpret {
 
         ~Scope ();  //!TODO
 
-        std::vector<Scope *>::const_iterator childBegin () const
+        constScopeIt childBegin () const
         {
             return children_.cbegin ();
         }
 
-        std::vector<Scope *>::const_iterator childEnd () const
+        constScopeIt childEnd () const
         {
             return children_.cend ();
         }
@@ -108,22 +111,52 @@ namespace interpret {
         void add (Scope *scope);
     };
 
-    class ErrorDetector final: public std::runtime_error {
-
+    class ErrorDetector final : public std::runtime_error {
         yy::location location_;
-    public:
-        ErrorDetector (const char* err, yy::location loc):  std::runtime_error (err),
-                                                            location_ (loc) {}
-        
-        yy::location getLocation () const { return location_; }
 
+    public:
+        ErrorDetector (const char *err, yy::location loc) : std::runtime_error (err),
+                                                            location_ (loc) {}
+
+        yy::location getLocation () const { return location_; }
     };
 
     class Interpreter final {
         Tree::NAryTree<Scope *> *globalScope_;
         Tree::NAryTree<AST::Node *> *tree_;
 
-        int callDeepth_ = 0;
+        struct RecursionController final {
+            const int maxDeepth_ = 1000;
+            int callDeepth_ = 0;
+
+            RecursionController &operator++ () noexcept
+            {  //Open the window, pls...
+                ++callDeepth_;
+                return *this;
+            }
+
+            RecursionController operator++ (int) noexcept
+            {
+                callDeepth_++;
+                return *this;
+            }
+
+            RecursionController &operator-- () noexcept
+            {
+                --callDeepth_;
+                return *this;
+            }
+
+            RecursionController operator-- (int) noexcept
+            {
+                callDeepth_--;
+                return *this;
+            }
+
+            bool isOverflow () const noexcept { return callDeepth_ >= maxDeepth_; }
+        };
+
+        RecursionController recursionController_;
         std::stack<int> callStack_;
         bool scopeExecution_ = true;
 
@@ -147,7 +180,7 @@ namespace interpret {
 
         //Implementin' functions
     private:
-        int CalcExpr (Scope *curScope, std::vector<AST::Node *>::const_iterator it);
+        int CalcExpr (Scope *curScope, vecASTIt it);
         int CalcVar (Scope *curScope, AST::VarNode *var);
         int CalcOper (Scope *curScope, AST::OperNode *node);
 
@@ -156,6 +189,7 @@ namespace interpret {
         int execCallUsingStack (Scope *newScope, AST::FuncNode *funcDecl);
         int execCallUsingStack (Scope *newScope, AST::ScopeNode *ASTScope);
         int CalcScope (AST::ScopeNode *node);
+        int getCallValue ();
 
         void createNewScope (Scope *newScope, AST::FuncNode *funcName, AST::FuncNode *funcArgs, AST::FuncNode *funcDecl, AST::OperNode *callNode, Scope *curScope);
         int execCall (Scope *curScope, AST::OperNode *callNode);

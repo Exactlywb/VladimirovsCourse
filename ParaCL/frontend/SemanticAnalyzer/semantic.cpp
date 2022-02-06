@@ -2,7 +2,15 @@
 
 namespace {
 
-    void uselessFinder (SemanticAnalyzer *analyzer_, AST::Node *curNode, const std::function<void (yy::location, const std::string &)> pushWarning)
+    void pushChildrenIntoStack (AST::Node *curNode, std::stack<AST::Node *> &stack)
+    {
+        auto childrenFin = curNode->childEnd ();
+
+        for (auto childrenSt = curNode->childBegin (); childrenSt != childrenFin; ++childrenSt)
+            stack.push (*childrenSt);
+    }
+
+    void uselessStatementRecognizer (SemanticAnalyzer *analyzer_, AST::Node *curNode, const std::function<void (yy::location, const std::string &)> pushWarning)
     {
         AST::Node *rightNode = curNode->getRightChild ();
 
@@ -21,6 +29,14 @@ namespace {
                 }
             }
         }
+    }
+
+    void SetHiddenReturn (AST::Node *curNode, AST::Node *oper)
+    {
+        AST::OperNode *returnNode = new AST::OperNode (AST::OperNode::OperType::RETURN);
+        returnNode->addChild (oper);
+        curNode->eraseChild (curNode->getChildrenNum () - 1);
+        curNode->addChild (returnNode);
     }
 
     void SetPoisonReturn (AST::Node *curNode)
@@ -53,10 +69,7 @@ namespace {
                     if (oper->getOpType () == AST::OperNode::OperType::RETURN)
                         break;
                     else if (oper->getOpType () != AST::OperNode::OperType::PRINT) {
-                        AST::OperNode *returnNode = new AST::OperNode (AST::OperNode::OperType::RETURN);
-                        returnNode->addChild (oper);
-                        curNode->eraseChild (curNode->getChildrenNum () - 1);
-                        curNode->addChild (returnNode);
+                        SetHiddenReturn (curNode, oper);
                     }
                     else {
                         pushWarning (oper->getLocation (), "unexpected statement in the scope end");
@@ -66,10 +79,7 @@ namespace {
                 }
                 case AST::NodeT::NUMBER:
                 case AST::NodeT::VARIABLE: {
-                    AST::OperNode *returnNode = new AST::OperNode (AST::OperNode::OperType::RETURN);
-                    returnNode->addChild (rightNode);
-                    curNode->eraseChild (curNode->getChildrenNum () - 1);
-                    curNode->addChild (returnNode);
+                    SetHiddenReturn (curNode, rightNode);
                     break;
                 }
             }
@@ -104,16 +114,10 @@ namespace {
                     if (static_cast<AST::OperNode *> (parent)->getOpType () == AST::OperNode::OperType::ASSIGN)
                         HiddenReturnNodesAnalyze (analyzer_, curNode, pushWarning);
 
-                uselessFinder (analyzer_, curNode, pushWarning);
+                uselessStatementRecognizer (analyzer_, curNode, pushWarning);
             }
-            //next
-            auto childrenSt = curNode->childBegin ();
-            auto childrenFin = curNode->childEnd ();
 
-            while (childrenSt != childrenFin) {
-                stack.push (*childrenSt);
-                childrenSt = std::next (childrenSt, 1);
-            }
+            pushChildrenIntoStack (curNode, stack);
         }
     }
 

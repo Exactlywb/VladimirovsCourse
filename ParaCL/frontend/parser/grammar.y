@@ -275,7 +275,7 @@ body                        :   OPCURVBRACK statementHandler CLCURVBRACK
                                                                     delete $2;
                                                                     $$ = newScope;
                                                                 }
-                            |   OPCURVBRACK CLCURVBRACK         {   $$ = new AST::ScopeNode ();   };
+                            |   OPCURVBRACK CLCURVBRACK         {   $$ = new AST::ScopeNode (@1);   };
 
 
 assignment                  :   ID ASSIGN assignStatement SEMICOLON       
@@ -387,6 +387,7 @@ parser::token_type yylex (parser::semantic_type* yylval, parser::location_type* 
     
     } catch (std::runtime_error& err) {
 
+        std::cout << err.what () << std::endl;
         throw err; 
 
     }

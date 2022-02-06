@@ -38,14 +38,6 @@ public:
 
     void run (Tree::NAryTree<AST::Node *> *tree,
               const std::function<void (yy::location, const std::string &)> pushWarning);
-
-    // void pushWarning (const std::string &err)
-    // {
-
-    //     std::string errMsg = std::string ("Warning: ") + err;
-    //     warnings_.push_back (errMsg + std::string ("\n"));
-
-    // }
 };
 
 #endif
