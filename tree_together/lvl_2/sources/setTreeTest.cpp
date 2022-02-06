@@ -15,7 +15,6 @@ int main ()
         std::cin >> num;
         tree.insert (num);
     }
-
     int requests = 0;
     std::cin >> requests;
 
@@ -31,14 +30,11 @@ int main ()
             continue;
         }
 
-        auto minIt = tree.upper_bound (minBorder);
-        auto maxIt = tree.lower_bound (maxBorder);
-
-        answ.push_back (static_cast<int> (std::distance (minIt, maxIt)));
+        answ.push_back (static_cast<int> (std::distance (tree.find(minBorder),tree.find(maxBorder))));
     }
 
-    for (auto v : answ)
-        std::cout << v << std::endl;
+    // for (auto v : answ)
+    //     std::cout << v << std::endl;
 
     return 0;
 }

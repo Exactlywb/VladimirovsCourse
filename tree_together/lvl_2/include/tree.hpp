@@ -8,6 +8,21 @@
 #include <iostream>
 #include <iterator>
 
+#include <stdio.h>
+#include <math.h>
+#include <string.h>
+#include <time.h>
+#include <iostream>
+#include <vector>
+#include <list>
+#include <string>
+#include <algorithm>
+#include <queue>
+#include <stack>
+#include <set>
+#include <map>
+#include <complex>
+
 namespace TreeImpl {
 
     template <typename T = int>
@@ -316,8 +331,11 @@ namespace TreeImpl {
                 else if (tmp->val_ < val) {
                     tmp = static_cast<SplayNode *> (tmp->right_);
                 }
-                else if (tmp->val_ == val)
+                else if (tmp->val_ == val) {
+
+                    // splay (tmp);
                     return MyIterator (tmp);
+                }
             }
 
             return MyIterator (nullptr);
@@ -399,6 +417,7 @@ namespace TreeImpl {
                 }
                 else
                     curNode = static_cast<SplayNode *> (curNode->left_);
+                
             }
             return amount;
         }
@@ -407,8 +426,8 @@ namespace TreeImpl {
 
         long range (T left, T right)
         {
-            long maybeLen = getNLessThan (right) - getNLessThan (left);
-            return (find (left) == MyIterator (nullptr)) ? maybeLen : maybeLen - 1;
+
+            return std::distance(find(left), find(right));
         }
 
         //-----------------------------------------------------------------------------------------------------

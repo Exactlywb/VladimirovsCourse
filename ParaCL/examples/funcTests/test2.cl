@@ -1,0 +1,6 @@
+a = func () : foo {
+
+    1;
+}
+
+print a;

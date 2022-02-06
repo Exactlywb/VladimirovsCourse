@@ -36,11 +36,18 @@ namespace interpret {
 
     int Interpreter::CalcVar (Scope *curScope, AST::VarNode *var)
     {
-        Variable<int> *clearVar = static_cast<Variable<int> *> ((*(curScope->smartLookup (var->getName ()).second)).second);
-        if (clearVar)
-            return clearVar->getVal ();
-        else
-            throw ErrorDetector ("Undeclared variable in an expression", var->getLocation ());
+        auto findElem = curScope->smartLookup (var->getName ());
+        if (findElem.first == nullptr) 
+            throw ErrorDetector("undeclared variable in an expression", var->getLocation ());
+
+        Wrapper* varWrapper =  (*findElem.second).second;
+
+        if (varWrapper->type_ == DataType::FUNC)
+            throw ErrorDetector ("wrong syntax for function calling", var->getLocation());
+
+        Variable<int> *clearVar = static_cast<Variable<int> *> (varWrapper);
+
+        return clearVar->getVal();
     }
 
     int Interpreter::CalcOper (Scope *curScope, AST::OperNode *node)
@@ -87,7 +94,7 @@ namespace interpret {
                 return tmp;
             }
             default: {
-                throw ErrorDetector ("Unexpected operator type in calculation", node->getLocation ());
+                throw ErrorDetector ("unexpected operator type in calculation", node->getLocation ());
             }
         }
     }
@@ -102,7 +109,14 @@ namespace interpret {
 
     int Interpreter::execCallUsingStack (Scope *newScope, AST::FuncNode *funcDecl)
     {
+        const int deepth = 1000;
+        ++callDeepth_;
+        // std::cout << callStack_.size() << std::endl;
+        if (callDeepth_ >= deepth)
+            throw ErrorDetector ("stack overflow", funcDecl->getLocation());
+
         execScope (newScope, static_cast<AST::ScopeNode *> (funcDecl->getRightChild ()));
+        --callDeepth_;
         int retRes = callStack_.top ();
         callStack_.pop ();
         scopeExecution_ = true;
@@ -145,22 +159,26 @@ namespace interpret {
         return nullptr;
     }
 
-    void Interpreter::createNewScope (Scope *newScope, AST::FuncNode *funcName, AST::FuncNode *funcArgs, AST::FuncNode *funcDecl, AST::OperNode *callNode, Scope *curScope)
+    void Interpreter::createNewScope (Scope *newScope, AST::FuncNode *funcName, AST::FuncNode *funcArgs, 
+                                      AST::FuncNode *funcDecl, AST::OperNode *callNode, Scope *curScope)
     {
         if (funcName) {
             const std::string &insideName = static_cast<AST::VarNode *> (funcName->getRightChild ())->getName ();
-            FuncObject *insideFunc = new FuncObject{funcDecl};
+            FuncObject *insideFunc = new FuncObject {funcDecl};
 
             newScope->add (insideName, insideFunc);
         }
 
-        auto argsSt = funcArgs->childBegin ();  //TODO
+        auto argsSt = funcArgs->childBegin ();
         auto argsFin = funcArgs->childEnd ();
 
         AST::FuncNode *funcArgsVal = static_cast<AST::FuncNode *> (callNode->getRightChild ());
 
         auto childSt = funcArgsVal->childBegin ();
         auto childFin = funcArgsVal->childEnd ();
+
+        if (std::distance (argsSt, argsFin) != std::distance (childSt, childFin))
+            throw ErrorDetector ("wrong number of arguments for a function calling", callNode->getLocation ());
 
         while (argsSt != argsFin) {  //TODO compare sizes
 
@@ -197,11 +215,15 @@ namespace interpret {
     {
         AST::VarNode *varNode = static_cast<AST::VarNode *> (*(callNode->childBegin ()));
 
-        Wrapper *obj = (*(curScope->smartLookup (varNode->getName ()).second)).second; // not found ?
+        auto nameLookup = curScope->smartLookup (varNode->getName ());
+        if (nameLookup.first == nullptr)
+            throw ErrorDetector ("can't find a function for a call", callNode->getLocation ());
+        
+        Wrapper *obj = (*(nameLookup.second)).second;
         if (obj->type_ == DataType::FUNC)
             return execRealCall (curScope, obj, callNode);
         
-        //TODO ERROR
+        throw ErrorDetector ("object is not a function", callNode->getLocation());
     }
 
     int Interpreter::CalcScope (AST::ScopeNode *node)
@@ -225,6 +247,8 @@ namespace interpret {
                 return CalcOper (curScope, static_cast<AST::OperNode *> (node));
             case AST::NodeT::SCOPE:
                 return CalcScope (static_cast<AST::ScopeNode *> (node));
+            default:
+                throw std::runtime_error ("unexpected statement to execute");
         }
     }
 
@@ -244,33 +268,24 @@ namespace interpret {
         else
             return nullptr;
     }
+    namespace {
 
-    int Interpreter::assignment (Scope *curScope, AST::OperNode *node)
-    {
-        auto childrenSt = node->childBegin ();
-        AST::VarNode *leftN = static_cast<AST::VarNode *> (*childrenSt);
-        const std::string &name = leftN->getName ();
+        void funcDeclAssignment (Scope *curScope,  yy::location errloc, const std::string &name, Scope * findScope, 
+                                 Scope::tblIt obj, FuncObject *newFuncObj) {
 
-
-        std::pair <Scope *, Scope::tblIt> findObj = curScope->smartLookup (name);
-        Scope::tblIt obj = findObj.second;
-        AST::FuncNode *funcNodeDecl = FuncNodeLookUp (node);
-        if (funcNodeDecl) {
-            if (obj == curScope->tbl_.end ()) {
-                FuncObject *newFuncObj = new FuncObject (funcNodeDecl);
+            if (obj == curScope->tbl_.end ())
                 curScope->add (name, newFuncObj);
-            }
             else {
-                if ((*obj).second->type_ == DataType::VAR){
-                    throw ErrorDetector ("Type conflicts", node->getLocation());
-                }
-                findObj.first->tbl_.erase(obj);
-                FuncObject *newFuncObj = new FuncObject (funcNodeDecl);
+                if ((*obj).second->type_ == DataType::VAR)
+                    throw ErrorDetector ("type conflicts", errloc);
+                
+                findScope->tbl_.erase(obj);
                 curScope->add (name, newFuncObj);
             }
         }
-        else {
-            int val = CalcExpr (curScope, std::next (childrenSt, 1));  //Now we have only int type... In the near future it shall be template
+
+        int varDeclAssignment (Scope *curScope,  yy::location errloc, const std::string &name,
+                               int val, Scope::tblIt obj) {
 
             if (obj == curScope->tbl_.end ()) {
                 Variable<int> *newVar = new Variable<int> (val);
@@ -278,12 +293,50 @@ namespace interpret {
             }
             else {
                 if ((*obj).second->type_ == DataType::FUNC){
-                    throw ErrorDetector ("Type conflicts", node->getLocation());
+                    throw ErrorDetector ("type conflicts", errloc);
                 }
                 Variable<int> *clearVar = static_cast<Variable<int> *> ((*obj).second);  //Only int type...
                 clearVar->setVal (val);
             }
             return val;
+        }
+    } 
+
+    int Interpreter::assignment (Scope *curScope, AST::OperNode *node)
+    {   
+        const int poison = -666;
+        auto childrenSt = node->childBegin ();
+        AST::VarNode *leftN = static_cast<AST::VarNode *> (*childrenSt);
+        const std::string &name = leftN->getName ();
+
+        std::pair <Scope *, Scope::tblIt> findObj = curScope->smartLookup (name);
+        Scope::tblIt obj = findObj.second;
+        AST::FuncNode *funcNodeDecl = FuncNodeLookUp (node);
+
+        if (funcNodeDecl) {
+
+            AST::Node* funcNameASTNode = *(funcNodeDecl->childBegin ());
+
+            if (funcNameASTNode->getType () == AST::NodeT::FUNCTION) { //TODO refactoring
+
+                AST::FuncNode* funcNameClear = static_cast<AST::FuncNode*> (funcNameASTNode);
+                if (funcNameClear->getFuncCompType () == AST::FuncNode::FuncComponents::FUNC_NAME) {
+                    const std::string& funcName = static_cast<AST::VarNode*>(*funcNameClear->childBegin ())->getName ();
+                    std::pair <Scope*, Scope::tblIt> findNamesakeFunc = curScope->smartLookup (funcName);
+                    if (findNamesakeFunc.second != curScope->tbl_.end ())
+                        throw ErrorDetector ("function with the same name already exists", funcNameClear->getLocation ());
+                }
+            }
+
+            FuncObject *newFuncObj = new FuncObject (funcNodeDecl);
+            funcDeclAssignment(curScope, node->getLocation(), name, findObj.first, obj, newFuncObj);
+
+            return poison;
+        }
+        else {
+            
+            int val = CalcExpr (curScope, std::next (childrenSt, 1));  //Now we have only int type... In the near future it shall be template
+            return varDeclAssignment (curScope, node->getLocation(), name, val, obj);            
         }
     }
 
@@ -348,7 +401,7 @@ namespace interpret {
                 execWhile (curScope, node);
                 break;
             default:
-                throw ErrorDetector ("Unexpected condition statement type", node->getLocation ());
+                throw ErrorDetector ("unexpected condition statement type", node->getLocation ());
         }
     }
 

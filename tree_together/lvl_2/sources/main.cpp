@@ -15,6 +15,8 @@ int main ()
         tree.insert (num);
     }
 
+    // tree.graphDump("out.dot");
+
     int requests = 0;
     std::cin >> requests;
 
@@ -42,8 +44,8 @@ int main ()
         answ.push_back (tree.range (minBorder, maxBorder));
     }
 
-    for (auto v : answ)
-        std::cout << v << std::endl;
+    // for (auto v : answ)
+    //     std::cout << v << std::endl;
 
     return 0;
 }

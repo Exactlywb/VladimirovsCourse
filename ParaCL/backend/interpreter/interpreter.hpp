@@ -123,6 +123,7 @@ namespace interpret {
         Tree::NAryTree<Scope *> *globalScope_;
         Tree::NAryTree<AST::Node *> *tree_;
 
+        int callDeepth_ = 0;
         std::stack<int> callStack_;
         bool scopeExecution_ = true;
 
