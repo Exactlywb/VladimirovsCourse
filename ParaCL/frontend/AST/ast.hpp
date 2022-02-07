@@ -127,6 +127,7 @@ namespace AST {
         VarNode (const std::string &name, yy::location loc, Node *parent = nullptr) : Node (NodeT::VARIABLE, parent),
                                                                                       NodeLocator (loc),
                                                                                       name_ (name) {}
+        
 
         void nodeDump (std::ostream &out) const override
         {
@@ -148,7 +149,6 @@ namespace AST {
             FUNC_NAME
 
         };
-
     private:
         FuncComponents compType_;
 
@@ -181,7 +181,6 @@ namespace AST {
     class OperNode final : public Node, public NodeLocator {
     public:
         enum class OperType;
-
     private:
         OperType opType_;
 
@@ -325,6 +324,7 @@ namespace AST {
         {
             out << "SCOPE";
         }
+
     };
 
     class CondNode final : public Node, public NodeLocator {

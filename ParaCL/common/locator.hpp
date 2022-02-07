@@ -11,6 +11,11 @@ public:
     NodeLocator () = default;
 
     yy::location getLocation () const { return location_; }
+
+    virtual ~NodeLocator () = 0;
+
 };
+
+inline NodeLocator::~NodeLocator () = default;
 
 #endif
