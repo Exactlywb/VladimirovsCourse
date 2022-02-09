@@ -301,10 +301,19 @@ assignment                  :   ID ASSIGN assignStatement SEMICOLON
                                                                 {   $$ = makeAssign ($1, $3, @2, @1);   }
                             |   ID ASSIGN func SEMICOLON        {   $$ = makeAssign ($1, $3, @2, @1);   }
                             |   ID ASSIGN func                  {   $$ = makeAssign ($1, $3, @2, @1);   }
-                            |   ID ASSIGN error SEMICOLON       {   driver->pushError (@3, "Bad expression after assignment");  $$ = nullptr;   }
+                            |   ID ASSIGN error SEMICOLON       {   driver->pushError (@3, "Bad expression after assignment");  
+                                                                    $$ = nullptr;   
+                                                                }
                             |   ID ASSIGN   body                {   $$ = makeAssign ($1, $3, @2, @1);  }
                             |   ID ASSIGN   body SEMICOLON      {   $$ = makeAssign ($1, $3, @2, @1);  }
-                            |   ID error SEMICOLON              {   driver->pushError (@1, "Unexpected operation with variable");   $$ = nullptr;   };
+                            |   ID error SEMICOLON              {   driver->pushError (@1, "Unexpected operation with variable");   
+                                                                    $$ = nullptr;   
+                                                                }
+                            |   error ASSIGN assignStatement SEMICOLON 
+                                                                {   
+                                                                    driver->pushError (@1, "rvalue can't become lvalue"); 
+                                                                    $$ = nullptr; 
+                                                                };
 
 func                        :   FUNC_DECL argsList body         {
                                                                     AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL, @1);

@@ -20,7 +20,7 @@ struct SemanticAnalyzer {
 private:
     ContextType context_ = ContextType::UsualContext;
 
-    Tree::NAryTree<AST::Node *> *tree_;
+    Tree::NAryTree<Scope*> *globalScope_;
 
 public:
     void setContext (ContextType context)
@@ -33,7 +33,7 @@ public:
         return context_;
     }
 
-    SemanticAnalyzer () = default;
+    SemanticAnalyzer (): globalScope_ (new Tree::NAryTree<Scope *> (new Scope)) {};
 
     //Let's implement 0-rule
     SemanticAnalyzer (const SemanticAnalyzer &other) = delete;
@@ -44,6 +44,12 @@ public:
     void run    (Tree::NAryTree<AST::Node *> *tree, 
                  const std::function<void (yy::location, const std::string &)> pushWarning, 
                  const std::function<void (yy::location, const std::string &)>);
+
+private:
+    void AnalyzeScopes (Scope *curScope, AST::ScopeNode *node,
+                        const std::function<void (yy::location, const std::string &)> pushWarning, 
+                        const std::function<void (yy::location, const std::string &)> pushError);
+
 };
 
 #endif

@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "ast.hpp"
-#include "compiler.hpp"
+// #include "compiler.hpp"
 #include "customLexer.hpp"
 #include "grammar.tab.hh"
 // #include "interpreter.hpp"
@@ -165,17 +165,17 @@ namespace yy {
         //     }
         // }
 
-        void compile ()
-        {
-            ParaCompiler::ParaCLLVMCompiler compiler (&tree_);
+        // void compile ()
+        // {
+        //     ParaCompiler::ParaCLLVMCompiler compiler (&tree_);
 
-            try {
-                compiler.run ();
-            }
-            catch (const std::runtime_error &err) {
-                std::cout << "Runtime error: " << err.what ();
-            }
-        }
+        //     try {
+        //         compiler.run ();
+        //     }
+        //     catch (const std::runtime_error &err) {
+        //         std::cout << "Runtime error: " << err.what ();
+        //     }
+        // }
     };
 
 }  // namespace yy

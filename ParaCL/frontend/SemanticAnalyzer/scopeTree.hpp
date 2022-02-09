@@ -68,10 +68,10 @@ class Scope final {
     Scope *parent_ = nullptr;
     std::unordered_map<std::string, TypeWrapper *> tbl_;
 
+public:
     using tblIt = std::unordered_map<std::string, TypeWrapper *>::iterator;
     using constScopeIt = std::vector<Scope *>::const_iterator;
 
-public:
     Scope () = default;
 
     //Rule of 0
