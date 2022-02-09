@@ -248,6 +248,15 @@ ifStatement                 :   IF conditionExpression body     {
                                                                         delete $2;
                                                                         delete $3;
                                                                     }
+                                                                }
+                            |   IF conditionExpression statement {
+                                                                    if ($2 && $3) {
+                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::WHILE, $2, $3, @1);
+                                                                    } else {
+                                                                        $$ = nullptr;
+                                                                        delete $2;
+                                                                        delete $3;
+                                                                    }
                                                                 };
 
 whileStatement              :   WHILE conditionExpression body  {
@@ -258,6 +267,16 @@ whileStatement              :   WHILE conditionExpression body  {
                                                                         delete $2;
                                                                         delete $3;
                                                                     }
+                                                                }
+                            |   WHILE conditionExpression statement
+                                                                {
+                                                                   if ($2 && $3) {
+                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::WHILE, $2, $3, @1);
+                                                                    } else {
+                                                                        $$ = nullptr;
+                                                                        delete $2;
+                                                                        delete $3;
+                                                                    } 
                                                                 };
 
 conditionExpression         :   OPCIRCBRACK assignStatement CLCIRCBRACK   
