@@ -32,6 +32,10 @@ int main (int argc, char **argv)
         return 0;
     }
 
+#if 1
+        driver.callDump (std::cout);
+#endif
+
     driver.semantic ();
     driver.printWarnings ();
 

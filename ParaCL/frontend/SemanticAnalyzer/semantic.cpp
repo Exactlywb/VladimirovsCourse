@@ -172,8 +172,10 @@ namespace {
 
                     break;
                 }
-                default:
+                default: {
                     pushError (curNode->getLocation (), "unexpected operator in expression");
+                    return;
+                }
 
             }
 
@@ -181,13 +183,20 @@ namespace {
 
     }
 
-    void CheckAssignOperScope (Scope *curScope, AST::OperNode *node, 
-                            const std::function<void (yy::location, const std::string &)> pushWarning, 
-                            const std::function<void (yy::location, const std::string &)> pushError)
-    {
+    void CheckVarInExpr (Scope *curScope, AST::VarNode *node,
+                         const std::function<void (yy::location, const std::string &)> pushWarning,
+                         const std::function<void (yy::location, const std::string &)> pushError) {
 
-        //!TODO
-        
+        std::pair<Scope*, Scope::tblIt> findRes = curScope->smartLookup (node->getName ());
+        if (findRes.first == nullptr) {
+            pushError (node->getLocation (), "undeclared variable in expression");
+            return;
+        }
+
+        auto checkType = findRes.second;
+        if ((*checkType).second->type_ == TypeWrapper::DataType::FUNC)
+            pushError (node->getLocation (), "function can't be used as a variable");
+
     }
 
     void CheckOperatorInExpr (Scope *curScope, AST::OperNode *node,
@@ -198,28 +207,14 @@ namespace {
 
     }
 
-    void CheckVarInExpr (Scope *curScope, AST::VarNode *node,
-                         const std::function<void (yy::location, const std::string &)> pushWarning,
-                         const std::function<void (yy::location, const std::string &)> pushError) {
-
-        std::pair<Scope*, Scope::tblIt> findRes = curScope->smartLookup (node->getName ());
-        if (findRes.first == nullptr)
-            pushError (node->getLocation (), "undeclared variable in expression");
-
-        auto checkType = findRes.second;
-        if ((*checkType).second->type_ == TypeWrapper::DataType::FUNC)
-            pushError (node->getLocation (), "function can't be used as a variable");
-
-    }
-
-    void CheckUnaryOperScope (Scope *curScope, AST::OperNode *node, 
+    void CheckUnaryOperScope (Scope *curScope, AST::Node *node, 
                               const std::function<void (yy::location, const std::string &)> pushWarning, 
                               const std::function<void (yy::location, const std::string &)> pushError)
     {
 
         std::stack<AST::Node*> execStack;
         BuildExecStackFromExpression (execStack, node->getRightChild (), pushWarning, pushError);
-
+        
         while (!execStack.empty ()) {
 
             AST::Node* curNodeFromExpr = execStack.top ();
@@ -247,6 +242,74 @@ namespace {
 
     }
 
+    std::pair<TypeWrapper::DataType, AST::FuncNode*> GetRValueType (AST::OperNode* node) {
+
+        AST::Node *rightChild = node;
+        while (node->getOpType () == AST::OperNode::OperType::ASSIGN) {
+            rightChild = node->getRightChild ();
+            if (rightChild->getType () == AST::NodeT::OPERATOR)
+                node = static_cast<AST::OperNode *> (rightChild);
+            else
+                break;
+        }
+
+        if (rightChild->getType () == AST::NodeT::FUNCTION)
+            return {TypeWrapper::DataType::FUNC, static_cast<AST::FuncNode *> (rightChild)};
+        else
+            return {TypeWrapper::DataType::VAR, nullptr};
+
+    }
+
+    void CheckVarRValue (Scope *curScope, AST::OperNode* assign, 
+                         const std::function<void (yy::location, const std::string &)> pushWarning, 
+                         const std::function<void (yy::location, const std::string &)> pushError) {
+        
+        std::pair<TypeWrapper::DataType, AST::FuncNode*> rVal = GetRValueType (assign);
+        if (rVal.first != TypeWrapper::DataType::VAR)
+            pushError (assign->getLocation (), "type conflict: Variable cannot be assigned a function");
+
+    }
+
+    void CheckAssignStatementScope (Scope *curScope, AST::OperNode *node, 
+                                    const std::function<void (yy::location, const std::string &)> pushWarning, 
+                                    const std::function<void (yy::location, const std::string &)> pushError)
+    {
+
+        AST::Node* idNode = node->getLeftChild ();
+        if (idNode->getType () != AST::NodeT::VARIABLE) {
+            pushError (idNode->getLocation (), "variable name expected");
+            return;
+        }
+
+        AST::VarNode* clearID = static_cast<AST::VarNode*> (idNode);
+        const std::string& name = clearID->getName ();
+        std::pair <Scope*, Scope::tblIt> findRes = curScope->smartLookup (name);
+        
+        if (findRes.first == nullptr) { //new var
+
+            std::pair<TypeWrapper::DataType, AST::FuncNode*> rVal = GetRValueType (node);
+            if (rVal.first == TypeWrapper::DataType::VAR) {
+                Variable* newVar;
+                curScope->add (name, newVar);
+            } else {
+                FuncObject* newFunc = new FuncObject (rVal.second);
+                curScope->add (name, newFunc);
+            }
+
+        } else {
+            
+            Scope::tblIt nodeIt = findRes.second;
+            TypeWrapper* scopeNode = (*nodeIt).second;
+
+            if (scopeNode->type_ == TypeWrapper::DataType::FUNC)
+                pushError (clearID->getLocation (), "function redefinition");
+            else
+                CheckVarRValue (curScope, node, pushWarning, pushError);
+
+        }
+
+    }
+
     void CheckExprScope (Scope *curScope, AST::OperNode *node, 
                          const std::function<void (yy::location, const std::string &)> pushWarning, 
                          const std::function<void (yy::location, const std::string &)> pushError)
@@ -255,7 +318,7 @@ namespace {
         switch (node->getOpType ()) {
 
             case AST::OperNode::OperType::ASSIGN: {
-                CheckAssignOperScope (curScope, node, pushWarning, pushError);
+                CheckAssignStatementScope (curScope, node, pushWarning, pushError);
                 break;
             }
             case AST::OperNode::OperType::RETURN:
@@ -279,7 +342,6 @@ void SemanticAnalyzer::AnalyzeScopes   (Scope *curScope, AST::ScopeNode *node,
     for (auto stBegin = node->childBegin (); stBegin != node->childEnd (); ++stBegin) {
 
         AST::Node *nodeToCheck = *stBegin;
-        std::cout << "still alive" << std::endl;
         switch (nodeToCheck->getType ()) {
 
             case AST::NodeT::OPERATOR: {
@@ -304,9 +366,11 @@ void SemanticAnalyzer::run (Tree::NAryTree<AST::Node *> *tree,
                             const std::function<void (yy::location, const std::string &)> pushWarning, 
                             const std::function<void (yy::location, const std::string &)> pushError)
 {
+    AnalyzeHiddenReturn (this, tree, pushWarning);
+
     AST::ScopeNode* startScope = static_cast<AST::ScopeNode*> (tree->getRoot ());
     if (startScope)
         AnalyzeScopes (globalScope_->getRoot (), startScope, pushWarning, pushError);
-    AnalyzeHiddenReturn (this, tree, pushWarning);
+
 }
 
