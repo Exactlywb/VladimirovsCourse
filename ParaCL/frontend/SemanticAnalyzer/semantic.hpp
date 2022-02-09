@@ -8,7 +8,7 @@
 #include "nAryTree.hpp"
 #include "errorDetector.hpp"
 
-struct SemanticAnalyzer {
+struct SemanticAnalyzer final {
     
     enum class ContextType {
 

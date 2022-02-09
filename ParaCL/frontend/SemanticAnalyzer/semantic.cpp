@@ -126,10 +126,58 @@ namespace {
         }
     }
 
-    void BuildExecStackFromExpression (std::stack<AST::Node*> &execStack, AST::Node *node)
+    void BuildExecStackFromExpression (std::stack<AST::Node*> &execStack, AST::Node *node,
+                                       const std::function<void (yy::location, const std::string &)> pushWarning, 
+                                       const std::function<void (yy::location, const std::string &)> pushError)
     {
 
-        //!TODO
+
+        AST::Node* curNode = node;
+        std::stack<AST::Node*> descent;
+
+        descent.push (curNode);
+
+        while (!descent.empty ()) {
+
+            curNode = descent.top ();
+            descent.pop ();
+
+            switch (curNode->getType ()) {
+
+                case AST::NodeT::NUMBER:
+                case AST::NodeT::VARIABLE: {
+                    execStack.push (curNode);
+                    break;
+                }
+                case AST::NodeT::OPERATOR: {
+                    
+                    AST::OperNode* opNode = static_cast<AST::OperNode*> (curNode);
+                    switch (opNode->getOpType ()) {
+
+                        case AST::OperNode::OperType::UNARY_M:
+                        case AST::OperNode::OperType::UNARY_P: {
+                            descent.push (opNode->getLeftChild ());
+                            break;
+                        }
+                        case AST::OperNode::OperType::CALL:
+                        case AST::OperNode::OperType::SCAN: {
+                            execStack.push (curNode);
+                            break;
+                        }
+                        default:
+                            descent.push (opNode->getLeftChild ());
+                            descent.push (opNode->getRightChild ());
+
+                    }
+
+                    break;
+                }
+                default:
+                    pushError (curNode->getLocation (), "unexpected operator in expression");
+
+            }
+
+        }
 
     }
 
@@ -170,7 +218,7 @@ namespace {
     {
 
         std::stack<AST::Node*> execStack;
-        BuildExecStackFromExpression (execStack, node->getRightChild ());
+        BuildExecStackFromExpression (execStack, node->getRightChild (), pushWarning, pushError);
 
         while (!execStack.empty ()) {
 
