@@ -10,7 +10,8 @@ namespace {
             stack.push (*childrenSt);
     }
 
-    void uselessStatementRecognizer (SemanticAnalyzer *analyzer_, AST::Node *curNode, const std::function<void (yy::location, const std::string &)> pushWarning)
+    void uselessStatementRecognizer (SemanticAnalyzer *analyzer_, AST::Node *curNode, 
+                                     const std::function<void (yy::location, const std::string &)> pushWarning)
     {
         AST::Node *rightNode = curNode->getRightChild ();
 
@@ -49,7 +50,8 @@ namespace {
         curNode->addChild (returnNode);
     }
 
-    void HiddenReturnNodesAnalyze (SemanticAnalyzer *analyzer_, AST::Node *curNode, const std::function<void (yy::location, const std::string &)> pushWarning)
+    void HiddenReturnNodesAnalyze (SemanticAnalyzer *analyzer_, AST::Node *curNode, 
+                                   const std::function<void (yy::location, const std::string &)> pushWarning)
     {
         AST::Node *rightNode = curNode->getRightChild ();
 
@@ -86,7 +88,8 @@ namespace {
         }
     }
 
-    void AnalyzeHiddenReturn (SemanticAnalyzer *analyzer_, Tree::NAryTree<AST::Node *> *tree, const std::function<void (yy::location, const std::string &)> pushWarning)
+    void AnalyzeHiddenReturn (SemanticAnalyzer *analyzer_, Tree::NAryTree<AST::Node *> *tree, 
+                              const std::function<void (yy::location, const std::string &)> pushWarning)
     {
         AST::Node *curNode = tree->getRoot ();
         if (!curNode)
@@ -121,9 +124,21 @@ namespace {
         }
     }
 
+    void AnalyzeScopes (SemanticAnalyzer *analyzer_, Tree::NAryTree<AST::Node*> *tree,
+                        const std::function<void (yy::location, const std::string &)> pushWarning, 
+                        const std::function<void (yy::location, const std::string &)> pushError) {
+
+        
+
+    }
+
 }  // namespace
 
-void SemanticAnalyzer::run (Tree::NAryTree<AST::Node *> *tree, const std::function<void (yy::location, const std::string &)> pushWarning)
+void SemanticAnalyzer::run (Tree::NAryTree<AST::Node *> *tree, 
+                            const std::function<void (yy::location, const std::string &)> pushWarning, 
+                            const std::function<void (yy::location, const std::string &)> pushError)
 {
+    AnalyzeScopes (this, tree, pushWarning, pushError);
     AnalyzeHiddenReturn (this, tree, pushWarning);
 }
+
