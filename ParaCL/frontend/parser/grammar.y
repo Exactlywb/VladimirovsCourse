@@ -251,7 +251,7 @@ ifStatement                 :   IF conditionExpression body     {
                                                                 }
                             |   IF conditionExpression statement {
                                                                     if ($2 && $3) {
-                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::WHILE, $2, $3, @1);
+                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::IF, $2, $3, @1);
                                                                     } else {
                                                                         $$ = nullptr;
                                                                         delete $2;
