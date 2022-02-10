@@ -199,11 +199,61 @@ namespace {
 
     }
 
+    void CheckArgsAmmountForCall (AST::FuncNode* funcArgs, AST::FuncNode* callArgs,
+                                  const std::function<void (yy::location, const std::string &)> pushWarning,
+                                  const std::function<void (yy::location, const std::string &)> pushError) {
+
+        if (funcArgs->getChildrenNum () != callArgs->getChildrenNum ())
+            pushError (callArgs->getLocation (), "wrong number of arguments for a call");
+
+    }
+
+    void CheckCallOperatorInExpr (Scope *curScope, AST::OperNode *node,
+                                  const std::function<void (yy::location, const std::string &)> pushWarning,
+                                  const std::function<void (yy::location, const std::string &)> pushError) {
+
+        AST::VarNode* funcID    = static_cast<AST::VarNode*>(node->getLeftChild ());
+        AST::FuncNode* callArgs = static_cast<AST::FuncNode*>(node->getRightChild ());
+
+        std::pair<Scope*, Scope::tblIt> findFunc = curScope->smartLookup (funcID->getName ());
+        if (findFunc.first == nullptr)
+            pushError (funcID->getLocation (), "undeclared function to call");
+        else {
+
+            Scope::tblIt scopeIt = findFunc.second;
+            TypeWrapper* scopeFoundElem = (*scopeIt).second;
+
+            if (scopeFoundElem->type_ == TypeWrapper::DataType::FUNC) {
+
+                FuncObject* funcTransform   = static_cast<FuncObject*> (scopeFoundElem);
+
+                AST::FuncNode* funcArgs     = static_cast<AST::FuncNode*> (funcTransform [1]);
+                CheckArgsAmmountForCall (funcArgs, callArgs);
+
+            } else
+                pushError (funcID->getLocation (), "not a function to call");         
+
+        }
+
+
+    }
+
     void CheckOperatorInExpr (Scope *curScope, AST::OperNode *node,
                               const std::function<void (yy::location, const std::string &)> pushWarning,
                               const std::function<void (yy::location, const std::string &)> pushError) {
 
-        //!TODO
+        AST::OperNode::OperType opType = node->getOpType ();
+        
+        switch (opType) { //!TODO is it all?
+
+            case AST::OperNode::OperType::CALL: {
+                CheckCallOperatorInExpr (curScope, node, pushWarning, pushError);
+                break;
+            }
+            default:
+                break;
+            
+        }
 
     }
 
