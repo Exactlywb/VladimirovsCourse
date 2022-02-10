@@ -30,6 +30,7 @@ namespace AST {
         std::vector<Node *> children_;
         const NodeT type_;
 
+
     public:
         Node (const NodeT type, Node *parent = nullptr) : type_ (type),
                                                           parent_ (parent) {}
@@ -40,6 +41,7 @@ namespace AST {
 
         virtual ~Node () = default;
 
+        Node* operator[](int num) {return children_[num];}
         //Let's implement 0-rule
         Node (const Node &other) = delete;
         Node (Node &&other) = delete;
