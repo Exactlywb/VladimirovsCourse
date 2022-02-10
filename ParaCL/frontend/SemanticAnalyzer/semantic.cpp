@@ -202,7 +202,7 @@ namespace {
     void CheckArgsAmmountForCall (AST::FuncNode* funcArgs, AST::FuncNode* callArgs,
                                   const std::function<void (yy::location, const std::string &)> pushWarning,
                                   const std::function<void (yy::location, const std::string &)> pushError) {
-
+        std::cout << "I AM ALIVE: " << funcArgs->getChildrenNum () << callArgs->getChildrenNum () << std::endl;
         if (funcArgs->getChildrenNum () != callArgs->getChildrenNum ())
             pushError (callArgs->getLocation (), "wrong number of arguments for a call");
 
@@ -227,7 +227,8 @@ namespace {
 
                 FuncObject* funcTransform   = static_cast<FuncObject*> (scopeFoundElem);
 
-                AST::FuncNode* funcArgs     = static_cast<AST::FuncNode*> (funcTransform [1]);
+                AST::FuncNode* funcDecl     = funcTransform->getNode ();
+                AST::FuncNode* funcArgs     = static_cast<AST::FuncNode*> ((*funcDecl) [1]);
                 CheckArgsAmmountForCall (funcArgs, callArgs, pushWarning, pushError);
 
             } else
