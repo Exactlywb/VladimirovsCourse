@@ -325,7 +325,9 @@ namespace {
                                     const std::function<void (yy::location, const std::string &)> pushError)
     {
 
+         
         AST::Node* idNode = node->getLeftChild ();
+
         if (idNode->getType () != AST::NodeT::VARIABLE) {
             pushError (idNode->getLocation (), "variable name expected");
             return;
