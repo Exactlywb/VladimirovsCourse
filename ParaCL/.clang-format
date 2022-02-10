@@ -16,7 +16,7 @@ BreakConstructorInitializers: BeforeColon
 AllowAllConstructorInitializersOnNextLine: true
 BreakBeforeBraces: Stroustrup
 BreakBeforeTernaryOperators: false
-ColumnLimit: 0
+ColumnLimit: 150
 CommentPragmas: NOLINT:.*
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 Cpp11BracedListStyle: true

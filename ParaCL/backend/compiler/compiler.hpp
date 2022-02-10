@@ -24,15 +24,16 @@ namespace ParaCompiler {
         std::unique_ptr<llvm::Module> module_;
         std::unique_ptr<llvm::IRBuilder<>> builder_;
 
-        std::unordered_map<std::string,
-                           llvm::Value *>
-            symbTbl_;
+        std::unordered_map<std::string, llvm::Value *> symbTbl_;
 
     public:
-        ParaCLLVMCompiler (Tree::NAryTree<AST::Node *> *tree) : tree_ (tree),
-                                                                context_ (std::make_unique<llvm::LLVMContext> ()),
-                                                                module_ (std::make_unique<llvm::Module> ("paraCL", *context_)),
-                                                                builder_ (std::make_unique<llvm::IRBuilder<>> (*context_)) {}
+        ParaCLLVMCompiler (Tree::NAryTree<AST::Node *> *tree)
+            : tree_ (tree),
+              context_ (std::make_unique<llvm::LLVMContext> ()),
+              module_ (std::make_unique<llvm::Module> ("paraCL", *context_)),
+              builder_ (std::make_unique<llvm::IRBuilder<>> (*context_))
+        {
+        }
 
         void run ()
         {
@@ -41,7 +42,7 @@ namespace ParaCompiler {
 
             std::cout << "LLVM here" << std::endl;
 
-            //genScope ();
+            // genScope ();
         }
     };
 

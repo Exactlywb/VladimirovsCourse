@@ -30,9 +30,8 @@ namespace yy {
         std::vector<std::string> code_;
 
     public:
-        FrontendDriver (const char *input) : lexer_ (std::unique_ptr<ParaCLexer>{new ParaCLexer}),
-                                             analyzer_ (std::unique_ptr<SemanticAnalyzer>{new SemanticAnalyzer}),
-                                             tree_ ()
+        FrontendDriver (const char *input)
+            : lexer_ (std::unique_ptr<ParaCLexer>{new ParaCLexer}), analyzer_ (std::unique_ptr<SemanticAnalyzer>{new SemanticAnalyzer}), tree_ ()
         {
             std::fstream inputFile (input, std::ios_base::in);
             while (inputFile) {
@@ -90,10 +89,7 @@ namespace yy {
                 std::cout << e << std::endl;
         }
 
-        void cleanError ()
-        {
-            error_.clear ();
-        }
+        void cleanError () { error_.clear (); }
 
         int getLineNo () const noexcept { return lexer_->lineno (); }
 
@@ -101,7 +97,8 @@ namespace yy {
 
         void pushError (yy::location curLocation, const std::string &err)
         {
-            std::string errPos = std::string ("ERROR::#") + std::to_string (curLocation.begin.line) + std::string (", ") + std::to_string (curLocation.begin.column) + std::string (": ");
+            std::string errPos = std::string ("ERROR::#") + std::to_string (curLocation.begin.line) + std::string (", ") +
+                                 std::to_string (curLocation.begin.column) + std::string (": ");
             std::string errMsg = err + std::string (": ");
             std::string codePart = code_[curLocation.begin.line - 1];
 
@@ -114,7 +111,8 @@ namespace yy {
 
         void pushWarning (yy::location curLocation, const std::string &warn)
         {
-            std::string warnPos = std::string ("WARNING::#") + std::to_string (curLocation.begin.line) + std::string (", ") + std::to_string (curLocation.begin.column) + std::string (": ");
+            std::string warnPos = std::string ("WARNING::#") + std::to_string (curLocation.begin.line) + std::string (", ") +
+                                  std::to_string (curLocation.begin.column) + std::string (": ");
             std::string warnMsg = warn + std::string (": ");
             std::string codePart = code_[curLocation.begin.line - 1];
 
@@ -125,15 +123,9 @@ namespace yy {
             warnings_.push_back (warnPos + warnMsg + codePart + underLine);
         }
 
-        std::vector<std::string>::const_iterator errBegin () const
-        {
-            return error_.cbegin ();
-        }
+        std::vector<std::string>::const_iterator errBegin () const { return error_.cbegin (); }
 
-        std::vector<std::string>::const_iterator errEnd () const
-        {
-            return error_.cend ();
-        }
+        std::vector<std::string>::const_iterator errEnd () const { return error_.cend (); }
 
         bool parse ()
         {
@@ -142,15 +134,9 @@ namespace yy {
             return !res;
         }
 
-        void setRoot (AST::Node *node)
-        {
-            tree_.setRoot (node);
-        }
+        void setRoot (AST::Node *node) { tree_.setRoot (node); }
 
-        void callDump (std::ostream &out)
-        {
-            tree_.dump (out);
-        }
+        void callDump (std::ostream &out) { tree_.dump (out); }
 
         // void interpret ()
         // {  //!TODO does it have to be in driver?
