@@ -252,7 +252,7 @@ namespace {
                 break;
             }
             default:
-                break;
+                break; 
             
         }
 
@@ -386,6 +386,16 @@ namespace {
 
     }
 
+    void CheckConditionExpression (Scope *curScope, AST::CondNode *node, 
+                                   const std::function<void (yy::location, const std::string &)> pushWarning, 
+                                   const std::function<void (yy::location, const std::string &)> pushError)  
+    {
+        
+        CheckUnaryOperScope (curScope, (*node)[0], pushWarning, pushError);
+        CheckExprScope      (curScope, static_cast<AST::OperNode*> ((*node)[1]), 
+                             pushWarning, pushError);
+    }
+
     void CheckCondScope (Scope *curScope, AST::CondNode *node, 
                          const std::function<void (yy::location, const std::string &)> pushWarning, 
                          const std::function<void (yy::location, const std::string &)> pushError)
@@ -396,7 +406,8 @@ namespace {
             case AST::CondNode::ConditionType::IF:
             case AST::CondNode::ConditionType::WHILE: {
 
-                // CheckConditionExpression ();
+                CheckConditionExpression (curScope, node, pushWarning, pushError);
+                break;
 
             }
             default:
@@ -423,6 +434,7 @@ void SemanticAnalyzer::AnalyzeScopes   (Scope *curScope, AST::ScopeNode *node,
                 break;
             }
             case AST::NodeT::CONDITION: {
+
                 CheckCondScope (curScope, static_cast<AST::CondNode*> (nodeToCheck),
                                 pushWarning, pushError);
                 break;
