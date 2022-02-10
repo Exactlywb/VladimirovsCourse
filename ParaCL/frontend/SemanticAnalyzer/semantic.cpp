@@ -228,7 +228,7 @@ namespace {
                 FuncObject* funcTransform   = static_cast<FuncObject*> (scopeFoundElem);
 
                 AST::FuncNode* funcArgs     = static_cast<AST::FuncNode*> (funcTransform [1]);
-                CheckArgsAmmountForCall (funcArgs, callArgs);
+                CheckArgsAmmountForCall (funcArgs, callArgs, pushWarning, pushError);
 
             } else
                 pushError (funcID->getLocation (), "not a function to call");         
@@ -383,6 +383,26 @@ namespace {
 
     }
 
+    void CheckCondScope (Scope *curScope, AST::CondNode *node, 
+                         const std::function<void (yy::location, const std::string &)> pushWarning, 
+                         const std::function<void (yy::location, const std::string &)> pushError)
+    {
+
+        switch (node->getConditionType ()) {
+
+            case AST::CondNode::ConditionType::IF:
+            case AST::CondNode::ConditionType::WHILE: {
+
+                // CheckConditionExpression ();
+
+            }
+            default:
+                pushError (node->getLocation (), "unexpected condition type");
+
+        }
+
+    }
+
 }  // namespace
 
 void SemanticAnalyzer::AnalyzeScopes   (Scope *curScope, AST::ScopeNode *node,
@@ -399,10 +419,11 @@ void SemanticAnalyzer::AnalyzeScopes   (Scope *curScope, AST::ScopeNode *node,
                                 pushWarning, pushError);
                 break;
             }
-            // case AST::NodeT::CONDITION: {
-            //     CheckCondScope (curScope, static_cast<AST::CondNode*> (nodeToCheck));
-            //     break;
-            // }
+            case AST::NodeT::CONDITION: {
+                CheckCondScope (curScope, static_cast<AST::CondNode*> (nodeToCheck),
+                                pushWarning, pushError);
+                break;
+            }
             default:
                 pushError (node->getLocation (), "unexpected statement type");
 
