@@ -392,17 +392,9 @@ namespace {
 
     }
 
-    void CheckConditionExpression (Scope *curScope, AST::CondNode *node, 
-                                   const std::function<void (yy::location, const std::string &)> pushWarning, 
-                                   const std::function<void (yy::location, const std::string &)> pushError)  
-    {
-        
-        CheckUnaryOperScope (curScope, (*node)[0], pushWarning, pushError);
-        CheckExprScope      (curScope, static_cast<AST::OperNode*> ((*node)[1]), 
-                             pushWarning, pushError);
-    }
+}  // namespace
 
-    void CheckCondScope (Scope *curScope, AST::CondNode *node, 
+void SemanticAnalyzer::CheckCondScope (Scope *curScope, AST::CondNode *node, 
                          const std::function<void (yy::location, const std::string &)> pushWarning, 
                          const std::function<void (yy::location, const std::string &)> pushError)
     {
@@ -423,7 +415,16 @@ namespace {
 
     }
 
-}  // namespace
+void SemanticAnalyzer::CheckConditionExpression (Scope *curScope, AST::CondNode *node, 
+                                   const std::function<void (yy::location, const std::string &)> pushWarning, 
+                                   const std::function<void (yy::location, const std::string &)> pushError)  
+    {
+        
+        CheckUnaryOperScope (curScope, (*node)[0], pushWarning, pushError);
+        Scope* newScope = new Scope;
+        AnalyzeScopes        (newScope, static_cast<AST::ScopeNode*> ((*node)[1]), 
+                             pushWarning, pushError);
+    }
 
 void SemanticAnalyzer::AnalyzeScopes   (Scope *curScope, AST::ScopeNode *node,
                                         const std::function<void (yy::location, const std::string &)> pushWarning, 
@@ -446,7 +447,7 @@ void SemanticAnalyzer::AnalyzeScopes   (Scope *curScope, AST::ScopeNode *node,
                 break;
             }
             default:
-                pushError (node->getLocation (), "unexpected statement type");
+                pushError (nodeToCheck->getLocation (), "unexpected statement type");
 
         }
 

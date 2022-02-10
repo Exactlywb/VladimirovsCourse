@@ -50,6 +50,14 @@ private:
                         const std::function<void (yy::location, const std::string &)> pushWarning, 
                         const std::function<void (yy::location, const std::string &)> pushError);
 
+    void CheckConditionExpression (Scope *curScope, AST::CondNode *node, 
+                                   const std::function<void (yy::location, const std::string &)> pushWarning, 
+                                   const std::function<void (yy::location, const std::string &)> pushError);
+
+    void CheckCondScope (Scope *curScope, AST::CondNode *node, 
+                         const std::function<void (yy::location, const std::string &)> pushWarning, 
+                         const std::function<void (yy::location, const std::string &)> pushError);  
+
 };
 
 #endif
