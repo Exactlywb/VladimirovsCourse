@@ -45,7 +45,7 @@ add_definitions (${LLVM_DEFINITIONS_LIST})
 # Now build our source files
 add_executable (${PROJECT_NAME}
 
-    backend/interpreter/interpreter.cpp
+    # backend/interpreter/interpreter.cpp
     backend/compiler/compiler.cpp
     frontend/driver/driver.cpp
     frontend/customLexer/customLexer.cpp
@@ -66,14 +66,20 @@ target_compile_features (${PROJECT_NAME} PRIVATE cxx_std_20)
 target_include_directories (${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories (${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
+#target_include_directories for FRONTEND
 target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/frontend/AST")
 target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/frontend/driver")
 target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/frontend/customLexer/")
+target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/frontend/SemanticAnalyzer/")
+
+#target_include_directories for COMMON
 target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/common/")
 target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/common/InputHandler/")
-target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/backend/interpreter/")
-target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/backend/compiler/")
-target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/frontend/SemanticAnalyzer/")
+
+#target_include_directories for BACKEND
+# target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/backend/interpreter/")
+# target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/backend/compiler/")
+
 
 find_program(CLANG_FORMAT "clang-format")
 if(CLANG_FORMAT)

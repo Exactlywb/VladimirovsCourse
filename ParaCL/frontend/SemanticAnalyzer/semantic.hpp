@@ -3,10 +3,13 @@
 
 #include <functional>
 
+#include "scopeTree.hpp"
 #include "ast.hpp"
 #include "nAryTree.hpp"
+#include "errorDetector.hpp"
 
-struct SemanticAnalyzer {
+struct SemanticAnalyzer final {
+    
     enum class ContextType {
 
         UsualContext,
@@ -16,6 +19,8 @@ struct SemanticAnalyzer {
 
 private:
     ContextType context_ = ContextType::UsualContext;
+
+    Tree::NAryTree<Scope*> *globalScope_;
 
 public:
     void setContext (ContextType context)
@@ -28,7 +33,7 @@ public:
         return context_;
     }
 
-    SemanticAnalyzer () = default;
+    SemanticAnalyzer (): globalScope_ (new Tree::NAryTree<Scope *> (new Scope)) {};
 
     //Let's implement 0-rule
     SemanticAnalyzer (const SemanticAnalyzer &other) = delete;
@@ -36,8 +41,15 @@ public:
     SemanticAnalyzer &operator= (const SemanticAnalyzer &other) = delete;
     SemanticAnalyzer &operator= (SemanticAnalyzer &&other) = delete;
 
-    void run (Tree::NAryTree<AST::Node *> *tree,
-              const std::function<void (yy::location, const std::string &)> pushWarning);
+    void run    (Tree::NAryTree<AST::Node *> *tree, 
+                 const std::function<void (yy::location, const std::string &)> pushWarning, 
+                 const std::function<void (yy::location, const std::string &)>);
+
+private:
+    void AnalyzeScopes (Scope *curScope, AST::ScopeNode *node,
+                        const std::function<void (yy::location, const std::string &)> pushWarning, 
+                        const std::function<void (yy::location, const std::string &)> pushError);
+
 };
 
 #endif

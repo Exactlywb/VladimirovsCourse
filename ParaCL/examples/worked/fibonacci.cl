@@ -7,17 +7,11 @@
 
 num = ?;
 
-if (num == 0) {
-
+if (num == 0)
     print (0);
 
-}
-
-if (num == 1 || num == 2) {
-
+if (num == 1 || num == 2)
     print (1);
-
-}
 
 if (num > 2) {
 

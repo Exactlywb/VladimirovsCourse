@@ -11,10 +11,10 @@
 #include <vector>
 
 #include "ast.hpp"
-#include "compiler.hpp"
+// #include "compiler.hpp"
 #include "customLexer.hpp"
 #include "grammar.tab.hh"
-#include "interpreter.hpp"
+// #include "interpreter.hpp"
 #include "nAryTree.hpp"
 #include "semantic.hpp"
 
@@ -70,7 +70,12 @@ namespace yy {
             std::function<void (yy::location, const std::string &)> pushWarningFunc = [=, this] (yy::location loc, const std::string &warn) {
                 this->pushWarning (loc, warn);
             };
-            analyzer_->run (&tree_, pushWarningFunc);
+
+            std::function<void (yy::location, const std::string &)> pushErrorFunc = [=, this] (yy::location loc, const std::string &err) {
+                this->pushError (loc, err);
+            };
+
+            analyzer_->run (&tree_, pushWarningFunc, pushErrorFunc);
         }
 
         void printWarnings () const
@@ -147,30 +152,30 @@ namespace yy {
             tree_.dump (out);
         }
 
-        void interpret ()
-        {  //!TODO does it have to be in driver?
+        // void interpret ()
+        // {  //!TODO does it have to be in driver?
 
-            interpret::Interpreter interpret (&tree_);
+        //     interpret::Interpreter interpret (&tree_);
 
-            try {
-                interpret.run ();
-            }
-            catch (const interpret::ErrorDetector &err) {
-                pushError (err.getLocation (), err.what ());
-            }
-        }
+        //     try {
+        //         interpret.run ();
+        //     }
+        //     catch (const interpret::ErrorDetector &err) {
+        //         pushError (err.getLocation (), err.what ());
+        //     }
+        // }
 
-        void compile ()
-        {
-            ParaCompiler::ParaCLLVMCompiler compiler (&tree_);
+        // void compile ()
+        // {
+        //     ParaCompiler::ParaCLLVMCompiler compiler (&tree_);
 
-            try {
-                compiler.run ();
-            }
-            catch (const std::runtime_error &err) {
-                std::cout << "Runtime error: " << err.what ();
-            }
-        }
+        //     try {
+        //         compiler.run ();
+        //     }
+        //     catch (const std::runtime_error &err) {
+        //         std::cout << "Runtime error: " << err.what ();
+        //     }
+        // }
     };
 
 }  // namespace yy

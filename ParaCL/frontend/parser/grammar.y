@@ -248,6 +248,15 @@ ifStatement                 :   IF conditionExpression body     {
                                                                         delete $2;
                                                                         delete $3;
                                                                     }
+                                                                }
+                            |   IF conditionExpression statement {
+                                                                    if ($2 && $3) {
+                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::IF, $2, $3, @1);
+                                                                    } else {
+                                                                        $$ = nullptr;
+                                                                        delete $2;
+                                                                        delete $3;
+                                                                    }
                                                                 };
 
 whileStatement              :   WHILE conditionExpression body  {
@@ -258,6 +267,16 @@ whileStatement              :   WHILE conditionExpression body  {
                                                                         delete $2;
                                                                         delete $3;
                                                                     }
+                                                                }
+                            |   WHILE conditionExpression statement
+                                                                {
+                                                                   if ($2 && $3) {
+                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::WHILE, $2, $3, @1);
+                                                                    } else {
+                                                                        $$ = nullptr;
+                                                                        delete $2;
+                                                                        delete $3;
+                                                                    } 
                                                                 };
 
 conditionExpression         :   OPCIRCBRACK assignStatement CLCIRCBRACK   
@@ -282,10 +301,19 @@ assignment                  :   ID ASSIGN assignStatement SEMICOLON
                                                                 {   $$ = makeAssign ($1, $3, @2, @1);   }
                             |   ID ASSIGN func SEMICOLON        {   $$ = makeAssign ($1, $3, @2, @1);   }
                             |   ID ASSIGN func                  {   $$ = makeAssign ($1, $3, @2, @1);   }
-                            |   ID ASSIGN error SEMICOLON       {   driver->pushError (@3, "Bad expression after assignment");  $$ = nullptr;   }
+                            |   ID ASSIGN error SEMICOLON       {   driver->pushError (@3, "Bad expression after assignment");  
+                                                                    $$ = nullptr;   
+                                                                }
                             |   ID ASSIGN   body                {   $$ = makeAssign ($1, $3, @2, @1);  }
                             |   ID ASSIGN   body SEMICOLON      {   $$ = makeAssign ($1, $3, @2, @1);  }
-                            |   ID error SEMICOLON              {   driver->pushError (@1, "Unexpected operation with variable");   $$ = nullptr;   };
+                            |   ID error SEMICOLON              {   driver->pushError (@1, "Unexpected operation with variable");   
+                                                                    $$ = nullptr;   
+                                                                }
+                            |   error ASSIGN assignStatement SEMICOLON 
+                                                                {   
+                                                                    driver->pushError (@1, "rvalue can't become lvalue"); 
+                                                                    $$ = nullptr; 
+                                                                };
 
 func                        :   FUNC_DECL argsList body         {
                                                                     AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL, @1);
