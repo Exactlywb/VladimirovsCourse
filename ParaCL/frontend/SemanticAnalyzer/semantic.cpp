@@ -251,7 +251,7 @@ namespace {
         }
     }
 
-    std::pair<TypeWrapper::DataType, AST::FuncNode *> GetRValueType (AST::OperNode *node) //TODO not only var or function ---> Plus and others may be too
+    std::pair<AST::NodeT, AST::Node*> GetRValueType (AST::OperNode *node) //TODO not only var or function ---> Plus and others may be too
     {
         AST::Node *rightChild = node;
 
@@ -264,21 +264,10 @@ namespace {
                 break;
         }
 
-        if (rightChild->getType () == AST::NodeT::FUNCTION)
-            return {TypeWrapper::DataType::FUNC, static_cast<AST::FuncNode *> (rightChild)};
+        return {rightChild->getType (), rightChild};
 
-        return {TypeWrapper::DataType::VAR, nullptr};
     }
 
-    void CheckVarRValue (Scope *curScope,
-                         AST::OperNode *assign,
-                         const std::function<void (yy::location, const std::string &)> pushWarning,
-                         const std::function<void (yy::location, const std::string &)> pushError)
-    {
-        std::pair<TypeWrapper::DataType, AST::FuncNode *> rVal = GetRValueType (assign);
-        if (rVal.first != TypeWrapper::DataType::VAR)
-            pushError (assign->getLocation (), "type conflict: Variable cannot be assigned a function");
-    }
 }  // namespace
 
 void SemanticAnalyzer::BuildingBinaryOperation (Scope *curScope,
@@ -368,61 +357,122 @@ void SemanticAnalyzer::CheckExprScope (Scope *curScope,
     }
 }
 
+void SemanticAnalyzer::CreateNewObjectInScope (Scope *curScope, AST::OperNode* node, AST::VarNode *clearID,
+                                               const std::function<void (yy::location, const std::string &)> pushWarning,
+                                               const std::function<void (yy::location, const std::string &)> pushError) 
+{
+
+    std::pair<AST::NodeT, AST::Node *> rVal = GetRValueType (node);
+    const std::string name = clearID->getName ();
+
+    if (rVal.first != AST::NodeT::FUNCTION) {
+
+        Variable *newVar = new Variable (clearID);
+        curScope->add (name, newVar);
+
+        AST::Node* rightChild = node->getRightChild();
+
+        if (rightChild->getType() == AST::NodeT::OPERATOR)
+            CheckExprScope (curScope, static_cast<AST::OperNode *>(rightChild), pushWarning, pushError);
+        
+    }
+    else {
+
+        FuncObject *newFunc = new FuncObject (static_cast<AST::FuncNode*> (rVal.second));
+        curScope->add (name, newFunc);
+
+        AST::Node* funcNode = node->getRightChild ();
+
+        Scope *newScope = new Scope;
+        AST::FuncNode* funcArgs = static_cast<AST::FuncNode*>((*funcNode) [0]);
+        switch (funcNode->getChildrenNum ()) {
+
+            case 3: {
+
+                AST::FuncNode* preFuncName = static_cast<AST::FuncNode *>((*funcNode) [0]);
+                AST::VarNode* funcName = static_cast<AST::VarNode*> ((*preFuncName) [0]);
+                FuncObject* insideFunc = new FuncObject (static_cast<AST::FuncNode*> (rVal.second));
+                newScope->add (funcName->getName (), insideFunc);
+                funcArgs = static_cast<AST::FuncNode*>((*funcNode) [1]);
+
+            }
+            case 2: {
+
+                for (auto beginIt = funcArgs->childBegin (); beginIt != funcArgs->childEnd (); ++beginIt) {
+
+                    AST::VarNode* argASTRef = static_cast<AST::VarNode*> ((*beginIt));
+                    Variable* newVar = new Variable (argASTRef);
+                    newScope->add (argASTRef->getName (), newVar);
+
+                }
+
+                break;
+            }
+            default: 
+                throw std::runtime_error ("wrong node for a function");
+
+        }
+
+        curScope->add (newScope);
+        AnalyzeScopes (newScope, static_cast<AST::ScopeNode *> (funcNode->getRightChild ()), pushWarning, pushError);
+
+    }
+
+}
+
 void SemanticAnalyzer::CheckAssignStatementScope (Scope *curScope, //TODO Try to example like c = x + y + g with undeclared g :)
                                                   AST::OperNode *node,
                                                   const std::function<void (yy::location, const std::string &)> pushWarning,
                                                   const std::function<void (yy::location, const std::string &)> pushError)
 {
     AST::Node *idNode = node->getLeftChild ();
-
+    
     if (idNode->getType () != AST::NodeT::VARIABLE) {
         pushError (idNode->getLocation (), "variable name expected");
         return;
     }
 
     AST::VarNode *clearID = static_cast<AST::VarNode *> (idNode);
-    const std::string &name = clearID->getName ();
+    const std::string name = clearID->getName ();
+    
     std::pair<Scope *, Scope::tblIt> findRes = curScope->smartLookup (name);
+ 
+    if (findRes.first == nullptr)   // new var
+        CreateNewObjectInScope (curScope, node, clearID, pushWarning, pushError);
+    else {
+        Scope::tblIt foundedIt = findRes.second;
+        TypeWrapper* foundedWrap = (*foundedIt).second;
 
-    if (findRes.first == nullptr) {  // new var
-
-        std::pair<TypeWrapper::DataType, AST::FuncNode *> rVal = GetRValueType (node);
-        if (rVal.first == TypeWrapper::DataType::VAR) {
-            Variable *newVar = new Variable (clearID);
-            curScope->add (name, newVar);
-            AST::Node* rightChild = node->getRightChild();
-            if (rightChild->getType() == AST::NodeT::OPERATOR)
-                CheckExprScope(curScope, static_cast<AST::OperNode *>(rightChild), pushWarning, pushError);
-        }
+        if (foundedWrap->type_ == TypeWrapper::DataType::FUNC)
+            pushError (clearID->getLocation (), "function redefinition");
         else {
-            FuncObject *newFunc = new FuncObject (rVal.second);
-            curScope->add (name, newFunc);
-            Scope *newScope = new Scope;
-            auto funcNode = node->getRightChild ();
-            auto funcArgs = funcNode->childBegin ();
 
-            switch (funcNode->getChildrenNum ()) {
-                case 3: {
-                    auto funcName = static_cast<AST::VarNode *>((*funcArgs)->getLeftChild());
-                    newScope->add (funcName->getName(), new FuncObject (rVal.second));
-                    ++funcArgs;
+            std::pair<AST::NodeT, AST::Node*> rVal = GetRValueType (node);
+            AST::NodeT rType = rVal.first;
+
+            AST::Node* rightNode = node->getRightChild ();
+            if (rightNode->getType () == AST::NodeT::OPERATOR)
+                CheckExprScope (curScope, static_cast<AST::OperNode*> (rightNode), pushWarning, pushError);
+            else {
+
+                switch (rType) {
+
+                    case AST::NodeT::FUNCTION:
+                        pushError (clearID->getLocation (), "variable can't be overriden by a function");
+                        break;
+                    case AST::NodeT::VARIABLE:
+                        CheckVarInExpr (curScope, static_cast<AST::VarNode*> (rVal.second), pushWarning, pushError);
+                        break;
+                    case AST::NodeT::SCOPE:
+                        //!TODO
+                        break;
+
                 }
-                case 2: {
-                    for (auto beginIt = (*funcArgs)->childBegin (), endIt = (*funcArgs)->childEnd (); beginIt != endIt; ++beginIt)
-                        newScope->add (static_cast<AST::VarNode *> (*beginIt)->getName (), new Variable (static_cast<AST::VarNode *> (*beginIt)));
-                    break;
-                }
-                default: throw std::runtime_error ("wrong node for function");
+
             }
 
-            curScope->add (newScope);
-            AnalyzeScopes (newScope, static_cast<AST::ScopeNode *> (funcNode->getRightChild ()), pushWarning, pushError);
         }
-    }
-    else {
-        AST::Node* rightChild = node->getRightChild();
-        if (rightChild->getType() == AST::NodeT::OPERATOR)
-            CheckExprScope(curScope, static_cast<AST::OperNode *>(rightChild), pushWarning, pushError);  
+
     }
         
 }

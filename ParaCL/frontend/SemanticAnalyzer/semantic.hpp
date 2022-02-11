@@ -77,6 +77,11 @@ private:
                          AST::CondNode *node,
                          const std::function<void (yy::location, const std::string &)> pushWarning,
                          const std::function<void (yy::location, const std::string &)> pushError);
+    
+    void CreateNewObjectInScope (Scope *curScope, AST::OperNode* node, AST::VarNode *clearID,
+                                 const std::function<void (yy::location, const std::string &)> pushWarning,
+                                 const std::function<void (yy::location, const std::string &)> pushError);
+
 };
 
 #endif

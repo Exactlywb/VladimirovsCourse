@@ -1,5 +1,5 @@
 a = 3;
-b = func () : bar {
+b = func () {
 
     return 3;
 }
