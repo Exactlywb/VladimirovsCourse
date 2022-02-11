@@ -10,22 +10,15 @@
 #include "scopeTree.hpp"
 
 struct SemanticAnalyzer final {
-    enum class ContextType {
-
-        UsualContext,
-        FuncContext
-
-    };
 
 private:
-    ContextType context_ = ContextType::UsualContext;
 
     Tree::NAryTree<Scope *> *globalScope_;
 
-public:
-    void setContext (ContextType context) { context_ = context; }
+    std::function<void (yy::location, const std::string &)> pushWarning_;
+    std::function<void (yy::location, const std::string &)> pushError_;
 
-    ContextType getContext () const { return context_; }
+public:
 
     SemanticAnalyzer () : globalScope_ (new Tree::NAryTree<Scope *> (new Scope)){};
 
@@ -43,56 +36,34 @@ public:
 
 private:
 
-    void BuildingBinaryOperation (Scope *curScope,
-                                  AST::Node *node,
-                                  const std::function<void (yy::location, const std::string &)> pushWarning,
-                                  const std::function<void (yy::location, const std::string &)> pushError);
+//HIDDEN RETURN ANALYZING
+    void AnalyzeHiddenReturn (Tree::NAryTree<AST::Node *> *tree);
 
-    void CheckUnaryOperScope (Scope *curScope,
-                              AST::Node *node,
-                              const std::function<void (yy::location, const std::string &)> pushWarning,
-                              const std::function<void (yy::location, const std::string &)> pushError);
+    void HiddenReturnNodesAnalyze   (AST::Node *curNode);
+    void UselessStatementRecognizer (AST::Node *curNode);
 
-    void CheckExprScope (Scope *curScope,
-                         AST::OperNode *node,
-                         const std::function<void (yy::location, const std::string &)> pushWarning,
-                         const std::function<void (yy::location, const std::string &)> pushError);
+//SCOPES ANALYZING
+    void AnalyzeScopes (Scope *curScope, AST::ScopeNode *node);
 
-    void CheckAssignStatementScope (Scope *curScope,
-                                    AST::OperNode *node,
-                                    const std::function<void (yy::location, const std::string &)> pushWarning,
-                                    const std::function<void (yy::location, const std::string &)> pushError);
+    void HandleBinaryOperation      (Scope *curScope, AST::Node *node);
+    void CheckUnaryOperScope        (Scope *curScope, AST::Node *node);
+    void CheckExprScope             (Scope *curScope, AST::OperNode *node);
+    void CheckAssignStatementScope  (Scope *curScope, AST::OperNode *node);
+    void CheckScopeVarInExpr        (Scope *curScope, AST::VarNode *node);
 
-    void AnalyzeScopes (Scope *curScope,
-                        AST::ScopeNode *node,
-                        const std::function<void (yy::location, const std::string &)> pushWarning,
-                        const std::function<void (yy::location, const std::string &)> pushError);
-
-    void CheckConditionExpression (Scope *curScope,
-                                   AST::CondNode *node,
-                                   const std::function<void (yy::location, const std::string &)> pushWarning,
-                                   const std::function<void (yy::location, const std::string &)> pushError);
-
-    void CheckCondScope (Scope *curScope,
-                         AST::CondNode *node,
-                         const std::function<void (yy::location, const std::string &)> pushWarning,
-                         const std::function<void (yy::location, const std::string &)> pushError);
+    void CheckConditionScopeExpr    (Scope *curScope, AST::CondNode *node);
+    void CheckCondScope             (Scope *curScope, AST::CondNode *node);
     
-    void CreateNewObjectInScope (Scope *curScope, AST::OperNode* node, AST::VarNode *clearID,
-                                 const std::function<void (yy::location, const std::string &)> pushWarning,
-                                 const std::function<void (yy::location, const std::string &)> pushError);
+    void CreateNewObjectInScope     (Scope *curScope, AST::OperNode* node, AST::VarNode *clearID);
+    void CreateNewFunctionInScope   (Scope *curScope, AST::OperNode* node, AST::VarNode *clearID, AST::Node* rNode);
+    void CreateNewVariableInScope   (Scope *curScope, AST::OperNode* node, AST::VarNode *clearID);
+    void CreateNewVariableViaScope  (Scope *curScope, AST::OperNode* node, AST::VarNode *clearID, AST::Node* rNode);
+    void AnalyzeNewScope            (Scope *curScope, AST::Node* newScopeNode);
 
-    void CreateNewFunctionInScope (Scope *curScope, AST::OperNode* node, AST::VarNode *clearID, AST::Node* rNode,
-                                   const std::function<void (yy::location, const std::string &)> pushWarning,
-                                   const std::function<void (yy::location, const std::string &)> pushError);
-
-    void CreateNewVariableInScope (Scope *curScope, AST::OperNode* node, AST::VarNode *clearID,
-                                   const std::function<void (yy::location, const std::string &)> pushWarning,
-                                   const std::function<void (yy::location, const std::string &)> pushError);
-
-    void CreateNewVariableViaScope (Scope *curScope, AST::OperNode* node, AST::VarNode *clearID, AST::Node* rNode,
-                                    const std::function<void (yy::location, const std::string &)> pushWarning,
-                                    const std::function<void (yy::location, const std::string &)> pushError);
+    void BuildExecStackFromExpression   (std::vector<AST::Node *> &execVector, AST::Node *node);
+    void CheckCallOperatorInExpr        (Scope *curScope, AST::OperNode *node);
+    void CheckArgsAmmountForCall        (AST::FuncNode *funcArgs, AST::FuncNode *callArgs);
+    void CheckOperatorInExpr            (Scope *curScope, AST::OperNode *node);
 
 };
 
