@@ -1,7 +1,7 @@
 a = func (x) {
 
-    b = {a = 4;}
-    c = b = x;
+    print b = 3;
+    c = 3;
 }
 
 print a(3);

@@ -22,9 +22,7 @@ void ParaCLexer::setLocation ()
                 location_.begin.column++;
                 location_.end.column++;
                 break;
-            default:
-                location_.begin.column = endCol;
-                location_.end.column = location_.begin.column + YYLeng ();
+            default: location_.begin.column = endCol; location_.end.column = location_.begin.column + YYLeng ();
         }
     }
 }

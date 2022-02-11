@@ -8,10 +8,10 @@
 #include <utility>
 #include <vector>
 
-#include "nAryTree.hpp"
 #include "ast.hpp"
+#include "nAryTree.hpp"
 
-struct TypeWrapper {  //To put TypeWrapper* into unordered_map
+struct TypeWrapper {  // To put TypeWrapper* into unordered_map
 
     enum class DataType {
 
@@ -36,34 +36,23 @@ public:
 
     ~FuncObject () = default;
 
-    void setNode (AST::FuncNode *node)
-    {
-        node_ = node;
-    }
+    void setNode (AST::FuncNode *node) { node_ = node; }
 
-    AST::FuncNode *getNode () const
-    {
-        return node_;
-    }
-
+    AST::FuncNode *getNode () const { return node_; }
 };
 
 class Variable final : public TypeWrapper {
     AST::VarNode *node_;
 
 public:
-    Variable (AST::VarNode* node) : node_ (node), TypeWrapper (DataType::VAR) {}
+    Variable (AST::VarNode *node) : node_ (node), TypeWrapper (DataType::VAR) {}
 
     ~Variable () = default;
 
-    AST::VarNode *getNode () const
-    {
-        return node_;
-    }
+    AST::VarNode *getNode () const { return node_; }
 };
 
 class Scope final {
-
     std::vector<Scope *> children_;
     Scope *parent_ = nullptr;
     std::unordered_map<std::string, TypeWrapper *> tbl_;
@@ -81,7 +70,7 @@ public:
 
     Scope () = default;
 
-    //Rule of 0
+    // Rule of 0
     Scope (const Scope &other) = delete;
     Scope (Scope &&other) = delete;
 
@@ -94,19 +83,13 @@ public:
             delete i.second;
     }
 
-    constScopeIt childBegin () const
-    {
-        return children_.cbegin ();
-    }
+    constScopeIt childBegin () const { return children_.cbegin (); }
 
-    constScopeIt childEnd () const
-    {
-        return children_.cend ();
-    }
+    constScopeIt childEnd () const { return children_.cend (); }
 
     void nodeDump (std::ostream &out) const
     {
-        out << "it is for compile";  //TODO: something with it
+        out << "it is for compile";  // TODO: something with it
     }
 
     std::pair<Scope *, tblIt> smartLookup (const std::string &name)
@@ -123,18 +106,13 @@ public:
         return {nullptr, tbl_.end ()};
     }
 
-
-    void add (const std::string &name, TypeWrapper *var)
-    {
-        tbl_.insert ({name, var});
-    }
+    void add (const std::string &name, TypeWrapper *var) { tbl_.insert ({name, var}); }
 
     void add (Scope *scope)
     {
         children_.push_back (scope);
         scope->parent_ = this;
     }
-
 };
 
 #endif

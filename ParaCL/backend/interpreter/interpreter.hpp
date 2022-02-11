@@ -23,7 +23,7 @@ namespace interpret {
 
     };
 
-    struct Wrapper {  //To put Wrapper* into unordered_map
+    struct Wrapper {  // To put Wrapper* into unordered_map
 
         DataType type_ = DataType::FUNC;
 
@@ -41,15 +41,9 @@ namespace interpret {
 
         ~FuncObject () = default;
 
-        void setNode (AST::FuncNode *node)
-        {
-            node_ = node;
-        }
+        void setNode (AST::FuncNode *node) { node_ = node; }
 
-        AST::FuncNode *getNode () const
-        {
-            return node_;
-        }
+        AST::FuncNode *getNode () const { return node_; }
     };
 
     template <typename T>
@@ -61,15 +55,9 @@ namespace interpret {
 
         ~Variable () = default;
 
-        void setVal (T value)
-        {
-            value_ = value;
-        }
+        void setVal (T value) { value_ = value; }
 
-        T getVal () const
-        {
-            return value_;
-        }
+        T getVal () const { return value_; }
     };
 
     struct Scope final {
@@ -82,28 +70,22 @@ namespace interpret {
     public:
         Scope () = default;
 
-        //Rule of 0
+        // Rule of 0
         Scope (const Scope &other) = delete;
         Scope (Scope &&other) = delete;
 
         Scope &operator= (const Scope &other) = delete;
         Scope &operator= (Scope &&other) = delete;
 
-        ~Scope ();  //!TODO
+        ~Scope ();  //! TODO
 
-        constScopeIt childBegin () const
-        {
-            return children_.cbegin ();
-        }
+        constScopeIt childBegin () const { return children_.cbegin (); }
 
-        constScopeIt childEnd () const
-        {
-            return children_.cend ();
-        }
+        constScopeIt childEnd () const { return children_.cend (); }
 
         void nodeDump (std::ostream &out) const
         {
-            out << "it is for compile";  //TODO: something with it
+            out << "it is for compile";  // TODO: something with it
         }
 
         std::pair<Scope *, tblIt> smartLookup (const std::string &name);
@@ -115,8 +97,7 @@ namespace interpret {
         yy::location location_;
 
     public:
-        ErrorDetector (const char *err, yy::location loc) : std::runtime_error (err),
-                                                            location_ (loc) {}
+        ErrorDetector (const char *err, yy::location loc) : std::runtime_error (err), location_ (loc) {}
 
         yy::location getLocation () const { return location_; }
     };
@@ -130,7 +111,7 @@ namespace interpret {
             int callDeepth_ = 0;
 
             RecursionController &operator++ () noexcept
-            {  //Open the window, pls...
+            {  // Open the window, pls...
                 ++callDeepth_;
                 return *this;
             }
@@ -161,24 +142,20 @@ namespace interpret {
         bool scopeExecution_ = true;
 
     public:
-        Interpreter (Tree::NAryTree<AST::Node *> *tree) : globalScope_ (new Tree::NAryTree<Scope *> (new Scope)),
-                                                          tree_ (tree) {}
+        Interpreter (Tree::NAryTree<AST::Node *> *tree) : globalScope_ (new Tree::NAryTree<Scope *> (new Scope)), tree_ (tree) {}
 
-        ~Interpreter ()
-        {
-            delete globalScope_;
-        }
+        ~Interpreter () { delete globalScope_; }
 
         void run ();
 
-        //Rule of 0
+        // Rule of 0
         Interpreter (const Interpreter &other) = delete;
         Interpreter (Interpreter &&other) = delete;
 
         Interpreter &operator= (const Interpreter &other) = delete;
         Interpreter &operator= (Interpreter &other) = delete;
 
-        //Implementin' functions
+        // Implementin' functions
     private:
         int CalcExpr (Scope *curScope, vecASTIt it);
         int CalcVar (Scope *curScope, AST::VarNode *var);
@@ -191,7 +168,8 @@ namespace interpret {
         int CalcScope (AST::ScopeNode *node);
         int getCallValue ();
 
-        void createNewScope (Scope *newScope, AST::FuncNode *funcName, AST::FuncNode *funcArgs, AST::FuncNode *funcDecl, AST::OperNode *callNode, Scope *curScope);
+        void createNewScope (
+            Scope *newScope, AST::FuncNode *funcName, AST::FuncNode *funcArgs, AST::FuncNode *funcDecl, AST::OperNode *callNode, Scope *curScope);
         int execCall (Scope *curScope, AST::OperNode *callNode);
 
         void execOper (Scope *curScope, AST::OperNode *node);

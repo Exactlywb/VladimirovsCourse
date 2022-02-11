@@ -4,12 +4,12 @@
 %option yyclass="ParaCLexer"
 
 %{
-
+    #include <stdio.h>
     #include "grammar.tab.hh"
     
     #include "../frontend/customLexer/customLexer.hpp"
     #define YY_USER_ACTION setLocation ();
-    #define yyterminate() return yy::parser::token_type::END    
+    #define yyterminate() return yy::parser::token_type::END
 
 %}
 
@@ -21,11 +21,13 @@ ALPHA                   [a-zA-Z]
 WORD                    ({ALPHA}|"_")({ALPHA}|{DIGIT}|"_")*
 
 ONE_LINE_COMMENT        "//".*
-/* TODO: multiline comments */
+MULTILINE_COMMENT       "/*"(.|\n)*"*/"
+
 %%
 
 {TRASH_SYMBS}           {   /*skip*/    }
 {ONE_LINE_COMMENT}      {   /*skip*/    }
+{MULTILINE_COMMENT}     {   /*skip*/    }
 
 {DIGIT}*                {   return yy::parser::token_type::NUMBER;      }
 

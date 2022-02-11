@@ -70,7 +70,7 @@ namespace Tree {
                 delete queueOnDelete[i];
         }
 
-        //Rule of 0
+        // Rule of 0
         NAryTree (const NAryTree &) = delete;
         NAryTree (NAryTree &&) = delete;
         NAryTree &operator= (const NAryTree &) = delete;
@@ -92,16 +92,10 @@ namespace Tree {
             out << "}\n";
         }
 
-        //Setters and getters
-        void setRoot (T root)
-        {
-            root_ = root;
-        }
+        // Setters and getters
+        void setRoot (T root) { root_ = root; }
 
-        T getRoot () const
-        {
-            return root_;
-        }
+        T getRoot () const { return root_; }
     };
 }  // namespace Tree
 

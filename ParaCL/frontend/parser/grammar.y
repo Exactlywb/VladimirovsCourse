@@ -251,7 +251,9 @@ ifStatement                 :   IF conditionExpression body     {
                                                                 }
                             |   IF conditionExpression statement {
                                                                     if ($2 && $3) {
-                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::IF, $2, $3, @1);
+                                                                        AST::ScopeNode* newScope = new AST::ScopeNode ();
+                                                                        newScope->addChild ($3);
+                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::IF, $2, newScope, @1);
                                                                     } else {
                                                                         $$ = nullptr;
                                                                         delete $2;
@@ -271,6 +273,8 @@ whileStatement              :   WHILE conditionExpression body  {
                             |   WHILE conditionExpression statement
                                                                 {
                                                                    if ($2 && $3) {
+                                                                        AST::ScopeNode* newScope = new AST::ScopeNode ();
+                                                                        newScope->addChild ($3);
                                                                         $$ = makeCondNode (AST::CondNode::ConditionType::WHILE, $2, $3, @1);
                                                                     } else {
                                                                         $$ = nullptr;

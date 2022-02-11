@@ -31,9 +31,8 @@ int main (int argc, char **argv)
         std::cout << err.what () << std::endl;
         return 0;
     }
-
-#if 1
-        driver.callDump (std::cout);
+#if 0
+    driver.callDump (std::cout);
 #endif
     driver.semantic ();
     driver.printWarnings ();

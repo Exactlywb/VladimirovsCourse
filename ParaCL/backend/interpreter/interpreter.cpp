@@ -6,7 +6,8 @@ namespace interpret {
 
     namespace {
 
-        void funcDeclAssignment (Scope *curScope, yy::location errloc, const std::string &name, Scope *findScope, Scope::tblIt obj, FuncObject *newFuncObj)
+        void funcDeclAssignment (
+            Scope *curScope, yy::location errloc, const std::string &name, Scope *findScope, Scope::tblIt obj, FuncObject *newFuncObj)
         {
             if (obj == curScope->tbl_.end ())
                 curScope->add (name, newFuncObj);
@@ -29,7 +30,7 @@ namespace interpret {
                 if ((*obj).second->type_ == DataType::FUNC) {
                     throw ErrorDetector ("type conflicts", errloc);
                 }
-                Variable<int> *clearVar = static_cast<Variable<int> *> ((*obj).second);  //Only int type...
+                Variable<int> *clearVar = static_cast<Variable<int> *> ((*obj).second);  // Only int type...
                 clearVar->setVal (val);
             }
             return val;
@@ -109,10 +110,7 @@ namespace interpret {
         return {nullptr, tbl_.end ()};
     }
 
-    void Scope::add (const std::string &name, Wrapper *var)
-    {
-        tbl_.insert ({name, var});
-    }
+    void Scope::add (const std::string &name, Wrapper *var) { tbl_.insert ({name, var}); }
 
     void Scope::add (Scope *scope)
     {
@@ -140,42 +138,25 @@ namespace interpret {
     {
         auto childrenSt = node->childBegin ();
         switch (node->getOpType ()) {
-            case AST::OperNode::OperType::ADD:
-                return CalcExpr (curScope, childrenSt) + CalcExpr (curScope, std::next (childrenSt, 1));
-            case AST::OperNode::OperType::SUB:
-                return CalcExpr (curScope, childrenSt) - CalcExpr (curScope, std::next (childrenSt, 1));
-            case AST::OperNode::OperType::MUL:
-                return CalcExpr (curScope, childrenSt) * CalcExpr (curScope, std::next (childrenSt, 1));
-            case AST::OperNode::OperType::DIV:
-                return CalcExpr (curScope, childrenSt) / CalcExpr (curScope, std::next (childrenSt, 1));
-            case AST::OperNode::OperType::MOD:
-                return CalcExpr (curScope, childrenSt) % CalcExpr (curScope, std::next (childrenSt, 1));
-            case AST::OperNode::OperType::EQ:
-                return CalcExpr (curScope, childrenSt) == CalcExpr (curScope, std::next (childrenSt, 1));
-            case AST::OperNode::OperType::NEQ:
-                return CalcExpr (curScope, childrenSt) != CalcExpr (curScope, std::next (childrenSt, 1));
-            case AST::OperNode::OperType::MORE:
-                return CalcExpr (curScope, childrenSt) > CalcExpr (curScope, std::next (childrenSt, 1));
-            case AST::OperNode::OperType::LESS:
-                return CalcExpr (curScope, childrenSt) < CalcExpr (curScope, std::next (childrenSt, 1));
-            case AST::OperNode::OperType::LTE:
-                return CalcExpr (curScope, childrenSt) <= CalcExpr (curScope, std::next (childrenSt, 1));
-            case AST::OperNode::OperType::GTE:
-                return CalcExpr (curScope, childrenSt) >= CalcExpr (curScope, std::next (childrenSt, 1));
-            case AST::OperNode::OperType::AND:
-                return CalcExpr (curScope, childrenSt) && CalcExpr (curScope, std::next (childrenSt, 1));
-            case AST::OperNode::OperType::OR:
-                return CalcExpr (curScope, childrenSt) || CalcExpr (curScope, std::next (childrenSt, 1));
-            case AST::OperNode::OperType::UNARY_M:
-                return -CalcExpr (curScope, childrenSt);
-            case AST::OperNode::OperType::UNARY_P:
-                return +CalcExpr (curScope, childrenSt);
-            case AST::OperNode::OperType::CALL:
-                return execCall (curScope, node);
-            case AST::OperNode::OperType::ASSIGN:
-                return assignment (curScope, node);
+            case AST::OperNode::OperType::ADD: return CalcExpr (curScope, childrenSt) + CalcExpr (curScope, std::next (childrenSt, 1));
+            case AST::OperNode::OperType::SUB: return CalcExpr (curScope, childrenSt) - CalcExpr (curScope, std::next (childrenSt, 1));
+            case AST::OperNode::OperType::MUL: return CalcExpr (curScope, childrenSt) * CalcExpr (curScope, std::next (childrenSt, 1));
+            case AST::OperNode::OperType::DIV: return CalcExpr (curScope, childrenSt) / CalcExpr (curScope, std::next (childrenSt, 1));
+            case AST::OperNode::OperType::MOD: return CalcExpr (curScope, childrenSt) % CalcExpr (curScope, std::next (childrenSt, 1));
+            case AST::OperNode::OperType::EQ: return CalcExpr (curScope, childrenSt) == CalcExpr (curScope, std::next (childrenSt, 1));
+            case AST::OperNode::OperType::NEQ: return CalcExpr (curScope, childrenSt) != CalcExpr (curScope, std::next (childrenSt, 1));
+            case AST::OperNode::OperType::MORE: return CalcExpr (curScope, childrenSt) > CalcExpr (curScope, std::next (childrenSt, 1));
+            case AST::OperNode::OperType::LESS: return CalcExpr (curScope, childrenSt) < CalcExpr (curScope, std::next (childrenSt, 1));
+            case AST::OperNode::OperType::LTE: return CalcExpr (curScope, childrenSt) <= CalcExpr (curScope, std::next (childrenSt, 1));
+            case AST::OperNode::OperType::GTE: return CalcExpr (curScope, childrenSt) >= CalcExpr (curScope, std::next (childrenSt, 1));
+            case AST::OperNode::OperType::AND: return CalcExpr (curScope, childrenSt) && CalcExpr (curScope, std::next (childrenSt, 1));
+            case AST::OperNode::OperType::OR: return CalcExpr (curScope, childrenSt) || CalcExpr (curScope, std::next (childrenSt, 1));
+            case AST::OperNode::OperType::UNARY_M: return -CalcExpr (curScope, childrenSt);
+            case AST::OperNode::OperType::UNARY_P: return +CalcExpr (curScope, childrenSt);
+            case AST::OperNode::OperType::CALL: return execCall (curScope, node);
+            case AST::OperNode::OperType::ASSIGN: return assignment (curScope, node);
             case AST::OperNode::OperType::SCAN: {
-                int tmp;  //TODO: other types
+                int tmp;  // TODO: other types
                 std::cin >> tmp;
                 return tmp;
             }
@@ -211,7 +192,8 @@ namespace interpret {
         return getCallValue ();
     }
 
-    void Interpreter::createNewScope (Scope *newScope, AST::FuncNode *funcName, AST::FuncNode *funcArgs, AST::FuncNode *funcDecl, AST::OperNode *callNode, Scope *curScope)
+    void Interpreter::createNewScope (
+        Scope *newScope, AST::FuncNode *funcName, AST::FuncNode *funcArgs, AST::FuncNode *funcDecl, AST::OperNode *callNode, Scope *curScope)
     {
         addFuncNameIntoNewScope (newScope, funcName, funcDecl);
 
@@ -284,16 +266,11 @@ namespace interpret {
     {
         AST::Node *node = *it;
         switch (node->getType ()) {
-            case AST::NodeT::VARIABLE:
-                return CalcVar (curScope, static_cast<AST::VarNode *> (node));
-            case AST::NodeT::NUMBER:
-                return static_cast<AST::NumNode *> (node)->getValue ();
-            case AST::NodeT::OPERATOR:
-                return CalcOper (curScope, static_cast<AST::OperNode *> (node));
-            case AST::NodeT::SCOPE:
-                return CalcScope (static_cast<AST::ScopeNode *> (node));
-            default:
-                throw std::runtime_error ("unexpected statement to execute");
+            case AST::NodeT::VARIABLE: return CalcVar (curScope, static_cast<AST::VarNode *> (node));
+            case AST::NodeT::NUMBER: return static_cast<AST::NumNode *> (node)->getValue ();
+            case AST::NodeT::OPERATOR: return CalcOper (curScope, static_cast<AST::OperNode *> (node));
+            case AST::NodeT::SCOPE: return CalcScope (static_cast<AST::ScopeNode *> (node));
+            default: throw std::runtime_error ("unexpected statement to execute");
         }
     }
 
@@ -317,7 +294,7 @@ namespace interpret {
             return poison;
         }
         else {
-            int val = CalcExpr (curScope, std::next (childrenSt, 1));  //Now we have only int type... In the near future it shall be template
+            int val = CalcExpr (curScope, std::next (childrenSt, 1));  // Now we have only int type... In the near future it shall be template
             return varDeclAssignment (curScope, node->getLocation (), name, val, obj);
         }
     }
@@ -350,8 +327,7 @@ namespace interpret {
                 print (curScope, node);
                 break;
             }
-            default:
-                throw ErrorDetector ("unexpected operator to execute", node->getLocation ());
+            default: throw ErrorDetector ("unexpected operator to execute", node->getLocation ());
         }
     }
 
@@ -378,14 +354,9 @@ namespace interpret {
     void Interpreter::execCond (Scope *curScope, AST::CondNode *node)
     {
         switch (node->getConditionType ()) {
-            case AST::CondNode::ConditionType::IF:
-                execIf (curScope, node);
-                break;
-            case AST::CondNode::ConditionType::WHILE:
-                execWhile (curScope, node);
-                break;
-            default:
-                throw ErrorDetector ("unexpected condition statement type", node->getLocation ());
+            case AST::CondNode::ConditionType::IF: execIf (curScope, node); break;
+            case AST::CondNode::ConditionType::WHILE: execWhile (curScope, node); break;
+            default: throw ErrorDetector ("unexpected condition statement type", node->getLocation ());
         }
     }
 
