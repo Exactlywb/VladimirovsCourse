@@ -235,6 +235,44 @@ void SemanticAnalyzer::CheckCondScope (Scope *curScope, AST::CondNode *node)
     }
 }
 
+void SemanticAnalyzer::HandleExistVarInScope (Scope *curScope, AST::VarNode *clearID, AST::OperNode *node,
+                                              std::pair<Scope *, Scope::tblIt> findRes) {
+
+    Scope::tblIt foundedIt = findRes.second;
+    TypeWrapper* foundedWrap = (*foundedIt).second;
+
+    if (foundedWrap->type_ == TypeWrapper::DataType::FUNC)
+        pushError_ (clearID->getLocation (), "function redefinition");
+    else {
+
+        std::pair<AST::NodeT, AST::Node*> rVal = GetRValueType (node);
+        AST::NodeT rType = rVal.first;
+
+        AST::Node* rightNode = node->getRightChild ();
+        if (rightNode->getType () == AST::NodeT::OPERATOR)
+            CheckExprScope (curScope, static_cast<AST::OperNode*> (rightNode));
+        else {
+
+            switch (rType) {
+
+                case AST::NodeT::FUNCTION:
+                    pushError_ (clearID->getLocation (), "variable can't be overriden by a function");
+                    break;
+                case AST::NodeT::VARIABLE:
+                    CheckScopeVarInExpr (curScope, static_cast<AST::VarNode*> (rVal.second));
+                    break;
+                case AST::NodeT::SCOPE:
+                    AnalyzeNewScope (curScope, rVal.second);
+                    break;
+
+            }
+
+        }
+
+    }
+
+}
+
 void SemanticAnalyzer::CheckAssignStatementScope (Scope *curScope, AST::OperNode *node)
 {
     AST::Node *idNode = node->getLeftChild ();
@@ -251,41 +289,8 @@ void SemanticAnalyzer::CheckAssignStatementScope (Scope *curScope, AST::OperNode
  
     if (findRes.first == nullptr)   // new var
         CreateNewObjectInScope (curScope, node, clearID);
-    else {
-        Scope::tblIt foundedIt = findRes.second;
-        TypeWrapper* foundedWrap = (*foundedIt).second;
-
-        if (foundedWrap->type_ == TypeWrapper::DataType::FUNC)
-            pushError_ (clearID->getLocation (), "function redefinition");
-        else {
-
-            std::pair<AST::NodeT, AST::Node*> rVal = GetRValueType (node);
-            AST::NodeT rType = rVal.first;
-
-            AST::Node* rightNode = node->getRightChild ();
-            if (rightNode->getType () == AST::NodeT::OPERATOR)
-                CheckExprScope (curScope, static_cast<AST::OperNode*> (rightNode));
-            else {
-
-                switch (rType) {
-
-                    case AST::NodeT::FUNCTION:
-                        pushError_ (clearID->getLocation (), "variable can't be overriden by a function");
-                        break;
-                    case AST::NodeT::VARIABLE:
-                        CheckScopeVarInExpr (curScope, static_cast<AST::VarNode*> (rVal.second));
-                        break;
-                    case AST::NodeT::SCOPE:
-                        AnalyzeNewScope (curScope, rVal.second);
-                        break;
-
-                }
-
-            }
-
-        }
-
-    }
+    else
+        HandleExistVarInScope (curScope, clearID, node, findRes);
         
 }
 

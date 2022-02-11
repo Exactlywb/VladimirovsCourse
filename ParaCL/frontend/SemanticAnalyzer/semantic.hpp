@@ -49,6 +49,8 @@ private:
     void CheckUnaryOperScope        (Scope *curScope, AST::Node *node);
     void CheckExprScope             (Scope *curScope, AST::OperNode *node);
     void CheckAssignStatementScope  (Scope *curScope, AST::OperNode *node);
+    void HandleExistVarInScope      (Scope *curScope, AST::VarNode *clearID, AST::OperNode *node,
+                                     std::pair<Scope *, Scope::tblIt> findRes);
     void CheckScopeVarInExpr        (Scope *curScope, AST::VarNode *node);
 
     void CheckConditionScopeExpr    (Scope *curScope, AST::CondNode *node);
