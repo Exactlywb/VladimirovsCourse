@@ -327,14 +327,55 @@ namespace {
 
     }
 
-    void CheckAssignStatementScope (Scope *curScope, AST::OperNode *node, 
+    
+    
+
+}  // namespace
+
+void SemanticAnalyzer::CheckExprScope (Scope *curScope, AST::OperNode *node, 
+                         const std::function<void (yy::location, const std::string &)> pushWarning, 
+                         const std::function<void (yy::location, const std::string &)> pushError)
+    {
+
+        switch (node->getOpType ()) {
+            case AST::OperNode::OperType::RETURN: {
+                
+                CheckAssignStatementScope (curScope, static_cast<AST::OperNode *>(node->getLeftChild()), pushWarning, pushError);
+                std::cout << "Here4" << std::endl; 
+                break;
+            }
+            case AST::OperNode::OperType::ASSIGN: {
+
+                CheckAssignStatementScope (curScope, node, pushWarning, pushError);
+                break;
+            }
+            case AST::OperNode::OperType::PRINT: {
+                CheckUnaryOperScope (curScope, node, pushWarning, pushError);
+                break;
+            }
+            default:
+                pushError (node->getLocation (), "unexpected operator type");
+
+        }
+
+    }
+
+void SemanticAnalyzer::CheckAssignStatementScope (Scope *curScope, AST::OperNode *node, 
                                     const std::function<void (yy::location, const std::string &)> pushWarning, 
                                     const std::function<void (yy::location, const std::string &)> pushError)
     {
 
-         
-        AST::Node* idNode = node->getLeftChild ();
+        
 
+        std::cout << std::endl;
+        AST::Node* idNode = node->getLeftChild ();
+        if (idNode == nullptr) {
+
+            node->nodeDump(std::cout);
+            std::cout << "Wow! Is it normal?" << std::endl;
+        }
+
+        std::cout << "After b" << std::endl;
         if (idNode->getType () != AST::NodeT::VARIABLE) {
             pushError (idNode->getLocation (), "variable name expected");
             return;
@@ -353,6 +394,14 @@ namespace {
             } else {
                 FuncObject* newFunc = new FuncObject (rVal.second);
                 curScope->add (name, newFunc);
+                std::cout << "Here2" << std::endl; 
+                Scope* newScope = new Scope;
+                
+                curScope->add (newScope);
+                AnalyzeScopes  (newScope, static_cast<AST::ScopeNode*>(node->getRightChild()->getRightChild()), 
+                                pushWarning, pushError);     
+                std::cout << "Here3" << std::endl; 
+           
             }
 
         } else {
@@ -369,30 +418,6 @@ namespace {
 
     }
 
-    void CheckExprScope (Scope *curScope, AST::OperNode *node, 
-                         const std::function<void (yy::location, const std::string &)> pushWarning, 
-                         const std::function<void (yy::location, const std::string &)> pushError)
-    {
-
-        switch (node->getOpType ()) {
-
-            case AST::OperNode::OperType::ASSIGN: {
-                CheckAssignStatementScope (curScope, node, pushWarning, pushError);
-                break;
-            }
-            case AST::OperNode::OperType::RETURN:
-            case AST::OperNode::OperType::PRINT: {
-                CheckUnaryOperScope (curScope, node, pushWarning, pushError);
-                break;
-            }
-            default:
-                pushError (node->getLocation (), "unexpected operator type");
-
-        }
-
-    }
-
-}  // namespace
 
 void SemanticAnalyzer::CheckCondScope (Scope *curScope, AST::CondNode *node, 
                          const std::function<void (yy::location, const std::string &)> pushWarning, 
@@ -422,6 +447,7 @@ void SemanticAnalyzer::CheckConditionExpression (Scope *curScope, AST::CondNode 
         
         CheckUnaryOperScope (curScope, (*node)[0], pushWarning, pushError);
         Scope* newScope = new Scope;
+        curScope->add(newScope);
         AnalyzeScopes        (newScope, static_cast<AST::ScopeNode*> ((*node)[1]), 
                              pushWarning, pushError);
     }
@@ -436,6 +462,7 @@ void SemanticAnalyzer::AnalyzeScopes   (Scope *curScope, AST::ScopeNode *node,
         switch (nodeToCheck->getType ()) {
 
             case AST::NodeT::OPERATOR: {
+                
                 CheckExprScope (curScope, static_cast<AST::OperNode*> (nodeToCheck), 
                                 pushWarning, pushError);
                 break;
@@ -461,6 +488,7 @@ void SemanticAnalyzer::run (Tree::NAryTree<AST::Node *> *tree,
 {
     AnalyzeHiddenReturn (this, tree, pushWarning);
 
+    std::cout << "Here1" << std::endl;
     AST::ScopeNode* startScope = static_cast<AST::ScopeNode*> (tree->getRoot ());
     if (startScope)
         AnalyzeScopes (globalScope_->getRoot (), startScope, pushWarning, pushError);

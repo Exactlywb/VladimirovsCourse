@@ -56,7 +56,15 @@ private:
 
     void CheckCondScope (Scope *curScope, AST::CondNode *node, 
                          const std::function<void (yy::location, const std::string &)> pushWarning, 
-                         const std::function<void (yy::location, const std::string &)> pushError);  
+                         const std::function<void (yy::location, const std::string &)> pushError);
+
+    void CheckAssignStatementScope (Scope *curScope, AST::OperNode *node, 
+                                    const std::function<void (yy::location, const std::string &)> pushWarning, 
+                                    const std::function<void (yy::location, const std::string &)> pushError);  
+    
+    void CheckExprScope (Scope *curScope, AST::OperNode *node, 
+                         const std::function<void (yy::location, const std::string &)> pushWarning, 
+                         const std::function<void (yy::location, const std::string &)> pushError);
 
 };
 
