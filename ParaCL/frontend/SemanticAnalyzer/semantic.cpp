@@ -164,6 +164,26 @@ namespace {
 
     }
 
+    void SetFunctionNameIntoNewScope (Scope* newScope, AST::FuncNode* preFuncName, AST::Node* rNode) {
+
+        AST::VarNode* funcName = static_cast<AST::VarNode*> ((*preFuncName) [0]);
+        FuncObject* insideFunc = new FuncObject (static_cast<AST::FuncNode*> (rNode));
+        newScope->add (funcName->getName (), insideFunc);
+
+    }
+
+    void SetArgumentsIntoNewScope (Scope* newScope, AST::FuncNode* funcArgs) {
+
+        for (auto beginIt = funcArgs->childBegin (); beginIt != funcArgs->childEnd (); ++beginIt) {
+
+            AST::VarNode* argASTRef = static_cast<AST::VarNode*> ((*beginIt));
+            Variable* newVar = new Variable (argASTRef);
+            newScope->add (argASTRef->getName (), newVar);
+
+        }
+        
+    }
+
 }
 
 void SemanticAnalyzer::AnalyzeScopes (Scope *curScope, AST::ScopeNode *node)
@@ -307,7 +327,7 @@ void SemanticAnalyzer::CreateNewVariableViaScope (Scope *curScope, AST::OperNode
 
     CreateNewVariableInScope (curScope, node, clearID);
     AnalyzeNewScope (curScope, rNode);
-    
+
 }
 
 void SemanticAnalyzer::CreateNewVariableInScope (Scope *curScope, AST::OperNode* node, AST::VarNode *clearID) 
@@ -331,33 +351,15 @@ void SemanticAnalyzer::CreateNewFunctionInScope (Scope *curScope, AST::OperNode*
     AST::Node* funcNode = node->getRightChild ();
 
     Scope *newScope = new Scope;
-    AST::FuncNode* funcArgs = static_cast<AST::FuncNode*>((*funcNode) [0]);
-    switch (funcNode->getChildrenNum ()) {
+    AST::FuncNode* funcComp = static_cast<AST::FuncNode*>((*funcNode) [0]);
+    if (funcNode->getChildrenNum () == 3) {
+        
+        SetFunctionNameIntoNewScope (newScope, funcComp, rNode);
+        funcComp = static_cast<AST::FuncNode*>((*funcNode) [1]);
 
-        case 3: {
-
-            AST::FuncNode* preFuncName = static_cast<AST::FuncNode *>((*funcNode) [0]);
-            AST::VarNode* funcName = static_cast<AST::VarNode*> ((*preFuncName) [0]);
-            FuncObject* insideFunc = new FuncObject (static_cast<AST::FuncNode*> (rNode));
-            newScope->add (funcName->getName (), insideFunc);
-            funcArgs = static_cast<AST::FuncNode*>((*funcNode) [1]);
-
-        }
-        case 2: {
-
-            for (auto beginIt = funcArgs->childBegin (); beginIt != funcArgs->childEnd (); ++beginIt) {
-
-                AST::VarNode* argASTRef = static_cast<AST::VarNode*> ((*beginIt));
-                Variable* newVar = new Variable (argASTRef);
-                newScope->add (argASTRef->getName (), newVar);
-
-            }
-
-            break;
-        }
-        default: 
-            throw std::runtime_error ("wrong node for a function");
     }
+
+    SetArgumentsIntoNewScope (newScope, funcComp);
 
     curScope->add (newScope);
     AnalyzeScopes (newScope, static_cast<AST::ScopeNode *> (funcNode->getRightChild ()));
@@ -444,7 +446,7 @@ void SemanticAnalyzer::HandleBinaryOperation (Scope *curScope, AST::Node *node)
 
 }
 
-void SemanticAnalyzer::BuildExecStackFromExpression (std::vector<AST::Node *> &execVector, AST::Node *node)
+void SemanticAnalyzer::BuildExecStackFromExpression (std::vector<AST::Node *> &execVector, AST::Node *node) //!TODO stack?
 {
     AST::Node *curNode = node;
     std::stack<AST::Node *> descent;
