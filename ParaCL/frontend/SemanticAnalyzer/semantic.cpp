@@ -289,7 +289,6 @@ void SemanticAnalyzer::BuildingBinaryOperation (Scope *curScope,
     std::vector<AST::Node *> execVector;
     BuildExecStackFromExpression (execVector, node, pushWarning, pushError);
 
-
     for (auto curNodeFromExpr : execVector) {
 
         switch (curNodeFromExpr->getType ()) {
@@ -393,17 +392,28 @@ void SemanticAnalyzer::CheckAssignStatementScope (Scope *curScope, //TODO Try to
             curScope->add (name, newVar);
             AST::Node* rightChild = node->getRightChild();
             if (rightChild->getType() == AST::NodeT::OPERATOR)
-                CheckExprScope(curScope, static_cast<AST::OperNode *>(rightChild), pushWarning, pushError);   
+                CheckExprScope(curScope, static_cast<AST::OperNode *>(rightChild), pushWarning, pushError);
         }
         else {
             FuncObject *newFunc = new FuncObject (rVal.second);
             curScope->add (name, newFunc);
             Scope *newScope = new Scope;
             auto funcNode = node->getRightChild ();
-            auto funArgs = funcNode->getLeftChild ();
+            auto funcArgs = funcNode->childBegin ();
 
-            for (auto beginIt = funArgs->childBegin (), endIt = funArgs->childEnd (); beginIt != endIt; ++beginIt)
-                newScope->add (static_cast<AST::VarNode *> (*beginIt)->getName (), new Variable (static_cast<AST::VarNode *> (*beginIt)));
+            switch (funcNode->getChildrenNum ()) {
+                case 3: {
+                    auto funcName = static_cast<AST::VarNode *>((*funcArgs)->getLeftChild());
+                    newScope->add (funcName->getName(), new FuncObject (rVal.second));
+                    ++funcArgs;
+                }
+                case 2: {
+                    for (auto beginIt = (*funcArgs)->childBegin (), endIt = (*funcArgs)->childEnd (); beginIt != endIt; ++beginIt)
+                        newScope->add (static_cast<AST::VarNode *> (*beginIt)->getName (), new Variable (static_cast<AST::VarNode *> (*beginIt)));
+                    break;
+                }
+                default: throw std::runtime_error ("wrong node for function");
+            }
 
             curScope->add (newScope);
             AnalyzeScopes (newScope, static_cast<AST::ScopeNode *> (funcNode->getRightChild ()), pushWarning, pushError);
