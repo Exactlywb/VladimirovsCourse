@@ -2,6 +2,7 @@
 #define SEMANTIC_HPP__
 
 #include <functional>
+#include <queue>
 
 #include "ast.hpp"
 #include "errorDetector.hpp"
@@ -39,6 +40,21 @@ public:
               const std::function<void (yy::location, const std::string &)>);
 
 private:
+    void CheckUnaryOperScope (Scope *curScope,
+                              AST::Node *node,
+                              const std::function<void (yy::location, const std::string &)> pushWarning,
+                              const std::function<void (yy::location, const std::string &)> pushError);
+
+    void CheckExprScope (Scope *curScope,
+                         AST::OperNode *node,
+                         const std::function<void (yy::location, const std::string &)> pushWarning,
+                         const std::function<void (yy::location, const std::string &)> pushError);
+
+    void CheckAssignStatementScope (Scope *curScope,
+                                    AST::OperNode *node,
+                                    const std::function<void (yy::location, const std::string &)> pushWarning,
+                                    const std::function<void (yy::location, const std::string &)> pushError);
+
     void AnalyzeScopes (Scope *curScope,
                         AST::ScopeNode *node,
                         const std::function<void (yy::location, const std::string &)> pushWarning,
