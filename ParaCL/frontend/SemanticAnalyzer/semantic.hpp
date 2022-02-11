@@ -82,6 +82,18 @@ private:
                                  const std::function<void (yy::location, const std::string &)> pushWarning,
                                  const std::function<void (yy::location, const std::string &)> pushError);
 
+    void CreateNewFunctionInScope (Scope *curScope, AST::OperNode* node, AST::VarNode *clearID, AST::Node* rNode,
+                                   const std::function<void (yy::location, const std::string &)> pushWarning,
+                                   const std::function<void (yy::location, const std::string &)> pushError);
+
+    void CreateNewVariableInScope (Scope *curScope, AST::OperNode* node, AST::VarNode *clearID,
+                                   const std::function<void (yy::location, const std::string &)> pushWarning,
+                                   const std::function<void (yy::location, const std::string &)> pushError);
+
+    void CreateNewVariableViaScope (Scope *curScope, AST::OperNode* node, AST::VarNode *clearID, AST::Node* rNode,
+                                    const std::function<void (yy::location, const std::string &)> pushWarning,
+                                    const std::function<void (yy::location, const std::string &)> pushError);
+
 };
 
 #endif

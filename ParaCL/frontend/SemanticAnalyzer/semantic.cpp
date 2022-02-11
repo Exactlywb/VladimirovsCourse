@@ -357,64 +357,93 @@ void SemanticAnalyzer::CheckExprScope (Scope *curScope,
     }
 }
 
+void SemanticAnalyzer::CreateNewFunctionInScope (Scope *curScope, AST::OperNode* node, AST::VarNode *clearID, AST::Node* rNode,
+                                                 const std::function<void (yy::location, const std::string &)> pushWarning,
+                                                 const std::function<void (yy::location, const std::string &)> pushError) {
+
+    FuncObject *newFunc = new FuncObject (static_cast<AST::FuncNode*> (rNode));
+    curScope->add (clearID->getName (), newFunc);
+
+    AST::Node* funcNode = node->getRightChild ();
+
+    Scope *newScope = new Scope;
+    AST::FuncNode* funcArgs = static_cast<AST::FuncNode*>((*funcNode) [0]);
+    switch (funcNode->getChildrenNum ()) {
+
+        case 3: {
+
+            AST::FuncNode* preFuncName = static_cast<AST::FuncNode *>((*funcNode) [0]);
+            AST::VarNode* funcName = static_cast<AST::VarNode*> ((*preFuncName) [0]);
+            FuncObject* insideFunc = new FuncObject (static_cast<AST::FuncNode*> (rNode));
+            newScope->add (funcName->getName (), insideFunc);
+            funcArgs = static_cast<AST::FuncNode*>((*funcNode) [1]);
+
+        }
+        case 2: {
+
+            for (auto beginIt = funcArgs->childBegin (); beginIt != funcArgs->childEnd (); ++beginIt) {
+
+                AST::VarNode* argASTRef = static_cast<AST::VarNode*> ((*beginIt));
+                Variable* newVar = new Variable (argASTRef);
+                newScope->add (argASTRef->getName (), newVar);
+
+            }
+
+            break;
+        }
+        default: 
+            throw std::runtime_error ("wrong node for a function");
+    }
+
+    curScope->add (newScope);
+    AnalyzeScopes (newScope, static_cast<AST::ScopeNode *> (funcNode->getRightChild ()), pushWarning, pushError);
+
+}
+
+void SemanticAnalyzer::CreateNewVariableInScope (Scope *curScope, AST::OperNode* node, AST::VarNode *clearID,
+                                                 const std::function<void (yy::location, const std::string &)> pushWarning,
+                                                 const std::function<void (yy::location, const std::string &)> pushError) 
+{
+
+    Variable *newVar = new Variable (clearID);
+    curScope->add (clearID->getName (), newVar);
+
+    AST::Node* rightChild = node->getRightChild();
+
+    if (rightChild->getType() == AST::NodeT::OPERATOR)
+        CheckExprScope (curScope, static_cast<AST::OperNode *>(rightChild), pushWarning, pushError);
+
+}
+
+void SemanticAnalyzer::CreateNewVariableViaScope (Scope *curScope, AST::OperNode* node, AST::VarNode *clearID, AST::Node* rNode,
+                                                  const std::function<void (yy::location, const std::string &)> pushWarning,
+                                                  const std::function<void (yy::location, const std::string &)> pushError) 
+{
+
+    CreateNewVariableInScope (curScope, node, clearID, pushWarning, pushError);
+
+    Scope* newScope = new Scope;
+    curScope->add (newScope);
+    AnalyzeScopes (newScope, static_cast<AST::ScopeNode*> (rNode), pushWarning, pushError);
+}
+
 void SemanticAnalyzer::CreateNewObjectInScope (Scope *curScope, AST::OperNode* node, AST::VarNode *clearID,
                                                const std::function<void (yy::location, const std::string &)> pushWarning,
                                                const std::function<void (yy::location, const std::string &)> pushError) 
 {
 
     std::pair<AST::NodeT, AST::Node *> rVal = GetRValueType (node);
-    const std::string name = clearID->getName ();
 
-    if (rVal.first != AST::NodeT::FUNCTION) {
+    switch (rVal.first) {
 
-        Variable *newVar = new Variable (clearID);
-        curScope->add (name, newVar);
-
-        AST::Node* rightChild = node->getRightChild();
-
-        if (rightChild->getType() == AST::NodeT::OPERATOR)
-            CheckExprScope (curScope, static_cast<AST::OperNode *>(rightChild), pushWarning, pushError);
-        
-    }
-    else {
-
-        FuncObject *newFunc = new FuncObject (static_cast<AST::FuncNode*> (rVal.second));
-        curScope->add (name, newFunc);
-
-        AST::Node* funcNode = node->getRightChild ();
-
-        Scope *newScope = new Scope;
-        AST::FuncNode* funcArgs = static_cast<AST::FuncNode*>((*funcNode) [0]);
-        switch (funcNode->getChildrenNum ()) {
-
-            case 3: {
-
-                AST::FuncNode* preFuncName = static_cast<AST::FuncNode *>((*funcNode) [0]);
-                AST::VarNode* funcName = static_cast<AST::VarNode*> ((*preFuncName) [0]);
-                FuncObject* insideFunc = new FuncObject (static_cast<AST::FuncNode*> (rVal.second));
-                newScope->add (funcName->getName (), insideFunc);
-                funcArgs = static_cast<AST::FuncNode*>((*funcNode) [1]);
-
-            }
-            case 2: {
-
-                for (auto beginIt = funcArgs->childBegin (); beginIt != funcArgs->childEnd (); ++beginIt) {
-
-                    AST::VarNode* argASTRef = static_cast<AST::VarNode*> ((*beginIt));
-                    Variable* newVar = new Variable (argASTRef);
-                    newScope->add (argASTRef->getName (), newVar);
-
-                }
-
-                break;
-            }
-            default: 
-                throw std::runtime_error ("wrong node for a function");
-
-        }
-
-        curScope->add (newScope);
-        AnalyzeScopes (newScope, static_cast<AST::ScopeNode *> (funcNode->getRightChild ()), pushWarning, pushError);
+        case AST::NodeT::FUNCTION:
+            CreateNewFunctionInScope (curScope, node, clearID, rVal.second, pushWarning, pushError);
+            break;
+        case AST::NodeT::SCOPE:
+            CreateNewVariableViaScope (curScope, node, clearID, rVal.second, pushWarning, pushError);
+            break;
+        default:
+            CreateNewVariableInScope (curScope, node, clearID, pushWarning, pushError);
 
     }
 
@@ -464,7 +493,9 @@ void SemanticAnalyzer::CheckAssignStatementScope (Scope *curScope, //TODO Try to
                         CheckVarInExpr (curScope, static_cast<AST::VarNode*> (rVal.second), pushWarning, pushError);
                         break;
                     case AST::NodeT::SCOPE:
-                        //!TODO
+                        Scope* newScope = new Scope;
+                        curScope->add (newScope);
+                        AnalyzeScopes (newScope, static_cast<AST::ScopeNode*> (rVal.second), pushWarning, pushError);
                         break;
 
                 }
@@ -497,7 +528,7 @@ void SemanticAnalyzer::CheckConditionExpression (Scope *curScope,
                                                  const std::function<void (yy::location, const std::string &)> pushWarning,
                                                  const std::function<void (yy::location, const std::string &)> pushError)
 {
-    CheckUnaryOperScope (curScope, (*node)[0], pushWarning, pushError);
+    BuildingBinaryOperation (curScope, (*node)[0], pushWarning, pushError);
     Scope *newScope = new Scope;
     curScope->add (newScope);
     AnalyzeScopes (newScope, static_cast<AST::ScopeNode *> ((*node)[1]), pushWarning, pushError);
@@ -509,6 +540,7 @@ void SemanticAnalyzer::AnalyzeScopes (Scope *curScope,
                                       const std::function<void (yy::location, const std::string &)> pushError)
 {
     for (auto stBegin = node->childBegin (); stBegin != node->childEnd (); ++stBegin) {
+
         AST::Node *nodeToCheck = *stBegin;
         switch (nodeToCheck->getType ()) {
             case AST::NodeT::OPERATOR: {
