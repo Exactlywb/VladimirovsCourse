@@ -35,6 +35,8 @@ public:
     SemanticAnalyzer &operator= (const SemanticAnalyzer &other) = delete;
     SemanticAnalyzer &operator= (SemanticAnalyzer &&other) = delete;
 
+    ~SemanticAnalyzer () { delete globalScope_; }
+
     void run (Tree::NAryTree<AST::Node *> *tree,
               const std::function<void (yy::location, const std::string &)> pushWarning,
               const std::function<void (yy::location, const std::string &)>);
