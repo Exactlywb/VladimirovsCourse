@@ -255,12 +255,8 @@ namespace {
     {
         AST::Node *rightChild = node;
 
-        rightChild->nodeDump(std::cout);
-        std::cout << " wow\n";
         while (node->getOpType () == AST::OperNode::OperType::ASSIGN) {
             rightChild = node->getRightChild ();
-            rightChild->nodeDump(std::cout);
-            std::cout << " wow\n";
 
             if (rightChild->getType () == AST::NodeT::OPERATOR)
                 node = static_cast<AST::OperNode *> (rightChild);
@@ -348,13 +344,6 @@ void SemanticAnalyzer::CheckExprScope (Scope *curScope,
             break;
         }
         case AST::OperNode::OperType::ADD:
-            BuildingBinaryOperation (curScope, node, pushWarning, pushError);
-            break;
-        /*//TODO Good luck
-        case AST::OperNode::OperType::UNARY_M:
-        case AST::OperNode::OperType::UNARY_P: {
-            break;
-        }
         case AST::OperNode::OperType::SUB:
         case AST::OperNode::OperType::MUL:
         case AST::OperNode::OperType::DIV:
@@ -366,8 +355,14 @@ void SemanticAnalyzer::CheckExprScope (Scope *curScope,
         case AST::OperNode::OperType::LTE:
         case AST::OperNode::OperType::OR:
         case AST::OperNode::OperType::AND:
-        case AST::OperNode::OperType::MOD: {
+        case AST::OperNode::OperType::MOD: 
+            BuildingBinaryOperation (curScope, node, pushWarning, pushError);
             break;
+        /*//TODO Good luck
+        case AST::OperNode::OperType::UNARY_M:
+        case AST::OperNode::OperType::UNARY_P: {
+            break;
+        }
         }*/
 
         default: pushError (node->getLocation (), "unexpected operator type");
@@ -381,8 +376,6 @@ void SemanticAnalyzer::CheckAssignStatementScope (Scope *curScope, //TODO Try to
 {
     AST::Node *idNode = node->getLeftChild ();
 
-    idNode->nodeDump(std::cout);
-    std::cout << " Idnode" << std::endl;
     if (idNode->getType () != AST::NodeT::VARIABLE) {
         pushError (idNode->getLocation (), "variable name expected");
         return;
@@ -394,12 +387,13 @@ void SemanticAnalyzer::CheckAssignStatementScope (Scope *curScope, //TODO Try to
 
     if (findRes.first == nullptr) {  // new var
 
-        std::cout << "Probably, here\n";
         std::pair<TypeWrapper::DataType, AST::FuncNode *> rVal = GetRValueType (node);
         if (rVal.first == TypeWrapper::DataType::VAR) {
-            std::cout << "Oh, seriously?\n";
             Variable *newVar = new Variable (clearID);
             curScope->add (name, newVar);
+            AST::Node* rightChild = node->getRightChild();
+            if (rightChild->getType() == AST::NodeT::OPERATOR)
+                CheckExprScope(curScope, static_cast<AST::OperNode *>(rightChild), pushWarning, pushError);   
         }
         else {
             FuncObject *newFunc = new FuncObject (rVal.second);
@@ -415,6 +409,12 @@ void SemanticAnalyzer::CheckAssignStatementScope (Scope *curScope, //TODO Try to
             AnalyzeScopes (newScope, static_cast<AST::ScopeNode *> (funcNode->getRightChild ()), pushWarning, pushError);
         }
     }
+    else {
+        AST::Node* rightChild = node->getRightChild();
+        if (rightChild->getType() == AST::NodeT::OPERATOR)
+            CheckExprScope(curScope, static_cast<AST::OperNode *>(rightChild), pushWarning, pushError);  
+    }
+        
 }
 
 void SemanticAnalyzer::CheckCondScope (Scope *curScope,
