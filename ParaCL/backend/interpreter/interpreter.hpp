@@ -86,6 +86,23 @@ namespace interpret {
 
         }
 
+    };
+
+    class Context final {
+    
+        Scope scope_;
+        
+        std::vector<const AST::Node*> execStack_;
+        const AST::Node *prev = nullptr;
+
+    };
+
+    class Interpreter final {
+        
+        Context context_;
+    public:
+        Interpreter () {}    //!TODO
+
     }; 
 
 }  // namespace interpret
