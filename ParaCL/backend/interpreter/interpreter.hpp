@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 #include <algorithm>
+#include <memory>
 
 #include "ast.hpp"
 #include "location.hh"
@@ -19,32 +20,65 @@ namespace interpret {
 
         std::string name_;
     public:
-        std::string getName () const { return name_ }
-        virtual auto&& getData () const = 0;
+        ScopeWrapper (const std::string& name): name_ (name) {}
+
+        std::string getName () const { return name_; }
+
+        virtual ~ScopeWrapper () = 0;
 
     };
 
-    class VarScope final: public ScopeWrapper {
+    struct VarScope final: public ScopeWrapper {
         
         int val_;
     
-    public:
         VarScope (const std::string& name): ScopeWrapper (name) {}
         VarScope (const std::string& name, int val): ScopeWrapper (name), 
                                                      val_ (val) {}
 
-        auto&& getData () const override { return val_; }
+        int getData () const { return val_; }
 
     };
 
-    class FuncObjScope final: public ScopeWrapper {
+    struct FuncObjScope final: public ScopeWrapper { //!TODO
+        class FuncComp {
 
-        AST::FuncNode* funcDecl_;
+            AST::FuncNode* funcDecl_ = nullptr;
+            
+            AST::FuncNode* funcName_ = nullptr;
+            AST::FuncNode* funcArgs_ = nullptr;
+
+            AST::ScopeNode* scope_ = nullptr;
+
+        public:
+            FuncComp (AST::FuncNode* funcDecl): funcDecl_ (funcDecl) {
+
+                AST::FuncNode* lFuncChild = static_cast<AST::FuncNode*>((*funcDecl) [0]);
+                if (lFuncChild->getFuncCompType () == AST::FuncNode::FuncComponents::FUNC_NAME) {
+
+                    funcName_ = lFuncChild;
+                    lFuncChild = static_cast<AST::FuncNode*>((*funcDecl) [1]);
+
+                }
+
+                funcArgs_ = lFuncChild;
+
+                scope_ = static_cast<AST::ScopeNode*> (funcDecl->getRightChild ());
+
+            }
+
+        };
+
+    private:
+        std::unique_ptr<FuncComp> (funcDetails_);
+
     public:
-        FuncObjScope (const std::string& name, AST::FuncNode* funcDecl = nullptr): 
-            ScopeWrapper (name), funcDecl_ (funcDecl) {}
 
-        auto&& getData () const override { return funcDecl_; }
+        FuncObjScope (const std::string& name, AST::FuncNode* funcDecl = nullptr): 
+            ScopeWrapper (name), 
+            funcDetails_ (std::unique_ptr<FuncComp> (new FuncComp (funcDecl))) {}
+
+        FuncComp* getData () const { return funcDetails_.get (); }
 
     };
 
@@ -62,9 +96,9 @@ namespace interpret {
 
         tblIt lookup (const std::string& name) {
         
-            for (auto&& obj: tbl_) {
+            for (auto&& obj = tbl_.cbegin (), end = tbl_.cend (); obj != end; ++obj) {
 
-                if ((*obj)->getName () == name)
+                if ((*obj)->getName () == name) //Note! The same name is about global var
                     return obj;
 
             }
@@ -88,7 +122,7 @@ namespace interpret {
 
     };
 
-    class Context final {
+    class Context final { //!TODO
     
         Scope scope_;
         
@@ -100,8 +134,11 @@ namespace interpret {
     class Interpreter final {
         
         Context context_;
+        AST::ScopeNode* root_;
     public:
-        Interpreter () {}    //!TODO
+        Interpreter (AST::ScopeNode* root): root_ (root) {}
+
+        void run ();
 
     }; 
 
