@@ -47,7 +47,7 @@ add_definitions (${LLVM_DEFINITIONS_LIST})
 # Now build our source files
 add_executable (${PROJECT_NAME}
 
-    # backend/interpreter/interpreter.cpp
+    backend/interpreter/interpreter.cpp
     backend/compiler/compiler.cpp
     frontend/driver/driver.cpp
     frontend/customLexer/customLexer.cpp
@@ -79,8 +79,8 @@ target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/common/
 target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/common/InputHandler/")
 
 #target_include_directories for BACKEND
-# target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/backend/interpreter/")
-# target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/backend/compiler/")
+target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/backend/interpreter/")
+target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/backend/compiler/")
 
 
 find_program(CLANG_FORMAT "clang-format")

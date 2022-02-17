@@ -138,18 +138,18 @@ namespace yy {
 
         void callDump (std::ostream &out) { tree_.dump (out); }
 
-        // void interpret ()
-        // {  //!TODO does it have to be in driver?
+        void interpret ()
+        {  //!TODO does it have to be in driver?
 
-        //     interpret::Interpreter interpret (&tree_);
+//             interpret::Interpreter interpret (&tree_);
 
-        //     try {
-        //         interpret.run ();
-        //     }
-        //     catch (const interpret::ErrorDetector &err) {
-        //         pushError (err.getLocation (), err.what ());
-        //     }
-        // }
+//             try {
+//                 interpret.run ();
+//             }
+//             catch (const interpret::ErrorDetector &err) {
+//                 pushError (err.getLocation (), err.what ());
+//             }
+        }
 
         // void compile ()
         // {

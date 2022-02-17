@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include <list>
+#include <algorithm>
 
 #include "ast.hpp"
 #include "location.hh"
@@ -15,30 +15,96 @@
 
 namespace interpret {
 
-    class ASTListConveyor  {
+    class ScopeWrapper {
 
-        std::list<AST::Node*> conveyor_;
-        virtual ~ASTListConveyor() = 0;
+        std::string name_;
     public:
-        void buildConveyor (AST::ScopeNode* startNode);
-        void runConveyor   ();
+        std::string getName () const { return name_ }
+        virtual auto&& getData () const = 0;
+
     };
 
-    class Intepreter final : public ASTListConveyor{
+    class VarScope final: public ScopeWrapper {
+        
+        int val_;
+    
+    public:
+        VarScope (const std::string& name): ScopeWrapper (name) {}
+        VarScope (const std::string& name, int val): ScopeWrapper (name), 
+                                                     val_ (val) {}
 
-        using listIt = std::list<AST::Node*>::const_iterator; //Sorry
-        std::stack<listIt> retStack_;
+        auto&& getData () const override { return val_; }
 
-        Intepreter (Tree::NAryTree<AST::Node*> &tree) {
-
-            buildConveyor (static_cast<AST::ScopeNode*>(tree.getRoot()));
-        }
-
-        void run () {
-
-            runConveyor();
-        }
     };
+
+    class FuncObjScope final: public ScopeWrapper {
+
+        AST::FuncNode* funcDecl_;
+    public:
+        FuncObjScope (const std::string& name, AST::FuncNode* funcDecl = nullptr): 
+            ScopeWrapper (name), funcDecl_ (funcDecl) {}
+
+        auto&& getData () const override { return funcDecl_; }
+
+    };
+
+    class Scope final {
+
+        std::vector<ScopeWrapper*> tbl_;
+
+    public:
+        using tblIt = std::vector<ScopeWrapper*>::const_iterator;        
+
+        void push (ScopeWrapper* obj) { tbl_.push_back (obj); }
+        
+        tblIt tblBegin () const { return tbl_.cbegin (); }
+        tblIt tblEnd () const { return tbl_.cend (); }
+
+        tblIt lookup (const std::string& name) {
+        
+            for (auto&& obj: tbl_) {
+
+                if ((*obj)->getName () == name)
+                    return obj;
+
+            }
+
+            return tbl_.cend ();
+
+        }
+
+        tblIt lookup (const std::string& name, tblIt end) {
+
+            for (tblIt obj = tbl_.cbegin (); obj != end; ++obj) {
+                
+                if ((*obj)->getName () == name)
+                    return obj;
+
+            }
+
+            return tbl_.cend ();
+
+        }
+
+    };
+
+    class Context final {
+    
+        Scope scope_;
+        
+        std::vector<const AST::Node*> execStack_;
+        const AST::Node *prev = nullptr;
+
+    };
+
+    class Interpreter final {
+        
+        Context context_;
+    public:
+        Interpreter () {}    //!TODO
+
+    }; 
+
 }  // namespace interpret
 
 #endif
