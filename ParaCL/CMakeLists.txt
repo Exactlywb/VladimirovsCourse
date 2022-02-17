@@ -6,6 +6,8 @@
 cmake_minimum_required (VERSION 3.13.4)
 project (ParaCL)
 
+include(CMakePrintHelpers)
+
 # Here we're trying to find Bison and Flex
 find_package (BISON REQUIRED)
 find_package (FLEX REQUIRED)
