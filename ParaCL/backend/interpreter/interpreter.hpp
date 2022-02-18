@@ -113,11 +113,31 @@ namespace interpret {
 
     class EvalApplyNode;
 
+    struct ExecStack {
+
+        std::vector<const EvalApplyNode*> execStack_;
+        
+        void push_back (const EvalApplyNode* node) {
+            execStack_.push_back (node);
+        }
+
+        bool empty () { return execStack_.empty (); }
+        size_t size () { return execStack_.size ();}
+
+        const EvalApplyNode*& operator[] (size_t pos) { return execStack_ [pos];}
+        void pop_back () { execStack_.pop_back (); }
+        const EvalApplyNode*& back () { return execStack_.back (); }
+    
+        void push_back (const AST::Node* node);
+
+    };
+
     struct Context final { //!TODO
     
         Scope scope_;
         
-        std::vector<const EvalApplyNode*> execStack_;
+        //std::vector<const EvalApplyNode*> execStack_;
+        ExecStack execStack_;
         std::vector<ScopeWrapper*> calcStack_;
         const AST::Node *prev = nullptr;
 
@@ -135,13 +155,13 @@ namespace interpret {
 
     class EvalApplyNode {
 
-        AST::Node* node_;
+        const AST::Node* node_;
         EvalApplyNode* parent_ = nullptr;
 
     public:
-        EvalApplyNode (AST::Node* node): node_ (node) {}
+        EvalApplyNode (const AST::Node* node): node_ (node) {}
 
-        AST::Node* getNode () const { return node_; }
+        const AST::Node* getNode () const { return node_; }
         virtual void eval (Context& context) const = 0;
 
     };
@@ -151,7 +171,7 @@ namespace interpret {
     class EAWhile final: public EvalApplyNode {
 
     public:
-        EAWhile (AST::CondNode* astCond): EvalApplyNode (astCond) {}
+        EAWhile (const AST::CondNode* astCond): EvalApplyNode (astCond) {}
         void eval (Context& context) const override {} //!TODO
 
     };
@@ -159,7 +179,7 @@ namespace interpret {
     class EAIf final: public EvalApplyNode {
 
     public:
-        EAIf (AST::CondNode* astCond): EvalApplyNode (astCond) {}
+        EAIf (const AST::CondNode* astCond): EvalApplyNode (astCond) {}
         void eval (Context& context) const override {} //!TODO
 
     };
@@ -168,7 +188,7 @@ namespace interpret {
     class EABinOp final: public EvalApplyNode {
 
     public:
-        EABinOp (AST::OperNode* astOper): EvalApplyNode (astOper) {}
+        EABinOp (const AST::OperNode* astOper): EvalApplyNode (astOper) {}
         void eval (Context& context) const override {} //!TODO
 
     };
@@ -189,13 +209,13 @@ namespace interpret {
 
         operT apply_;
     public:
-        EAUnaryOp (AST::OperNode* astOper): EvalApplyNode (astOper) {}
+        EAUnaryOp (const AST::OperNode* astOper): EvalApplyNode (astOper) {}
         void eval (Context& context) const override
         {
 
 
-            AST::Node* node = EvalApplyNode::getNode();
-            AST::Node* rhs  = (*node)[0];
+            const AST::Node* node = EvalApplyNode::getNode();
+            const AST::Node* rhs  = (*node)[0];
             
             if (context.prev == rhs) {
                 
@@ -205,7 +225,7 @@ namespace interpret {
             }
 
             context.execStack_.push_back(this);
-            context.execStack_.push_back(buildApplyNode(rhs));
+            context.execStack_.push_back(rhs);
             
         }
 
@@ -214,7 +234,7 @@ namespace interpret {
     class EAReturn final: public EvalApplyNode {
 
     public:
-        EAReturn (AST::OperNode* astOper): EvalApplyNode (astOper) {}
+        EAReturn (const AST::OperNode* astOper): EvalApplyNode (astOper) {}
         void eval (Context& context) const override {} //!TODO
 
     };
@@ -222,16 +242,7 @@ namespace interpret {
     class EAAssign final: public EvalApplyNode {
         
     public:
-        EAAssign (AST::OperNode* astOper): EvalApplyNode (astOper) {}
-        void eval (Context& context) const override; //!TODO
-
-    };
-
-
-    class EAPrint final: public EvalApplyNode { //Mom told me I'm special
-
-    public:
-        EAPrint (AST::OperNode* astOper): EvalApplyNode (astOper) {}
+        EAAssign (const AST::OperNode* astOper): EvalApplyNode (astOper) {}
         void eval (Context& context) const override; //!TODO
 
     };
@@ -239,7 +250,7 @@ namespace interpret {
     class EAVar final: public EvalApplyNode {
 
     public:
-        EAVar (AST::VarNode* astOper): EvalApplyNode (astOper) {}
+        EAVar (const AST::VarNode* astOper): EvalApplyNode (astOper) {}
         void eval (Context& context) const override {} //!TODO
 
     };
@@ -247,7 +258,7 @@ namespace interpret {
     class EAFunc final: public EvalApplyNode {
 
     public:
-        EAFunc (AST::FuncNode* astOper): EvalApplyNode (astOper) {}
+        EAFunc (const AST::FuncNode* astOper): EvalApplyNode (astOper) {}
         void eval (Context& context) const override {} //!TODO
 
     };
@@ -256,7 +267,7 @@ namespace interpret {
         
         int val_;
     public:
-        EANum (AST::NumNode* astOper): EvalApplyNode (astOper), val_(astOper->getValue()) {}
+        EANum (const AST::NumNode* astOper): EvalApplyNode (astOper), val_(astOper->getValue()) {}
         void eval (Context& context) const override; //!TODO
 
     };

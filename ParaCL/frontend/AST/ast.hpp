@@ -38,6 +38,7 @@ namespace AST {
         virtual ~Node () = default;
 
         Node *operator[] (int num) { return children_[num]; }
+        const Node *operator[] (int num) const { return children_ [num]; }
         // Let's implement 0-rule
         Node (const Node &other) = delete;
         Node (Node &&other) = delete;

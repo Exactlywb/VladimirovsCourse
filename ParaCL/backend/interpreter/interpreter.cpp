@@ -4,7 +4,7 @@ namespace interpret {
 
 namespace {
 
-        EvalApplyNode* buildApplyNodeFromCondition (AST::CondNode* condNode) {
+        EvalApplyNode* buildApplyNodeFromCondition (const AST::CondNode* condNode) {
 
             if (condNode->getConditionType() == AST::CondNode::ConditionType::IF)
                 return (new EAIf (condNode));
@@ -12,7 +12,7 @@ namespace {
             return (new EAWhile (condNode));
         }
 
-        EvalApplyNode* buildApplyNodeFromOperator (AST::OperNode* opNode) { //TODO: Make return
+        EvalApplyNode* buildApplyNodeFromOperator (const AST::OperNode* opNode) { //TODO: Make return
 
             switch (opNode->getOpType ()) {
 
@@ -42,30 +42,36 @@ namespace {
             }
         }
 
-        EvalApplyNode* buildApplyNodeFromVariable (AST::VarNode*  varNode)   { return (new EAVar  (varNode));  }
-        EvalApplyNode* buildApplyNodeFromFunction (AST::FuncNode* funcNode)  { return (new EAFunc (funcNode)); }
-        EvalApplyNode* buildApplyNodeFromNumber   (AST::NumNode*  numNode)   { return (new EANum  (numNode));  }
+        EvalApplyNode* buildApplyNodeFromVariable (const AST::VarNode*  varNode)   { return (new EAVar  (varNode));  }
+        EvalApplyNode* buildApplyNodeFromFunction (const AST::FuncNode* funcNode)  { return (new EAFunc (funcNode)); }
+        EvalApplyNode* buildApplyNodeFromNumber   (const AST::NumNode*  numNode)   { return (new EANum  (numNode));  }
 
-        EvalApplyNode* buildApplyNode (AST::Node* node) {
+        EvalApplyNode* buildApplyNode (const AST::Node* node) {
 
             switch (node->getType()) {
 
                 case AST::NodeT::CONDITION:
-                    return buildApplyNodeFromCondition (static_cast<AST::CondNode*> (node));
+                    return buildApplyNodeFromCondition (static_cast<const AST::CondNode*> (node));
                 case AST::NodeT::FUNCTION:
-                    return buildApplyNodeFromFunction (static_cast<AST::FuncNode*> (node));
+                    return buildApplyNodeFromFunction (static_cast<const AST::FuncNode*> (node));
                 case AST::NodeT::OPERATOR:
-                    return buildApplyNodeFromOperator (static_cast<AST::OperNode*> (node));
+                    return buildApplyNodeFromOperator (static_cast<const AST::OperNode*> (node));
                 case AST::NodeT::VARIABLE:
-                    return buildApplyNodeFromVariable (static_cast<AST::VarNode*> (node));
+                    return buildApplyNodeFromVariable (static_cast<const AST::VarNode*> (node));
                 case AST::NodeT::NUMBER:
-                    return buildApplyNodeFromNumber (static_cast<AST::NumNode*> (node));
+                    return buildApplyNodeFromNumber (static_cast<const AST::NumNode*> (node));
             }
         }
 
     }
 
 ScopeWrapper::~ScopeWrapper () = default;
+
+void ExecStack::push_back (const AST::Node* node) {
+
+    execStack_.push_back (buildApplyNode (node));
+
+}
 
 void Interpreter::run () {
 
@@ -104,19 +110,19 @@ void EAScope::eval (Context& context) const {
 
 void EAAssign::eval (Context& context) const {
 
-    AST::Node* node = EvalApplyNode::getNode();
-    AST::Node* lhs  = (*node)[0];
-    AST::Node* rhs  = (*node)[1];
+    const AST::Node* node = EvalApplyNode::getNode();
+    const AST::Node* lhs  = (*node)[0];
+    const AST::Node* rhs  = (*node)[1];
 
     if (context.prev == rhs) {
         
         // std::cout << "XACKMAJSDJ" << std::endl;
         context.prev = getNode(); 
-        auto&& id = context.execStack_.back();
+        auto id = context.execStack_.back();
         context.execStack_.pop_back();
-        auto&& val = context.calcStack_.back();
+        auto val = context.calcStack_.back();
 
-        auto&& varNode = static_cast<AST::VarNode*>(id->getNode());
+        const AST::VarNode* varNode = static_cast<const AST::VarNode*>(id->getNode());
         std::string name = varNode->getName();
 
         auto&& findRes = context.scope_.lookup(name);
