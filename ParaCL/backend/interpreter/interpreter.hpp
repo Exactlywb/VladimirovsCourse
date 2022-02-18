@@ -16,25 +16,16 @@
 
 namespace interpret {
 
-    class ScopeWrapper {
-
-        std::string name_;
-    public:
-        ScopeWrapper (const std::string& name): name_ (name) {}
-
-        std::string getName () const { return name_; }
+    struct ScopeWrapper {
 
         virtual ~ScopeWrapper () = 0;
-
     };
 
     struct VarScope final: public ScopeWrapper {
         
         int val_;
-    
-        VarScope (const std::string& name): ScopeWrapper (name) {}
-        VarScope (const std::string& name, int val): ScopeWrapper (name), 
-                                                     val_ (val) {}
+
+        VarScope (int val): val_ (val) {}
 
         int getData () const { return val_; }
 
@@ -74,8 +65,7 @@ namespace interpret {
 
     public:
 
-        FuncObjScope (const std::string& name, AST::FuncNode* funcDecl = nullptr): 
-            ScopeWrapper (name), 
+        FuncObjScope (AST::FuncNode* funcDecl = nullptr): 
             funcDetails_ (std::unique_ptr<FuncComp> (new FuncComp (funcDecl))) {}
 
         FuncComp* getData () const { return funcDetails_.get (); }
@@ -84,12 +74,12 @@ namespace interpret {
 
     class Scope final {
 
-        std::vector<ScopeWrapper*> tbl_;
+        std::vector<std::pair<std::string, ScopeWrapper*>> tbl_;
 
     public:
-        using tblIt = std::vector<ScopeWrapper*>::const_iterator;        
+        using tblIt = std::vector<std::pair<std::string, ScopeWrapper*>>::const_iterator;        
 
-        void push (ScopeWrapper* obj) { tbl_.push_back (obj); }
+        void push (std::pair<std::string, ScopeWrapper*> obj) { tbl_.push_back (obj); }
         
         tblIt tblBegin () const { return tbl_.cbegin (); }
         tblIt tblEnd () const { return tbl_.cend (); }
@@ -98,9 +88,8 @@ namespace interpret {
         
             for (auto&& obj = tbl_.cbegin (), end = tbl_.cend (); obj != end; ++obj) {
 
-                if ((*obj)->getName () == name)
+                if ((*obj).first == name)
                     return obj;
-
             }
 
             return tbl_.cend ();
@@ -111,7 +100,7 @@ namespace interpret {
 
             for (tblIt obj = tbl_.cbegin (); obj != end; ++obj) {
                 
-                if ((*obj)->getName () == name)
+                if ((*obj).first == name)
                     return obj;
 
             }
@@ -122,18 +111,20 @@ namespace interpret {
 
     };
 
-    class Context final { //!TODO
+    class EvalApplyNode;
+
+    struct Context final { //!TODO
     
         Scope scope_;
         
-        std::vector<const AST::Node*> execStack_;
+        std::vector<const EvalApplyNode*> execStack_;
+        std::vector<ScopeWrapper*> calcStack_;
         const AST::Node *prev = nullptr;
 
     };
 
     class Interpreter final {
-        
-        Context context_;
+
         AST::ScopeNode* root_;
     public:
         Interpreter (AST::ScopeNode* root): root_ (root) {}
@@ -151,23 +142,17 @@ namespace interpret {
         EvalApplyNode (AST::Node* node): node_ (node) {}
 
         AST::Node* getNode () const { return node_; }
-        virtual const EvalApplyNode *eval (Context& context) const = 0;
+        virtual void eval (Context& context) const = 0;
 
     };
 
-    class EAScope final: public EvalApplyNode {
-
-    public:
-        EAScope (AST::ScopeNode* astScope): EvalApplyNode (astScope) {}
-        const EvalApplyNode *eval (Context& context) const override; //!TODO
-
-    };
+    
 
     class EAWhile final: public EvalApplyNode {
 
     public:
         EAWhile (AST::CondNode* astCond): EvalApplyNode (astCond) {}
-        const EvalApplyNode *eval (Context& context) const override; //!TODO
+        void eval (Context& context) const override {} //!TODO
 
     };
 
@@ -175,7 +160,7 @@ namespace interpret {
 
     public:
         EAIf (AST::CondNode* astCond): EvalApplyNode (astCond) {}
-        const EvalApplyNode *eval (Context& context) const override; //!TODO
+        void eval (Context& context) const override {} //!TODO
 
     };
 
@@ -184,16 +169,45 @@ namespace interpret {
 
     public:
         EABinOp (AST::OperNode* astOper): EvalApplyNode (astOper) {}
-        const EvalApplyNode *eval (Context& context) const override; //!TODO
+        void eval (Context& context) const override {} //!TODO
+
+    };
+
+    struct UnaryOpPrint {
+
+        void operator() (Context& context) const {
+
+            VarScope* var = static_cast<VarScope*> (context.calcStack_.back());
+            std::cout << var->val_ << std::endl;
+            context.calcStack_.pop_back();
+        }
 
     };
 
     template <typename operT>
     class EAUnaryOp final: public EvalApplyNode {
 
+        operT apply_;
     public:
         EAUnaryOp (AST::OperNode* astOper): EvalApplyNode (astOper) {}
-        const EvalApplyNode *eval (Context& context) const override; //!TODO
+        void eval (Context& context) const override
+        {
+
+
+            AST::Node* node = EvalApplyNode::getNode();
+            AST::Node* rhs  = (*node)[0];
+            
+            if (context.prev == rhs) {
+                
+                context.prev = getNode(); 
+                apply_(context);
+                return;
+            }
+
+            context.execStack_.push_back(this);
+            context.execStack_.push_back(buildApplyNode(rhs));
+            
+        }
 
     };
 
@@ -201,15 +215,49 @@ namespace interpret {
 
     public:
         EAReturn (AST::OperNode* astOper): EvalApplyNode (astOper) {}
-        const EvalApplyNode *eval (Context& context) const override; //!TODO
+        void eval (Context& context) const override {} //!TODO
 
     };
 
     class EAAssign final: public EvalApplyNode {
-
+        
     public:
         EAAssign (AST::OperNode* astOper): EvalApplyNode (astOper) {}
-        const EvalApplyNode *eval (Context& context) const override; //!TODO
+        void eval (Context& context) const override; //!TODO
+
+    };
+
+
+    class EAPrint final: public EvalApplyNode { //Mom told me I'm special
+
+    public:
+        EAPrint (AST::OperNode* astOper): EvalApplyNode (astOper) {}
+        void eval (Context& context) const override; //!TODO
+
+    };
+
+    class EAVar final: public EvalApplyNode {
+
+    public:
+        EAVar (AST::VarNode* astOper): EvalApplyNode (astOper) {}
+        void eval (Context& context) const override {} //!TODO
+
+    };
+
+    class EAFunc final: public EvalApplyNode {
+
+    public:
+        EAFunc (AST::FuncNode* astOper): EvalApplyNode (astOper) {}
+        void eval (Context& context) const override {} //!TODO
+
+    };
+
+    class EANum final: public EvalApplyNode {
+        
+        int val_;
+    public:
+        EANum (AST::NumNode* astOper): EvalApplyNode (astOper), val_(astOper->getValue()) {}
+        void eval (Context& context) const override; //!TODO
 
     };
 
@@ -223,16 +271,13 @@ namespace interpret {
 
     };
 
-    struct UnaryOpPrint {
+    class EAScope final: public EvalApplyNode {
 
-        int operator() (const VarScope& val) {
-
-            //!TODO
-
-        }
-
+        std::vector<EvalApplyNode*> children_;
+    public:
+        EAScope (AST::ScopeNode* astScope);
+        void eval (Context& context) const override; //!TODO
     };
-
 }  // namespace interpret
 
 #endif

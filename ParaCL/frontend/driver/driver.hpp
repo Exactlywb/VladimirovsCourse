@@ -14,7 +14,7 @@
 // #include "compiler.hpp"
 #include "customLexer.hpp"
 #include "grammar.tab.hh"
-// #include "interpreter.hpp"
+#include "interpreter.hpp"
 #include "nAryTree.hpp"
 #include "semantic.hpp"
 
@@ -139,16 +139,11 @@ namespace yy {
         void callDump (std::ostream &out) { tree_.dump (out); }
 
         void interpret ()
-        {  //!TODO does it have to be in driver?
+        {  
 
-//             interpret::Interpreter interpret (&tree_);
-
-//             try {
-//                 interpret.run ();
-//             }
-//             catch (const interpret::ErrorDetector &err) {
-//                 pushError (err.getLocation (), err.what ());
-//             }
+            interpret::Interpreter interpret (static_cast<AST::ScopeNode*>(tree_.getRoot()));
+            interpret.run ();
+            
         }
 
         // void compile ()
