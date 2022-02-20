@@ -125,17 +125,23 @@ void EAAssign::eval (Context& context) const {
         const AST::VarNode* varNode = static_cast<const AST::VarNode*>(id->getNode());
         std::string name = varNode->getName();
 
-        auto&& findRes = context.scope_.lookup(name);
+        auto findRes = context.scope_.lookup(name);
 
-        if (findRes != context.scope_.tblEnd())
+        if (findRes == context.scope_.tblEnd())
             context.scope_.push({name, val});
+        else {
+
+            VarScope* curVal = static_cast<VarScope*>(val);
+            VarScope* var = static_cast<VarScope*>((*findRes).second);
+            var->val_ = curVal->val_;
+        }
 
         return;
     }
 
-    context.execStack_.push_back(buildApplyNode(lhs));
+    context.execStack_.push_back(lhs);
     context.execStack_.push_back(this);
-    context.execStack_.push_back(buildApplyNode(rhs));
+    context.execStack_.push_back(rhs);
 
     // std::cout << "num = " << buildApplyNode(rhs) << std::endl;
     
@@ -143,9 +149,18 @@ void EAAssign::eval (Context& context) const {
     
 }
 
+void EAVar::eval (Context& context) const {
+
+    const AST::VarNode* varNode = static_cast<const AST::VarNode*> (EvalApplyNode::getNode());
+    auto findRes = context.scope_.lookup(varNode->getName());
+
+
+    VarScope* var = static_cast<VarScope*> ((*findRes).second);
+    context.calcStack_.push_back(var);
+} 
+
 void EANum::eval (Context& context) const { 
 
-    std::cout << "Popal?" << std::endl;
     context.calcStack_.push_back(new VarScope(val_));
     // std::cout << "Popal wefw?" << std::endl;
 }

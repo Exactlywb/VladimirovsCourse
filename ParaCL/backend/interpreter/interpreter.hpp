@@ -86,12 +86,12 @@ namespace interpret {
 
         tblIt lookup (const std::string& name) {
         
-            for (auto&& obj = tbl_.cbegin (), end = tbl_.cend (); obj != end; ++obj) {
+            for (auto obj = tbl_.cbegin (), end = tbl_.cend (); obj != end; ++obj) {
 
                 if ((*obj).first == name)
                     return obj;
             }
-
+            
             return tbl_.cend ();
 
         }
@@ -187,9 +187,26 @@ namespace interpret {
     template <typename operT>
     class EABinOp final: public EvalApplyNode {
 
+        operT apply_;
     public:
         EABinOp (const AST::OperNode* astOper): EvalApplyNode (astOper) {}
-        void eval (Context& context) const override {} //!TODO
+        void eval (Context& context) const override {
+
+            const AST::Node* node = EvalApplyNode::getNode();
+            const AST::Node* rhs  = (*node)[1];
+            const AST::Node* lhs  = (*node)[0];
+            
+            if (context.prev == rhs) {
+                
+                context.prev = getNode(); 
+                apply_(context);
+                return;
+            }
+
+            context.execStack_.push_back(this);
+            context.execStack_.push_back(rhs);
+            context.execStack_.push_back(lhs);
+        }
 
     };
 
@@ -212,8 +229,6 @@ namespace interpret {
         EAUnaryOp (const AST::OperNode* astOper): EvalApplyNode (astOper) {}
         void eval (Context& context) const override
         {
-
-
             const AST::Node* node = EvalApplyNode::getNode();
             const AST::Node* rhs  = (*node)[0];
             
@@ -226,7 +241,6 @@ namespace interpret {
 
             context.execStack_.push_back(this);
             context.execStack_.push_back(rhs);
-            
         }
 
     };
@@ -251,7 +265,7 @@ namespace interpret {
 
     public:
         EAVar (const AST::VarNode* astOper): EvalApplyNode (astOper) {}
-        void eval (Context& context) const override {} //!TODO
+        void eval (Context& context) const override; //!TODO
 
     };
 
@@ -274,12 +288,14 @@ namespace interpret {
 
     struct BinOpAdd {
 
-        int operator() (const VarScope& lhs, const VarScope& rhs) const {
+        int operator() (Context& context) const {
 
-            //!TODO
-
+            VarScope* lhs = static_cast<VarScope*> (context.calcStack_.back());
+            context.calcStack_.pop_back();
+            VarScope* rhs = static_cast<VarScope*> (context.calcStack_.back());
+            context.calcStack_.pop_back();
+            context.calcStack_.push_back(new VarScope (lhs->getData() + rhs->getData()));
         }
-
     };
 
     class EAScope final: public EvalApplyNode {
