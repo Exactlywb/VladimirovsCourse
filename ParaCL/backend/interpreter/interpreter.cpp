@@ -4,26 +4,26 @@ namespace interpret {
 
 namespace {
 
-        EvalApplyNode* buildApplyNodeFromCondition (const AST::CondNode* condNode) {
+        std::shared_ptr<EvalApplyNode> buildApplyNodeFromCondition (const AST::CondNode* condNode) {
 
             if (condNode->getConditionType() == AST::CondNode::ConditionType::IF)
-                return (new EAIf (condNode));
+                return (std::make_shared<EAIf> (condNode));
                         
-            return (new EAWhile (condNode));
+            return (std::make_shared<EAWhile> (condNode));
         }
 
-        EvalApplyNode* buildApplyNodeFromOperator (const AST::OperNode* opNode) { //TODO: Make return
+        std::shared_ptr<EvalApplyNode> buildApplyNodeFromOperator (const AST::OperNode* opNode) { //TODO: Make return
 
             switch (opNode->getOpType ()) {
 
                 case AST::OperNode::OperType::RETURN:
-                    return (new EAReturn (opNode));
+                    return (std::make_shared<EAReturn> (opNode));
                 case AST::OperNode::OperType::ASSIGN:
-                    return (new EAAssign (opNode));
+                    return (std::make_shared<EAAssign> (opNode));
                 case AST::OperNode::OperType::UNARY_M:
                 case AST::OperNode::OperType::UNARY_P: 
                 case AST::OperNode::OperType::PRINT: 
-                    return (new EAUnaryOp<UnaryOpPrint> (opNode));
+                    return (std::make_shared<EAUnaryOp<UnaryOpPrint>> (opNode));
 
                 case AST::OperNode::OperType::ADD:
                 case AST::OperNode::OperType::SUB:
@@ -38,15 +38,15 @@ namespace {
                 case AST::OperNode::OperType::OR:
                 case AST::OperNode::OperType::AND:
                 case AST::OperNode::OperType::MOD: 
-                    return (new EABinOp<BinOpAdd>  (opNode));
+                    return (std::make_shared<EABinOp<BinOpAdd>>  (opNode));
             }
         }
 
-        EvalApplyNode* buildApplyNodeFromVariable (const AST::VarNode*  varNode)   { return (new EAVar  (varNode));  }
-        EvalApplyNode* buildApplyNodeFromFunction (const AST::FuncNode* funcNode)  { return (new EAFunc (funcNode)); }
-        EvalApplyNode* buildApplyNodeFromNumber   (const AST::NumNode*  numNode)   { return (new EANum  (numNode));  }
+        std::shared_ptr<EvalApplyNode> buildApplyNodeFromVariable (const AST::VarNode*  varNode)   { return (std::make_shared<EAVar> (varNode));  }
+        std::shared_ptr<EvalApplyNode> buildApplyNodeFromFunction (const AST::FuncNode* funcNode)  { return (std::make_shared<EAFunc> (funcNode)); }
+        std::shared_ptr<EvalApplyNode> buildApplyNodeFromNumber   (const AST::NumNode*  numNode)   { return (std::make_shared<EANum>  (numNode));  }
 
-        EvalApplyNode* buildApplyNode (const AST::Node* node) {
+        std::shared_ptr<EvalApplyNode> buildApplyNode (const AST::Node* node) {
 
             switch (node->getType()) {
 
@@ -77,10 +77,10 @@ void Interpreter::run () {
 
     Context context;
 
-    context.execStack_.push_back(new EAScope (root_));
+    context.execStack_.push_back(std::make_shared<EAScope> (root_));
     while (!context.execStack_.empty()) {
 
-        const EvalApplyNode* curNode = context.execStack_[context.execStack_.size() - 1];
+        std::shared_ptr<const EvalApplyNode> curNode = context.execStack_[context.execStack_.size() - 1];
         context.execStack_.pop_back();
         curNode->eval(context);
 
@@ -131,8 +131,8 @@ void EAAssign::eval (Context& context) const {
             context.scope_.push({name, val});
         else {
 
-            VarScope* curVal = static_cast<VarScope*>(val);
-            VarScope* var = static_cast<VarScope*>((*findRes).second);
+            std::shared_ptr<VarScope> curVal = std::static_pointer_cast<VarScope>(val);
+            std::shared_ptr<VarScope> var = std::static_pointer_cast<VarScope>((*findRes).second);
             var->val_ = curVal->val_;
         }
 
@@ -140,7 +140,7 @@ void EAAssign::eval (Context& context) const {
     }
 
     context.execStack_.push_back(lhs);
-    context.execStack_.push_back(this);
+    context.execStack_.push_back(shared_from_this ());
     context.execStack_.push_back(rhs);
 
     // std::cout << "num = " << buildApplyNode(rhs) << std::endl;
@@ -155,13 +155,13 @@ void EAVar::eval (Context& context) const {
     auto findRes = context.scope_.lookup(varNode->getName());
 
 
-    VarScope* var = static_cast<VarScope*> ((*findRes).second);
+    std::shared_ptr<VarScope> var = std::static_pointer_cast<VarScope> ((*findRes).second);
     context.calcStack_.push_back(var);
 } 
 
 void EANum::eval (Context& context) const { 
 
-    context.calcStack_.push_back(new VarScope(val_));
+    context.calcStack_.push_back(std::make_shared<VarScope> (val_));
     // std::cout << "Popal wefw?" << std::endl;
 }
 

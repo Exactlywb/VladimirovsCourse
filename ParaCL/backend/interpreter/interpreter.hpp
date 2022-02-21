@@ -74,12 +74,12 @@ namespace interpret {
 
     class Scope final {
 
-        std::vector<std::pair<std::string, ScopeWrapper*>> tbl_;
+        std::vector<std::pair<std::string, std::shared_ptr<ScopeWrapper>>> tbl_;
 
     public:
-        using tblIt = std::vector<std::pair<std::string, ScopeWrapper*>>::const_iterator;        
+        using tblIt = std::vector<std::pair<std::string, std::shared_ptr<ScopeWrapper>>>::const_iterator;        
 
-        void push (std::pair<std::string, ScopeWrapper*> obj) { tbl_.push_back (obj); }
+        void push (std::pair<std::string, std::shared_ptr<ScopeWrapper>> obj) { tbl_.push_back (obj); }
         
         tblIt tblBegin () const { return tbl_.cbegin (); }
         tblIt tblEnd () const { return tbl_.cend (); }
@@ -111,24 +111,50 @@ namespace interpret {
 
     };
 
-    class EvalApplyNode;
+    struct Context;
+
+    class EvalApplyNode: public std::enable_shared_from_this<EvalApplyNode> {
+
+        const AST::Node* node_;
+        EvalApplyNode* parent_ = nullptr;
+
+    public:
+        EvalApplyNode (const AST::Node* node): node_ (node) {}
+
+        const AST::Node* getNode () const { return node_; }
+        virtual void eval (Context& context) const = 0;
+
+    };
 
     struct ExecStack {
 
-        std::vector<const EvalApplyNode*> execStack_;
+        std::vector<std::shared_ptr<const EvalApplyNode>> execStack_;
         
-        void push_back (const EvalApplyNode* node) {
+        void push_back (std::shared_ptr<const EvalApplyNode> node) {
             execStack_.push_back (node);
         }
 
         bool empty () { return execStack_.empty (); }
         size_t size () { return execStack_.size ();}
 
-        const EvalApplyNode*& operator[] (size_t pos) { return execStack_ [pos];}
-        void pop_back () { execStack_.pop_back (); }
-        const EvalApplyNode*& back () { return execStack_.back (); }
+        std::shared_ptr<const EvalApplyNode> operator[] (size_t pos) { return execStack_ [pos];}
+        void pop_back () {
+            execStack_.pop_back (); 
+        }
+
+        std::shared_ptr<const EvalApplyNode> back () { return execStack_.back (); }
     
         void push_back (const AST::Node* node);
+
+    };
+
+    struct CalcStack {
+
+        std::vector<std::shared_ptr<ScopeWrapper>> calcStack_;
+        
+        void push_back (std::shared_ptr<ScopeWrapper> node) { calcStack_.push_back (node); }
+        void pop_back () { calcStack_.pop_back (); }
+        std::shared_ptr<ScopeWrapper> back () { return calcStack_.back (); }
 
     };
 
@@ -138,7 +164,8 @@ namespace interpret {
         
         //std::vector<const EvalApplyNode*> execStack_;
         ExecStack execStack_;
-        std::vector<ScopeWrapper*> calcStack_;
+        //std::vector<ScopeWrapper*> calcStack_;
+        CalcStack calcStack_;
         const AST::Node *prev = nullptr;
 
     };
@@ -152,21 +179,6 @@ namespace interpret {
         void run ();
 
     }; 
-
-    class EvalApplyNode {
-
-        const AST::Node* node_;
-        EvalApplyNode* parent_ = nullptr;
-
-    public:
-        EvalApplyNode (const AST::Node* node): node_ (node) {}
-
-        const AST::Node* getNode () const { return node_; }
-        virtual void eval (Context& context) const = 0;
-
-    };
-
-    
 
     class EAWhile final: public EvalApplyNode {
 
@@ -203,7 +215,7 @@ namespace interpret {
                 return;
             }
 
-            context.execStack_.push_back(this);
+            context.execStack_.push_back(shared_from_this ());
             context.execStack_.push_back(rhs);
             context.execStack_.push_back(lhs);
         }
@@ -214,7 +226,7 @@ namespace interpret {
 
         void operator() (Context& context) const {
 
-            VarScope* var = static_cast<VarScope*> (context.calcStack_.back());
+            std::shared_ptr<VarScope> var = std::static_pointer_cast<VarScope>(context.calcStack_.back());
             std::cout << var->val_ << std::endl;
             context.calcStack_.pop_back();
         }
@@ -239,7 +251,7 @@ namespace interpret {
                 return;
             }
 
-            context.execStack_.push_back(this);
+            context.execStack_.push_back(shared_from_this ());
             context.execStack_.push_back(rhs);
         }
 
@@ -290,17 +302,17 @@ namespace interpret {
 
         int operator() (Context& context) const {
 
-            VarScope* lhs = static_cast<VarScope*> (context.calcStack_.back());
+            std::shared_ptr<VarScope> lhs = std::static_pointer_cast<VarScope> (context.calcStack_.back());
             context.calcStack_.pop_back();
-            VarScope* rhs = static_cast<VarScope*> (context.calcStack_.back());
+            std::shared_ptr<VarScope> rhs = std::static_pointer_cast<VarScope> (context.calcStack_.back());
             context.calcStack_.pop_back();
-            context.calcStack_.push_back(new VarScope (lhs->getData() + rhs->getData()));
+            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() + rhs->getData()));
         }
     };
 
     class EAScope final: public EvalApplyNode {
 
-        std::vector<EvalApplyNode*> children_;
+        std::vector<std::shared_ptr<EvalApplyNode>> children_;
     public:
         EAScope (AST::ScopeNode* astScope);
         void eval (Context& context) const override; //!TODO
