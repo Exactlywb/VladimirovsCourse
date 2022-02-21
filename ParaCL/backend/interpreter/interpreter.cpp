@@ -26,20 +26,34 @@ namespace {
                     return (std::make_shared<EAUnaryOp<UnaryOpPrint>> (opNode));
 
                 case AST::OperNode::OperType::ADD:
+                    return std::make_shared<EABinOp<BinOpAdd>> (opNode);
                 case AST::OperNode::OperType::SUB:
+                    return std::make_shared<EABinOp<BinOpSub>> (opNode);
                 case AST::OperNode::OperType::MUL:
+                    return std::make_shared<EABinOp<BinOpMul>> (opNode);
                 case AST::OperNode::OperType::DIV:
+                    return std::make_shared<EABinOp<BinOpDiv>> (opNode);
                 case AST::OperNode::OperType::MORE:
+                    return std::make_shared<EABinOp<BinOpMore>> (opNode);
                 case AST::OperNode::OperType::LESS:
+                    return std::make_shared<EABinOp<BinOpLess>> (opNode);
                 case AST::OperNode::OperType::EQ:
+                    return std::make_shared<EABinOp<BinOpEQ>> (opNode);
                 case AST::OperNode::OperType::NEQ:
+                    return std::make_shared<EABinOp<BinOpNEQ>> (opNode);
                 case AST::OperNode::OperType::GTE:
+                    return std::make_shared<EABinOp<BinOpGTE>> (opNode);
                 case AST::OperNode::OperType::LTE:
+                    return std::make_shared<EABinOp<BinOpLTE>> (opNode);
                 case AST::OperNode::OperType::OR:
+                    return std::make_shared<EABinOp<BinOpOr>> (opNode);
                 case AST::OperNode::OperType::AND:
+                    return std::make_shared<EABinOp<BinOpAnd>> (opNode);
                 case AST::OperNode::OperType::MOD: 
-                    return (std::make_shared<EABinOp<BinOpAdd>>  (opNode));
+                    return (std::make_shared<EABinOp<BinOpMod>>  (opNode));
             }
+
+            throw std::runtime_error ("Unexpected operator type");
         }
 
         std::shared_ptr<EvalApplyNode> buildApplyNodeFromVariable (const AST::VarNode*  varNode)   { return (std::make_shared<EAVar> (varNode));  }
@@ -61,6 +75,8 @@ namespace {
                 case AST::NodeT::NUMBER:
                     return buildApplyNodeFromNumber (static_cast<const AST::NumNode*> (node));
             }
+            
+            throw std::runtime_error ("unexpected AST::Node type");
         }
 
     }

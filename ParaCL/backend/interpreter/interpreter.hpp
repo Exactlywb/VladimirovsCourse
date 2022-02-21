@@ -298,16 +298,163 @@ namespace interpret {
 
     };
 
+namespace {
+
+    std::shared_ptr<VarScope> getTopAndPopVar (Context& context) {
+
+        std::shared_ptr<VarScope> res = std::static_pointer_cast<VarScope> (context.calcStack_.back ());
+        context.calcStack_.pop_back ();
+        
+        return res;
+    
+    }
+
+}
+
     struct BinOpAdd {
 
-        int operator() (Context& context) const {
+        void operator() (Context& context) const {
 
-            std::shared_ptr<VarScope> lhs = std::static_pointer_cast<VarScope> (context.calcStack_.back());
-            context.calcStack_.pop_back();
-            std::shared_ptr<VarScope> rhs = std::static_pointer_cast<VarScope> (context.calcStack_.back());
-            context.calcStack_.pop_back();
+            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
             context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() + rhs->getData()));
         }
+    };
+
+    struct BinOpSub {
+
+        void operator() (Context& context) const {
+
+            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() - rhs->getData()));
+        }       
+
+    };
+
+    struct BinOpMul {
+
+        void operator() (Context& context) const {
+
+            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() * rhs->getData()));
+        }
+
+    };
+
+    struct BinOpDiv {
+
+        void operator() (Context& context) const {
+
+            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() / rhs->getData()));
+        }
+
+    };
+
+    struct BinOpMore {
+
+        void operator() (Context& context) const {
+
+            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() > rhs->getData()));
+        }
+
+    };
+
+    struct BinOpLess {
+
+        void operator() (Context& context) const {
+
+            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() < rhs->getData()));
+        }
+
+    };
+ 
+    struct BinOpEQ {
+
+        void operator() (Context& context) const {
+
+            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() == rhs->getData()));
+        }
+
+    };
+
+
+    struct BinOpNEQ {
+
+        void operator() (Context& context) const {
+
+            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() != rhs->getData()));
+        }
+
+    };
+
+    struct BinOpGTE {
+
+        void operator() (Context& context) const {
+
+            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() >= rhs->getData()));
+        }
+
+    };
+
+    struct BinOpLTE {
+
+        void operator() (Context& context) const {
+
+            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() <= rhs->getData()));
+        }
+
+    };
+
+
+    struct BinOpOr {
+
+        void operator() (Context& context) const {
+
+            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() || rhs->getData()));
+        }
+
+    };
+
+
+    struct BinOpAnd {
+
+        void operator() (Context& context) const {
+
+            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() && rhs->getData()));
+        }
+
+    };
+
+
+    struct BinOpMod {
+
+        void operator() (Context& context) const {
+
+            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() % rhs->getData()));
+        }
+
     };
 
     class EAScope final: public EvalApplyNode {
