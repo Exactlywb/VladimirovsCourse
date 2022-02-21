@@ -24,7 +24,6 @@ namespace {
                 case AST::OperNode::OperType::UNARY_P: 
                 case AST::OperNode::OperType::PRINT: 
                     return (std::make_shared<EAUnaryOp<UnaryOpPrint>> (opNode));
-
                 case AST::OperNode::OperType::ADD:
                     return std::make_shared<EABinOp<BinOpAdd>> (opNode);
                 case AST::OperNode::OperType::SUB:
@@ -56,9 +55,10 @@ namespace {
             throw std::runtime_error ("Unexpected operator type");
         }
 
-        std::shared_ptr<EvalApplyNode> buildApplyNodeFromVariable (const AST::VarNode*  varNode)   { return (std::make_shared<EAVar> (varNode));  }
-        std::shared_ptr<EvalApplyNode> buildApplyNodeFromFunction (const AST::FuncNode* funcNode)  { return (std::make_shared<EAFunc> (funcNode)); }
-        std::shared_ptr<EvalApplyNode> buildApplyNodeFromNumber   (const AST::NumNode*  numNode)   { return (std::make_shared<EANum>  (numNode));  }
+        std::shared_ptr<EvalApplyNode> buildApplyNodeFromVariable (const AST::VarNode*  varNode)        { return (std::make_shared<EAVar> (varNode));       }
+        std::shared_ptr<EvalApplyNode> buildApplyNodeFromFunction (const AST::FuncNode* funcNode)       { return (std::make_shared<EAFunc> (funcNode));     }
+        std::shared_ptr<EvalApplyNode> buildApplyNodeFromNumber   (const AST::NumNode*  numNode)        { return (std::make_shared<EANum>  (numNode));      }
+        std::shared_ptr<EvalApplyNode> buildApplyNodeFromScope    (const AST::ScopeNode*  scopeNode)    { return (std::make_shared<EAScope> (scopeNode));   }
 
         std::shared_ptr<EvalApplyNode> buildApplyNode (const AST::Node* node) {
 
@@ -74,6 +74,8 @@ namespace {
                     return buildApplyNodeFromVariable (static_cast<const AST::VarNode*> (node));
                 case AST::NodeT::NUMBER:
                     return buildApplyNodeFromNumber (static_cast<const AST::NumNode*> (node));
+                case AST::NodeT::SCOPE:
+                    return buildApplyNodeFromScope (static_cast<const AST::ScopeNode*> (node));
             }
             
             throw std::runtime_error ("unexpected AST::Node type");
@@ -104,7 +106,7 @@ void Interpreter::run () {
     }
 }
 
-EAScope::EAScope (AST::ScopeNode* astScope): EvalApplyNode (astScope) {
+EAScope::EAScope (const AST::ScopeNode* astScope): EvalApplyNode (astScope) {
 
     auto&& st  = getNode()->childBegin();
     auto&& fin = getNode()->childEnd();
@@ -165,6 +167,25 @@ void EAAssign::eval (Context& context) const {
     
 }
 
+void EAIf::eval (Context& context) const {
+
+    const AST::Node* node = EvalApplyNode::getNode();
+    const AST::Node* lhs  = (*node)[0];
+    
+    if (context.prev == lhs) {
+        std::shared_ptr<VarScope> cond = std::static_pointer_cast <VarScope> (context.calcStack_.back ());
+        
+        if (cond->getData()) {
+            context.execStack_.push_back ((*node)[1]);
+        }
+        context.calcStack_.pop_back ();
+        return;
+    }
+
+    context.execStack_.push_back (shared_from_this ());
+    context.execStack_.push_back (lhs);
+}
+
 void EAVar::eval (Context& context) const {
 
     const AST::VarNode* varNode = static_cast<const AST::VarNode*> (EvalApplyNode::getNode());
@@ -178,7 +199,6 @@ void EAVar::eval (Context& context) const {
 void EANum::eval (Context& context) const { 
 
     context.calcStack_.push_back(std::make_shared<VarScope> (val_));
-    // std::cout << "Popal wefw?" << std::endl;
 }
 
 

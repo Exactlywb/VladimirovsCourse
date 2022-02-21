@@ -77,7 +77,7 @@ namespace interpret {
         std::vector<std::pair<std::string, std::shared_ptr<ScopeWrapper>>> tbl_;
 
     public:
-        using tblIt = std::vector<std::pair<std::string, std::shared_ptr<ScopeWrapper>>>::const_iterator;        
+        using tblIt = std::vector<std::pair<std::string, std::shared_ptr<ScopeWrapper>>>::const_iterator;
 
         void push (std::pair<std::string, std::shared_ptr<ScopeWrapper>> obj) { tbl_.push_back (obj); }
         
@@ -162,9 +162,7 @@ namespace interpret {
     
         Scope scope_;
         
-        //std::vector<const EvalApplyNode*> execStack_;
         ExecStack execStack_;
-        //std::vector<ScopeWrapper*> calcStack_;
         CalcStack calcStack_;
         const AST::Node *prev = nullptr;
 
@@ -192,7 +190,7 @@ namespace interpret {
 
     public:
         EAIf (const AST::CondNode* astCond): EvalApplyNode (astCond) {}
-        void eval (Context& context) const override {} //!TODO
+        void eval (Context& context) const override; //!TODO
 
     };
 
@@ -327,7 +325,7 @@ namespace {
 
             std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
             std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() - rhs->getData()));
+            context.calcStack_.push_back(std::make_shared<VarScope> (rhs->getData() - lhs->getData()));
         }       
 
     };
@@ -349,7 +347,7 @@ namespace {
 
             std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
             std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() / rhs->getData()));
+            context.calcStack_.push_back(std::make_shared<VarScope> (rhs->getData() / lhs->getData()));
         }
 
     };
@@ -360,7 +358,7 @@ namespace {
 
             std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
             std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() > rhs->getData()));
+            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() < rhs->getData()));
         }
 
     };
@@ -371,7 +369,7 @@ namespace {
 
             std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
             std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() < rhs->getData()));
+            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() > rhs->getData()));
         }
 
     };
@@ -405,7 +403,7 @@ namespace {
 
             std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
             std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() >= rhs->getData()));
+            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() <= rhs->getData()));
         }
 
     };
@@ -416,7 +414,7 @@ namespace {
 
             std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
             std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() <= rhs->getData()));
+            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() >= rhs->getData()));
         }
 
     };
@@ -452,7 +450,7 @@ namespace {
 
             std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
             std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() % rhs->getData()));
+            context.calcStack_.push_back(std::make_shared<VarScope> (rhs->getData() % lhs->getData()));
         }
 
     };
@@ -461,7 +459,7 @@ namespace {
 
         std::vector<std::shared_ptr<EvalApplyNode>> children_;
     public:
-        EAScope (AST::ScopeNode* astScope);
+        EAScope (const AST::ScopeNode* astScope);
         void eval (Context& context) const override; //!TODO
     };
 }  // namespace interpret
