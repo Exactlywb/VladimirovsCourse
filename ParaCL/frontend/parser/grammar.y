@@ -275,7 +275,7 @@ whileStatement              :   WHILE conditionExpression body  {
                                                                    if ($2 && $3) {
                                                                         AST::ScopeNode* newScope = new AST::ScopeNode ();
                                                                         newScope->addChild ($3);
-                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::WHILE, $2, $3, @1);
+                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::WHILE, $2, newScope, @1);
                                                                     } else {
                                                                         $$ = nullptr;
                                                                         delete $2;
