@@ -182,7 +182,7 @@ namespace interpret {
 
     public:
         EAWhile (const AST::CondNode* astCond): EvalApplyNode (astCond) {}
-        void eval (Context& context) const override {} //!TODO
+        void eval (Context& context) const override;
 
     };
 
@@ -190,7 +190,7 @@ namespace interpret {
 
     public:
         EAIf (const AST::CondNode* astCond): EvalApplyNode (astCond) {}
-        void eval (Context& context) const override; //!TODO
+        void eval (Context& context) const override;
 
     };
 
@@ -231,6 +231,26 @@ namespace interpret {
 
     };
 
+    struct UnaryOpMinus {
+
+        void operator() (Context& context) const {
+
+            std::shared_ptr<VarScope> var = std::static_pointer_cast<VarScope>(context.calcStack_.back());
+            context.calcStack_.pop_back();
+            context.calcStack_.push_back(std::make_shared <VarScope> (- var->getData ()));
+        }
+    };
+
+    struct UnaryOpPlus {
+
+        void operator() (Context& context) const {
+
+            std::shared_ptr<VarScope> var = std::static_pointer_cast<VarScope>(context.calcStack_.back());
+            context.calcStack_.pop_back();
+            context.calcStack_.push_back(std::make_shared <VarScope> (+ var->getData ()));
+        }
+    };
+
     template <typename operT>
     class EAUnaryOp final: public EvalApplyNode {
 
@@ -244,7 +264,7 @@ namespace interpret {
             
             if (context.prev == rhs) {
                 
-                context.prev = getNode(); 
+                context.prev = getNode();
                 apply_(context);
                 return;
             }
@@ -253,6 +273,11 @@ namespace interpret {
             context.execStack_.push_back(rhs);
         }
 
+    };
+
+    struct EAScan final: public EvalApplyNode {
+        EAScan (const AST::OperNode* astOper): EvalApplyNode (astOper) {}
+        void eval (Context& context) const override;
     };
 
     class EAReturn final: public EvalApplyNode {
@@ -264,7 +289,7 @@ namespace interpret {
     };
 
     class EAAssign final: public EvalApplyNode {
-        
+
     public:
         EAAssign (const AST::OperNode* astOper): EvalApplyNode (astOper) {}
         void eval (Context& context) const override; //!TODO

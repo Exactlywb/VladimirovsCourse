@@ -21,7 +21,9 @@ namespace {
                 case AST::OperNode::OperType::ASSIGN:
                     return (std::make_shared<EAAssign> (opNode));
                 case AST::OperNode::OperType::UNARY_M:
+                    return (std::make_shared<EAUnaryOp<UnaryOpMinus>> (opNode));
                 case AST::OperNode::OperType::UNARY_P: 
+                    return (std::make_shared<EAUnaryOp<UnaryOpPlus>> (opNode));
                 case AST::OperNode::OperType::PRINT: 
                     return (std::make_shared<EAUnaryOp<UnaryOpPrint>> (opNode));
                 case AST::OperNode::OperType::ADD:
@@ -50,6 +52,8 @@ namespace {
                     return std::make_shared<EABinOp<BinOpAnd>> (opNode);
                 case AST::OperNode::OperType::MOD: 
                     return (std::make_shared<EABinOp<BinOpMod>>  (opNode));
+                case AST::OperNode::OperType::SCAN: 
+                    return (std::make_shared<EAScan> (opNode));
             }
 
             throw std::runtime_error ("Unexpected operator type");
@@ -108,8 +112,8 @@ void Interpreter::run () {
 
 EAScope::EAScope (const AST::ScopeNode* astScope): EvalApplyNode (astScope) {
 
-    auto&& st  = getNode()->childBegin();
-    auto&& fin = getNode()->childEnd();
+    auto st  = getNode()->childBegin();
+    auto fin = getNode()->childEnd();
 
     for (; st != fin; ++st)      
         children_.push_back(buildApplyNode(*st));
@@ -134,7 +138,6 @@ void EAAssign::eval (Context& context) const {
 
     if (context.prev == rhs) {
         
-        // std::cout << "XACKMAJSDJ" << std::endl;
         context.prev = getNode(); 
         auto id = context.execStack_.back();
         context.execStack_.pop_back();
@@ -145,11 +148,12 @@ void EAAssign::eval (Context& context) const {
 
         auto findRes = context.scope_.lookup(name);
 
-        if (findRes == context.scope_.tblEnd())
-            context.scope_.push({name, val});
+        std::shared_ptr<VarScope> curVal = std::static_pointer_cast<VarScope>(val);
+        
+        if (findRes == context.scope_.tblEnd()) {
+            context.scope_.push({name, std::make_shared<VarScope> (curVal->getData())});
+        }
         else {
-
-            std::shared_ptr<VarScope> curVal = std::static_pointer_cast<VarScope>(val);
             std::shared_ptr<VarScope> var = std::static_pointer_cast<VarScope>((*findRes).second);
             var->val_ = curVal->val_;
         }
@@ -160,11 +164,13 @@ void EAAssign::eval (Context& context) const {
     context.execStack_.push_back(lhs);
     context.execStack_.push_back(shared_from_this ());
     context.execStack_.push_back(rhs);
+}
 
-    // std::cout << "num = " << buildApplyNode(rhs) << std::endl;
+void EAScan::eval (Context& context) const {
     
-    // std::cout << "Size = " << context.execStack_.size() << std::endl;
-    
+    int var;
+    std::cin >> var;
+    context.calcStack_.push_back(std::make_shared<VarScope> (var));
 }
 
 void EAIf::eval (Context& context) const {
@@ -176,6 +182,26 @@ void EAIf::eval (Context& context) const {
         std::shared_ptr<VarScope> cond = std::static_pointer_cast <VarScope> (context.calcStack_.back ());
         
         if (cond->getData()) {
+            context.execStack_.push_back ((*node)[1]);
+        }
+        context.calcStack_.pop_back ();
+        return;
+    }
+
+    context.execStack_.push_back (shared_from_this ());
+    context.execStack_.push_back (lhs);
+}
+
+void EAWhile::eval (Context& context) const {
+
+    const AST::Node* node = EvalApplyNode::getNode();
+    const AST::Node* lhs  = (*node)[0];
+    
+    if (context.prev == lhs) {
+        std::shared_ptr<VarScope> cond = std::static_pointer_cast <VarScope> (context.calcStack_.back ());
+        
+        if (cond->getData()) {
+            context.execStack_.push_back (shared_from_this ());
             context.execStack_.push_back ((*node)[1]);
         }
         context.calcStack_.pop_back ();
