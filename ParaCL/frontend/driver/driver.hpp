@@ -89,6 +89,11 @@ namespace yy {
                 std::cout << e << std::endl;
         }
 
+        bool isNoErrors () const
+        {
+            return error_.empty ();
+        }
+
         void cleanError () { error_.clear (); }
 
         int getLineNo () const noexcept { return lexer_->lineno (); }
