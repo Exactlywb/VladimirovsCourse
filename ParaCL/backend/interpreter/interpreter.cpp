@@ -170,8 +170,8 @@ void EAAssign::eval (Context& context) const {
 
     if (context.prev == rhs) {
         
-        context.prev = getNode(); 
         auto id = context.execStack_.back();
+        context.prev = getNode(); 
         context.execStack_.pop_back();
         auto val = context.calcStack_.back();
 
@@ -179,18 +179,35 @@ void EAAssign::eval (Context& context) const {
         std::string name = varNode->getName();
         auto findRes = context.scope_->lookup(name);
 
-        std::shared_ptr<const VarScope> curVal = std::static_pointer_cast<const VarScope>(val);
         
         if (findRes == context.scope_->tblEnd()) {
 
-            std::shared_ptr<VarScope> varToPush = std::make_shared<VarScope> (curVal->getData ());
-            context.scope_->push({name, varToPush});
-            context.calcStack_.push_back (varToPush);
-            
+            if (val->type_ == ScopeWrapper::WrapperType::VAR) {
+
+                std::shared_ptr<const VarScope> curVal = std::static_pointer_cast<const VarScope> (val);
+                std::shared_ptr<VarScope> varToPush = std::make_shared<VarScope> (curVal->getData ());
+                context.scope_->push({name, varToPush});
+                context.calcStack_.push_back (varToPush);
+
+            } else {
+                std::shared_ptr<FuncObjScope> funcCompToCopy = std::static_pointer_cast<FuncObjScope> (val);
+                context.scope_->push ({name, funcCompToCopy});
+
+                const AST::FuncNode* funcName = funcCompToCopy->getFuncNodeName ();
+                if (funcName) {
+
+                    const AST::VarNode* funcVarName = static_cast<const AST::VarNode*> ((*funcName) [0]);
+                    context.scope_->push ({funcVarName->getName (), funcCompToCopy});
+
+                }
+
+            }
+
         }
         else {
 
             std::shared_ptr<VarScope> var = std::static_pointer_cast<VarScope>((*findRes).second);
+            std::shared_ptr<const VarScope> curVal = std::static_pointer_cast<const VarScope> (val);
             var->val_ = curVal->val_;
 
         }
@@ -256,7 +273,7 @@ void EAVar::eval (Context& context) const {
     const AST::VarNode* varNode = static_cast<const AST::VarNode*> (EvalApplyNode::getNode());
     auto findRes = context.scope_->lookup(varNode->getName());
 
-    std::shared_ptr<const VarScope> var = std::static_pointer_cast<const VarScope> ((*findRes).second);
+    std::shared_ptr<VarScope> var = std::static_pointer_cast<VarScope> ((*findRes).second);
 
     context.calcStack_.push_back(var);
 } 
@@ -264,6 +281,13 @@ void EAVar::eval (Context& context) const {
 void EANum::eval (Context& context) const { 
 
     context.calcStack_.push_back(std::make_shared<VarScope> (val_));
+}
+
+void EAFunc::eval (Context& context) const {
+
+    const AST::FuncNode* astNode = static_cast<const AST::FuncNode*> (EvalApplyNode::getNode ());
+    context.calcStack_.StackWrapper::push_back (std::make_shared<FuncObjScope> (astNode));
+
 }
 
 }

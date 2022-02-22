@@ -18,57 +18,69 @@ namespace interpret {
 
     struct ScopeWrapper {
 
+        enum class WrapperType {
+
+            VAR,
+            FUNCOBJ
+
+        };
+
+        WrapperType type_;
+        ScopeWrapper (WrapperType type): type_ (type) {}
         virtual ~ScopeWrapper () = 0;
+
     };
 
     struct VarScope final: public ScopeWrapper {
         
         int val_;
 
-        VarScope (int val): val_ (val) {}
+        VarScope (int val): ScopeWrapper (ScopeWrapper::WrapperType::VAR), val_ (val) {}
 
         int getData () const { return val_; }
 
     };
 
     struct FuncObjScope final: public ScopeWrapper {
-        class FuncComp {
+        struct FuncComp {
 
-            AST::FuncNode* funcDecl_ = nullptr;
+            const AST::FuncNode* funcDecl_ = nullptr;
             
-            AST::FuncNode* funcName_ = nullptr;
-            AST::FuncNode* funcArgs_ = nullptr;
+            const AST::FuncNode* funcName_ = nullptr;
+            const AST::FuncNode* funcArgs_ = nullptr;
 
-            AST::ScopeNode* scope_ = nullptr;
+            const AST::ScopeNode* scope_ = nullptr;
 
         public:
-            FuncComp (AST::FuncNode* funcDecl): funcDecl_ (funcDecl) {
+            FuncComp (const AST::FuncNode* funcDecl): funcDecl_ (funcDecl) {
 
-                AST::FuncNode* lFuncChild = static_cast<AST::FuncNode*>((*funcDecl) [0]);
+                const AST::FuncNode* lFuncChild = static_cast<const AST::FuncNode*>((*funcDecl) [0]);
                 if (lFuncChild->getFuncCompType () == AST::FuncNode::FuncComponents::FUNC_NAME) {
 
                     funcName_ = lFuncChild;
-                    lFuncChild = static_cast<AST::FuncNode*>((*funcDecl) [1]);
+                    lFuncChild = static_cast<const AST::FuncNode*>((*funcDecl) [1]);
 
                 }
 
                 funcArgs_ = lFuncChild;
 
-                scope_ = static_cast<AST::ScopeNode*> (funcDecl->getRightChild ());
+                scope_ = static_cast<const AST::ScopeNode*> (funcDecl->getRightChild ());
 
             }
 
         };
 
     private:
-        std::unique_ptr<FuncComp> (funcDetails_);
+        FuncComp funcDetails_;
 
     public:
 
-        FuncObjScope (AST::FuncNode* funcDecl = nullptr): 
-            funcDetails_ (std::unique_ptr<FuncComp> (new FuncComp (funcDecl))) {}
+        FuncObjScope (const AST::FuncNode* funcDecl = nullptr): 
+            ScopeWrapper (ScopeWrapper::WrapperType::FUNCOBJ),
+            funcDetails_ (funcDecl) {}
 
-        FuncComp* getData () const { return funcDetails_.get (); }
+        const AST::FuncNode* getFuncNodeName () const { return funcDetails_.funcName_; }
+        FuncComp getData () const { return funcDetails_; }
 
     };
 
@@ -173,7 +185,7 @@ namespace interpret {
         
         StackWrapper<Scope> scopeStack_;
         ExecStack execStack_;
-        StackWrapper<const ScopeWrapper> calcStack_;
+        StackWrapper<ScopeWrapper> calcStack_;
 
         const AST::Node *prev = nullptr;
 
@@ -275,7 +287,7 @@ namespace interpret {
 
     public:
         EAAssign (const AST::OperNode* astOper): EvalApplyNode (astOper) {}
-        void eval (Context& context) const override; //!TODO
+        void eval (Context& context) const override;
 
     };
 
@@ -283,7 +295,7 @@ namespace interpret {
 
     public:
         EAVar (const AST::VarNode* astOper): EvalApplyNode (astOper) {}
-        void eval (Context& context) const override; //!TODO
+        void eval (Context& context) const override;
 
     };
 
@@ -291,7 +303,7 @@ namespace interpret {
 
     public:
         EAFunc (const AST::FuncNode* astOper): EvalApplyNode (astOper) {}
-        void eval (Context& context) const override {} //!TODO
+        void eval (Context& context) const override; //!TODO
 
     };
 
@@ -300,7 +312,7 @@ namespace interpret {
         int val_;
     public:
         EANum (const AST::NumNode* astOper): EvalApplyNode (astOper), val_(astOper->getValue()) {}
-        void eval (Context& context) const override; //!TODO
+        void eval (Context& context) const override;
 
     };
 
