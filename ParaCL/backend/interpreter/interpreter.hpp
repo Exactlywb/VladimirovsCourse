@@ -126,53 +126,49 @@ namespace interpret {
 
     };
 
-    struct ExecStack {
+    template <typename T>
+    class StackWrapper {
 
-        std::vector<std::shared_ptr<const EvalApplyNode>> execStack_;
+        std::vector<std::shared_ptr<T>> stack_;
+
+    public:
+        void push_back  (std::shared_ptr<T> node) { stack_.push_back (node); }
+        void pop_back   () { stack_.pop_back (); }
+
+        bool empty () const { return stack_.empty (); }
+        size_t size () const { return stack_.size (); }
+
+        std::shared_ptr<T> back () const { return stack_.back (); }
         
-        void push_back (std::shared_ptr<const EvalApplyNode> node) {
-            execStack_.push_back (node);
-        }
+        std::shared_ptr<T> operator[] (const size_t pos) { return stack_ [pos]; }
+        const std::shared_ptr<T> operator[] (const size_t pos) const { return stack_ [pos]; }        
 
-        bool empty () { return execStack_.empty (); }
-        size_t size () { return execStack_.size ();}
+    };
 
-        std::shared_ptr<const EvalApplyNode> operator[] (size_t pos) { return execStack_ [pos];}
-        void pop_back () {
-            execStack_.pop_back (); 
-        }
+    struct ExecStack final: public StackWrapper<const EvalApplyNode> {
 
-        std::shared_ptr<const EvalApplyNode> back () { return execStack_.back (); }
-    
         void push_back (const AST::Node* node);
 
     };
 
-    struct CalcStack {
-
-        std::vector<std::shared_ptr<ScopeWrapper>> calcStack_;
-        
-        void push_back (std::shared_ptr<ScopeWrapper> node) { calcStack_.push_back (node); }
-        void pop_back () { calcStack_.pop_back (); }
-        std::shared_ptr<ScopeWrapper> back () { return calcStack_.back (); }
-
-    };
-
+    class EAScope;
     struct Context final { //!TODO
     
         Scope scope_;
         
+        StackWrapper<const EAScope> scopeStack_;
         ExecStack execStack_;
-        CalcStack calcStack_;
+        StackWrapper<const ScopeWrapper> calcStack_;
+
         const AST::Node *prev = nullptr;
 
     };
 
     class Interpreter final {
 
-        AST::ScopeNode* root_;
+        const AST::ScopeNode* root_;
     public:
-        Interpreter (AST::ScopeNode* root): root_ (root) {}
+        Interpreter (const AST::ScopeNode* root): root_ (root) {}
 
         void run ();
 
@@ -213,42 +209,11 @@ namespace interpret {
                 return;
             }
 
-            context.execStack_.push_back(shared_from_this ());
+            context.execStack_.StackWrapper::push_back(shared_from_this ());
             context.execStack_.push_back(rhs);
             context.execStack_.push_back(lhs);
         }
 
-    };
-
-    struct UnaryOpPrint {
-
-        void operator() (Context& context) const {
-
-            std::shared_ptr<VarScope> var = std::static_pointer_cast<VarScope>(context.calcStack_.back());
-            std::cout << var->val_ << std::endl;
-            context.calcStack_.pop_back();
-        }
-
-    };
-
-    struct UnaryOpMinus {
-
-        void operator() (Context& context) const {
-
-            std::shared_ptr<VarScope> var = std::static_pointer_cast<VarScope>(context.calcStack_.back());
-            context.calcStack_.pop_back();
-            context.calcStack_.push_back(std::make_shared <VarScope> (- var->getData ()));
-        }
-    };
-
-    struct UnaryOpPlus {
-
-        void operator() (Context& context) const {
-
-            std::shared_ptr<VarScope> var = std::static_pointer_cast<VarScope>(context.calcStack_.back());
-            context.calcStack_.pop_back();
-            context.calcStack_.push_back(std::make_shared <VarScope> (+ var->getData ()));
-        }
     };
 
     template <typename operT>
@@ -269,7 +234,7 @@ namespace interpret {
                 return;
             }
 
-            context.execStack_.push_back(shared_from_this ());
+            context.execStack_.StackWrapper::push_back(shared_from_this ());
             context.execStack_.push_back(rhs);
         }
 
@@ -323,9 +288,9 @@ namespace interpret {
 
 namespace {
 
-    std::shared_ptr<VarScope> getTopAndPopVar (Context& context) {
+    std::shared_ptr<const VarScope> getTopAndPopVar (Context& context) {
 
-        std::shared_ptr<VarScope> res = std::static_pointer_cast<VarScope> (context.calcStack_.back ());
+        std::shared_ptr<const VarScope> res = std::static_pointer_cast<const VarScope> (context.calcStack_.back ());
         context.calcStack_.pop_back ();
         
         return res;
@@ -334,12 +299,41 @@ namespace {
 
 }
 
+    struct UnaryOpPrint {
+
+        void operator() (Context& context) const {
+
+            std::shared_ptr<const VarScope> var = std::static_pointer_cast<const VarScope>(context.calcStack_.back());
+            std::cout << var->val_ << std::endl;
+            context.calcStack_.pop_back();
+        }
+
+    };
+
+    struct UnaryOpMinus {
+
+        void operator() (Context& context) const {
+
+            std::shared_ptr<const VarScope> var = getTopAndPopVar (context);
+            context.calcStack_.push_back(std::make_shared <VarScope> (- var->getData ()));
+        }
+    };
+
+    struct UnaryOpPlus {
+
+        void operator() (Context& context) const {
+
+            std::shared_ptr<const VarScope> var = getTopAndPopVar (context);
+            context.calcStack_.push_back(std::make_shared <VarScope> (+ var->getData ()));
+        }
+    };
+
     struct BinOpAdd {
 
         void operator() (Context& context) const {
 
-            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
             context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() + rhs->getData()));
         }
     };
@@ -348,8 +342,8 @@ namespace {
 
         void operator() (Context& context) const {
 
-            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
             context.calcStack_.push_back(std::make_shared<VarScope> (rhs->getData() - lhs->getData()));
         }       
 
@@ -359,8 +353,8 @@ namespace {
 
         void operator() (Context& context) const {
 
-            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
             context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() * rhs->getData()));
         }
 
@@ -370,8 +364,8 @@ namespace {
 
         void operator() (Context& context) const {
 
-            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
             context.calcStack_.push_back(std::make_shared<VarScope> (rhs->getData() / lhs->getData()));
         }
 
@@ -381,8 +375,8 @@ namespace {
 
         void operator() (Context& context) const {
 
-            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
             context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() < rhs->getData()));
         }
 
@@ -392,8 +386,8 @@ namespace {
 
         void operator() (Context& context) const {
 
-            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
             context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() > rhs->getData()));
         }
 
@@ -403,8 +397,8 @@ namespace {
 
         void operator() (Context& context) const {
 
-            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
             context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() == rhs->getData()));
         }
 
@@ -415,8 +409,8 @@ namespace {
 
         void operator() (Context& context) const {
 
-            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
             context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() != rhs->getData()));
         }
 
@@ -426,8 +420,8 @@ namespace {
 
         void operator() (Context& context) const {
 
-            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
             context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() <= rhs->getData()));
         }
 
@@ -437,8 +431,8 @@ namespace {
 
         void operator() (Context& context) const {
 
-            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
             context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() >= rhs->getData()));
         }
 
@@ -449,8 +443,8 @@ namespace {
 
         void operator() (Context& context) const {
 
-            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
             context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() || rhs->getData()));
         }
 
@@ -461,8 +455,8 @@ namespace {
 
         void operator() (Context& context) const {
 
-            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
             context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() && rhs->getData()));
         }
 
@@ -473,8 +467,8 @@ namespace {
 
         void operator() (Context& context) const {
 
-            std::shared_ptr<VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<VarScope> rhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
+            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
             context.calcStack_.push_back(std::make_shared<VarScope> (rhs->getData() % lhs->getData()));
         }
 
