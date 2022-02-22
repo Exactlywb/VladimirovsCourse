@@ -132,7 +132,13 @@ namespace interpret {
         std::vector<std::shared_ptr<T>> stack_;
 
     public:
-        void push_back  (std::shared_ptr<T> node) { stack_.push_back (node); }
+        std::shared_ptr<T> push_back  (std::shared_ptr<T> node) {
+        
+            stack_.push_back (node); 
+            return node; 
+        
+        }
+
         void pop_back   () { stack_.pop_back (); }
 
         bool empty () const { return stack_.empty (); }
@@ -147,20 +153,33 @@ namespace interpret {
 
     struct ExecStack final: public StackWrapper<const EvalApplyNode> {
 
-        void push_back (const AST::Node* node);
+        std::shared_ptr<const EvalApplyNode> push_back (const AST::Node* node);
 
     };
 
-    class EAScope;
+    class EAScope final: public EvalApplyNode {
+
+        std::vector<std::shared_ptr<EvalApplyNode>> children_;
+    public:
+        EAScope (const AST::ScopeNode* astScope);
+        void eval (Context& context) const override;
+
+        std::shared_ptr<EvalApplyNode> getLastChildren () const { return children_.back (); }
+    };
+
     struct Context final { //!TODO
     
-        Scope scope_;
+        std::shared_ptr<Scope> scope_;
+        std::shared_ptr<const EAScope> curEAScope_;
         
-        StackWrapper<const EAScope> scopeStack_;
+        StackWrapper<Scope> scopeStack_;
         ExecStack execStack_;
         StackWrapper<const ScopeWrapper> calcStack_;
 
         const AST::Node *prev = nullptr;
+
+        void replaceScope (const Scope& scope, std::shared_ptr<const EAScope> curEAScope);
+        void removeCurScope ();
 
     };
 
@@ -474,13 +493,6 @@ namespace {
 
     };
 
-    class EAScope final: public EvalApplyNode {
-
-        std::vector<std::shared_ptr<EvalApplyNode>> children_;
-    public:
-        EAScope (const AST::ScopeNode* astScope);
-        void eval (Context& context) const override; //!TODO
-    };
 }  // namespace interpret
 
 #endif
