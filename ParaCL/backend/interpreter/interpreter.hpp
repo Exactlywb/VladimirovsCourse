@@ -87,7 +87,6 @@ namespace interpret {
         tblIt lookup (const std::string& name) {
         
             for (auto obj = tbl_.cbegin (), end = tbl_.cend (); obj != end; ++obj) {
-
                 if ((*obj).first == name)
                     return obj;
             }
@@ -169,7 +168,7 @@ namespace interpret {
 
     struct Context final { //!TODO
     
-        std::shared_ptr<Scope> scope_;
+        std::shared_ptr<Scope> scope_ = nullptr;
         std::shared_ptr<const EAScope> curEAScope_;
         
         StackWrapper<Scope> scopeStack_;
@@ -178,7 +177,7 @@ namespace interpret {
 
         const AST::Node *prev = nullptr;
 
-        void replaceScope (const Scope& scope, std::shared_ptr<const EAScope> curEAScope);
+        void replaceScope (std::shared_ptr<Scope> scope, std::shared_ptr<const EAScope> curEAScope);
         void removeCurScope ();
 
     };
@@ -415,7 +414,6 @@ namespace {
     struct BinOpEQ {
 
         void operator() (Context& context) const {
-
             std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
             std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
             context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() == rhs->getData()));

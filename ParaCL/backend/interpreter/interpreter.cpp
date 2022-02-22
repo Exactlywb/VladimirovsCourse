@@ -95,16 +95,21 @@ std::shared_ptr<const EvalApplyNode> ExecStack::push_back (const AST::Node* node
 
 }
 
-void Context::replaceScope (const Scope& scope, std::shared_ptr<const EAScope> curEAScope) {
+void Context::replaceScope (std::shared_ptr<Scope> scope, std::shared_ptr<const EAScope> curEAScope) {
 
-    scopeStack_.push_back (scope_);
-    scope_ = std::make_shared<Scope> (scope);
+    if (scope_ != nullptr) {
+        scopeStack_.push_back (scope_);
+    }
+
+    if (scope)
+        scope_ = scope;
+    else
+        scope_ = std::shared_ptr<Scope>(new Scope);
+    
     curEAScope_ = curEAScope;
-
 }
 
 void Context::removeCurScope () {
-
     if (scopeStack_.empty ())
         return;
 
@@ -118,8 +123,6 @@ void Interpreter::run () {
     Context context;
 
     std::shared_ptr<EAScope> globalScope = std::make_shared<EAScope> (root_);
-    context.scope_ = std::make_shared<Scope> ();
-
     context.execStack_.StackWrapper::push_back(globalScope);
 
     while (!context.execStack_.empty()) {
@@ -154,7 +157,7 @@ void EAScope::eval (Context& context) const {
     for (; fin != st; ++st) 
         context.execStack_.StackWrapper::push_back(*st);
     
-    context.replaceScope (*context.scope_.get (), std::static_pointer_cast<const EAScope>(shared_from_this ()));
+    context.replaceScope (context.scope_, std::static_pointer_cast<const EAScope>(shared_from_this ()));
 
 }
 
@@ -167,25 +170,30 @@ void EAAssign::eval (Context& context) const {
 
     if (context.prev == rhs) {
         
-        // context.prev = getNode(); 
-        // auto id = context.execStack_.back();
-        // context.execStack_.pop_back();
-        // auto val = context.calcStack_.back();
+        context.prev = getNode(); 
+        auto id = context.execStack_.back();
+        context.execStack_.pop_back();
+        auto val = context.calcStack_.back();
 
-        // const AST::VarNode* varNode = static_cast<const AST::VarNode*>(id->getNode());
-        // std::string name = varNode->getName();
+        const AST::VarNode* varNode = static_cast<const AST::VarNode*>(id->getNode());
+        std::string name = varNode->getName();
+        auto findRes = context.scope_->lookup(name);
 
-        // auto findRes = context.scope_.lookup(name);
-
-        // std::shared_ptr<const VarScope> curVal = std::static_pointer_cast<const VarScope>(val);
+        std::shared_ptr<const VarScope> curVal = std::static_pointer_cast<const VarScope>(val);
         
-        // if (findRes == context.scope_.tblEnd()) {
-        //     context.scope_.push({name, std::make_shared<VarScope> (curVal->getData())});
-        // }
-        // else {
-        //     std::shared_ptr<const VarScope> var = std::static_pointer_cast<const VarScope>((*findRes).second);
-        //     // var->val_ = curVal->val_;
-        // }
+        if (findRes == context.scope_->tblEnd()) {
+
+            std::shared_ptr<VarScope> varToPush = std::make_shared<VarScope> (curVal->getData ());
+            context.scope_->push({name, varToPush});
+            context.calcStack_.push_back (varToPush);
+            
+        }
+        else {
+
+            std::shared_ptr<VarScope> var = std::static_pointer_cast<VarScope>((*findRes).second);
+            var->val_ = curVal->val_;
+
+        }
 
         return;
     }
@@ -248,8 +256,8 @@ void EAVar::eval (Context& context) const {
     const AST::VarNode* varNode = static_cast<const AST::VarNode*> (EvalApplyNode::getNode());
     auto findRes = context.scope_->lookup(varNode->getName());
 
-
     std::shared_ptr<const VarScope> var = std::static_pointer_cast<const VarScope> ((*findRes).second);
+
     context.calcStack_.push_back(var);
 } 
 
