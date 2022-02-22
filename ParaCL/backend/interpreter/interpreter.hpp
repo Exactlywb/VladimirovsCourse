@@ -20,8 +20,9 @@ namespace interpret {
 
         enum class WrapperType {
 
-            VAR,
-            FUNCOBJ
+            ID,
+            NUM,
+            FUNC
 
         };
 
@@ -31,57 +32,48 @@ namespace interpret {
 
     };
 
-    struct VarScope final: public ScopeWrapper {
+//=======================================================================
+//======================== SCOPE IMPLEMENTATION =========================
+//=======================================================================
+
+    struct NumScope final: public ScopeWrapper {
         
         int val_;
 
-        VarScope (int val): ScopeWrapper (ScopeWrapper::WrapperType::VAR), val_ (val) {}
-
-        int getData () const { return val_; }
+        NumScope (const int val): ScopeWrapper (ScopeWrapper::WrapperType::NUM), val_ (val) {}
 
     };
 
-    struct FuncObjScope final: public ScopeWrapper {
-        struct FuncComp {
+    struct IDScope final: public ScopeWrapper { //!TODO remove?
 
-            const AST::FuncNode* funcDecl_ = nullptr;
+        const std::string name_;
+
+        IDScope (const std::string& name): ScopeWrapper (ScopeWrapper::WrapperType::ID), name_ (name) {}
+
+    };
+
+    struct FuncScope final: public ScopeWrapper {
+
+        const AST::FuncNode* name_ = nullptr;
+        const AST::FuncNode* args_ = nullptr;
+        const AST::ScopeNode* execScope_ = nullptr;
+
+        FuncScope (const AST::FuncNode* funcDecl): 
+            ScopeWrapper (ScopeWrapper::WrapperType::FUNC)
+        {
             
-            const AST::FuncNode* funcName_ = nullptr;
-            const AST::FuncNode* funcArgs_ = nullptr;
+            const AST::FuncNode* leftChild = static_cast<const AST::FuncNode*>((*funcDecl)[0]);
+            if (leftChild->getFuncCompType () == AST::FuncNode::FuncComponents::FUNC_NAME) {
 
-            const AST::ScopeNode* scope_ = nullptr;
-
-        public:
-            FuncComp (const AST::FuncNode* funcDecl): funcDecl_ (funcDecl) {
-
-                const AST::FuncNode* lFuncChild = static_cast<const AST::FuncNode*>((*funcDecl) [0]);
-                if (lFuncChild->getFuncCompType () == AST::FuncNode::FuncComponents::FUNC_NAME) {
-
-                    funcName_ = lFuncChild;
-                    lFuncChild = static_cast<const AST::FuncNode*>((*funcDecl) [1]);
-
-                }
-
-                funcArgs_ = lFuncChild;
-
-                scope_ = static_cast<const AST::ScopeNode*> (funcDecl->getRightChild ());
+                name_ = leftChild;
+                leftChild = static_cast<const AST::FuncNode*>((*funcDecl)[1]);
 
             }
+            args_ = leftChild;
+            execScope_ = static_cast<const AST::ScopeNode*>(funcDecl->getRightChild ());
 
-        };
-
-    private:
-        FuncComp funcDetails_;
-
-    public:
-
-        FuncObjScope (const AST::FuncNode* funcDecl = nullptr): 
-            ScopeWrapper (ScopeWrapper::WrapperType::FUNCOBJ),
-            funcDetails_ (funcDecl) {}
-
-        const AST::FuncNode* getFuncNodeName () const { return funcDetails_.funcName_; }
-        FuncComp getData () const { return funcDetails_; }
-
+        }
+        
     };
 
     class Scope final {
@@ -122,18 +114,20 @@ namespace interpret {
 
     };
 
+//=======================================================================
+
     struct Context;
 
-    class EvalApplyNode: public std::enable_shared_from_this<EvalApplyNode> {
+    struct EvalApplyNode: public std::enable_shared_from_this<EvalApplyNode> {
 
-        const AST::Node* node_;
-        EvalApplyNode* parent_ = nullptr;
+        const AST::Node* node_ = nullptr;
+        std::shared_ptr<EvalApplyNode> parent_ = nullptr;
 
     public:
-        EvalApplyNode (const AST::Node* node): node_ (node) {}
+        EvalApplyNode (const AST::Node* node, std::shared_ptr<EvalApplyNode> parent): node_ (node), parent_(parent) {}
 
         const AST::Node* getNode () const { return node_; }
-        virtual void eval (Context& context) const = 0;
+        virtual std::pair<std::shared_ptr<EvalApplyNode>, std::shared_ptr<EvalApplyNode>> eval (Context& context) = 0;
 
     };
 
@@ -162,32 +156,49 @@ namespace interpret {
 
     };
 
-    struct ExecStack final: public StackWrapper<const EvalApplyNode> {
+    class Dummy final: public EvalApplyNode {
 
-        std::shared_ptr<const EvalApplyNode> push_back (const AST::Node* node);
+    public:
+        std::pair<std::shared_ptr<EvalApplyNode>, std::shared_ptr<EvalApplyNode>> eval (Context& context) override {
+            throw std::runtime_error ("You've called Dummy class to execute");
+        }
+
+        Dummy (): EvalApplyNode (nullptr, nullptr) {}
 
     };
 
     class EAScope final: public EvalApplyNode {
 
+        int curChildrenToExec_ = 0;
         std::vector<std::shared_ptr<EvalApplyNode>> children_;
     public:
-        EAScope (const AST::ScopeNode* astScope);
-        void eval (Context& context) const override;
+        EAScope (const AST::ScopeNode* astScope, std::shared_ptr<EvalApplyNode>);
+
+        std::pair<std::shared_ptr<EvalApplyNode>, std::shared_ptr<EvalApplyNode>> eval (Context& context) override;
 
         std::shared_ptr<EvalApplyNode> getLastChildren () const { return children_.back (); }
     };
 
-    struct Context final { //!TODO
-    
-        std::shared_ptr<Scope> scope_ = nullptr;
-        std::shared_ptr<const EAScope> curEAScope_;
-        
-        StackWrapper<Scope> scopeStack_;
-        ExecStack execStack_;
-        StackWrapper<ScopeWrapper> calcStack_;
+    class EAAssign final: public EvalApplyNode {
 
-        const AST::Node *prev = nullptr;
+        std::shared_ptr<IDScope>        lhs_;
+        std::shared_ptr<EvalApplyNode>  rhs_;
+    public:
+        EAAssign (const AST::OperNode* astAssign, std::shared_ptr<EvalApplyNode>);
+
+        std::pair<std::shared_ptr<EvalApplyNode>, std::shared_ptr<EvalApplyNode>> eval (Context& context) override;
+
+        std::shared_ptr<IDScope> getLhs () const {return lhs_;}
+        std::shared_ptr<EvalApplyNode> getRhs () const {return rhs_;} 
+    };
+
+    struct Context final {
+        
+        std::vector<std::shared_ptr<Scope>>             scopeStack_;
+        std::vector<std::shared_ptr<ScopeWrapper>>      calcStack_;
+        std::vector<std::shared_ptr<EvalApplyNode>>     retStack_;
+
+        std::shared_ptr<EvalApplyNode> prev_ = nullptr;
 
         void replaceScope (std::shared_ptr<Scope> scope, std::shared_ptr<const EAScope> curEAScope);
         void removeCurScope ();
@@ -204,304 +215,7 @@ namespace interpret {
 
     }; 
 
-    class EAWhile final: public EvalApplyNode {
-
-    public:
-        EAWhile (const AST::CondNode* astCond): EvalApplyNode (astCond) {}
-        void eval (Context& context) const override;
-
-    };
-
-    class EAIf final: public EvalApplyNode {
-
-    public:
-        EAIf (const AST::CondNode* astCond): EvalApplyNode (astCond) {}
-        void eval (Context& context) const override;
-
-    };
-
-    template <typename operT>
-    class EABinOp final: public EvalApplyNode {
-
-        operT apply_;
-    public:
-        EABinOp (const AST::OperNode* astOper): EvalApplyNode (astOper) {}
-        void eval (Context& context) const override {
-
-            const AST::Node* node = EvalApplyNode::getNode();
-            const AST::Node* rhs  = (*node)[1];
-            const AST::Node* lhs  = (*node)[0];
-            
-            if (context.prev == rhs) {
-                
-                context.prev = getNode(); 
-                apply_(context);
-                return;
-            }
-
-            context.execStack_.StackWrapper::push_back(shared_from_this ());
-            context.execStack_.push_back(rhs);
-            context.execStack_.push_back(lhs);
-        }
-
-    };
-
-    template <typename operT>
-    class EAUnaryOp final: public EvalApplyNode {
-
-        operT apply_;
-    public:
-        EAUnaryOp (const AST::OperNode* astOper): EvalApplyNode (astOper) {}
-        void eval (Context& context) const override
-        {
-            const AST::Node* node = EvalApplyNode::getNode();
-            const AST::Node* rhs  = (*node)[0];
-            
-            if (context.prev == rhs) {
-                
-                context.prev = getNode();
-                apply_(context);
-                return;
-            }
-
-            context.execStack_.StackWrapper::push_back(shared_from_this ());
-            context.execStack_.push_back(rhs);
-        }
-
-    };
-
-    struct EAScan final: public EvalApplyNode {
-        EAScan (const AST::OperNode* astOper): EvalApplyNode (astOper) {}
-        void eval (Context& context) const override;
-    };
-
-    class EAReturn final: public EvalApplyNode {
-
-    public:
-        EAReturn (const AST::OperNode* astOper): EvalApplyNode (astOper) {}
-        void eval (Context& context) const override {} //!TODO
-
-    };
-
-    class EAAssign final: public EvalApplyNode {
-
-    public:
-        EAAssign (const AST::OperNode* astOper): EvalApplyNode (astOper) {}
-        void eval (Context& context) const override;
-
-    };
-
-    class EAVar final: public EvalApplyNode {
-
-    public:
-        EAVar (const AST::VarNode* astOper): EvalApplyNode (astOper) {}
-        void eval (Context& context) const override;
-
-    };
-
-    class EAFunc final: public EvalApplyNode {
-
-    public:
-        EAFunc (const AST::FuncNode* astOper): EvalApplyNode (astOper) {}
-        void eval (Context& context) const override; //!TODO
-
-    };
-
-    class EANum final: public EvalApplyNode {
-        
-        int val_;
-    public:
-        EANum (const AST::NumNode* astOper): EvalApplyNode (astOper), val_(astOper->getValue()) {}
-        void eval (Context& context) const override;
-
-    };
-
-namespace {
-
-    std::shared_ptr<const VarScope> getTopAndPopVar (Context& context) {
-
-        std::shared_ptr<const VarScope> res = std::static_pointer_cast<const VarScope> (context.calcStack_.back ());
-        context.calcStack_.pop_back ();
-        
-        return res;
     
-    }
-
-}
-
-    struct UnaryOpPrint {
-
-        void operator() (Context& context) const {
-
-            std::shared_ptr<const VarScope> var = std::static_pointer_cast<const VarScope>(context.calcStack_.back());
-            std::cout << var->val_ << std::endl;
-            context.calcStack_.pop_back();
-        }
-
-    };
-
-    struct UnaryOpMinus {
-
-        void operator() (Context& context) const {
-
-            std::shared_ptr<const VarScope> var = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared <VarScope> (- var->getData ()));
-        }
-    };
-
-    struct UnaryOpPlus {
-
-        void operator() (Context& context) const {
-
-            std::shared_ptr<const VarScope> var = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared <VarScope> (+ var->getData ()));
-        }
-    };
-
-    struct BinOpAdd {
-
-        void operator() (Context& context) const {
-
-            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() + rhs->getData()));
-        }
-    };
-
-    struct BinOpSub {
-
-        void operator() (Context& context) const {
-
-            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (rhs->getData() - lhs->getData()));
-        }       
-
-    };
-
-    struct BinOpMul {
-
-        void operator() (Context& context) const {
-
-            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() * rhs->getData()));
-        }
-
-    };
-
-    struct BinOpDiv {
-
-        void operator() (Context& context) const {
-
-            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (rhs->getData() / lhs->getData()));
-        }
-
-    };
-
-    struct BinOpMore {
-
-        void operator() (Context& context) const {
-
-            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() < rhs->getData()));
-        }
-
-    };
-
-    struct BinOpLess {
-
-        void operator() (Context& context) const {
-
-            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() > rhs->getData()));
-        }
-
-    };
- 
-    struct BinOpEQ {
-
-        void operator() (Context& context) const {
-            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() == rhs->getData()));
-        }
-
-    };
-
-
-    struct BinOpNEQ {
-
-        void operator() (Context& context) const {
-
-            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() != rhs->getData()));
-        }
-
-    };
-
-    struct BinOpGTE {
-
-        void operator() (Context& context) const {
-
-            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() <= rhs->getData()));
-        }
-
-    };
-
-    struct BinOpLTE {
-
-        void operator() (Context& context) const {
-
-            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() >= rhs->getData()));
-        }
-
-    };
-
-
-    struct BinOpOr {
-
-        void operator() (Context& context) const {
-
-            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() || rhs->getData()));
-        }
-
-    };
-
-
-    struct BinOpAnd {
-
-        void operator() (Context& context) const {
-
-            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (lhs->getData() && rhs->getData()));
-        }
-
-    };
-
-
-    struct BinOpMod {
-
-        void operator() (Context& context) const {
-
-            std::shared_ptr<const VarScope> lhs = getTopAndPopVar (context);
-            std::shared_ptr<const VarScope> rhs = getTopAndPopVar (context);
-            context.calcStack_.push_back(std::make_shared<VarScope> (rhs->getData() % lhs->getData()));
-        }
-
-    };
 
 }  // namespace interpret
 
