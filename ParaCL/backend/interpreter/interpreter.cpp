@@ -24,7 +24,7 @@ namespace interpret {
                 return new EAUnOp<UnOpMinus> (opNode, parent);
             case AST::OperNode::OperType::UNARY_P: 
                 return new EAUnOp<UnOpPlus> (opNode, parent);
-            case AST::OperNode::OperType::PRINT: 
+            case AST::OperNode::OperType::PRINT:
                 return new EAUnOp<UnOpPrint> (opNode, parent);
             case AST::OperNode::OperType::ADD:
                 return new EABinOp<BinOpAdd> (opNode, parent);
@@ -78,10 +78,9 @@ namespace interpret {
     EvalApplyNode* buildApplyNode (const AST::Node* node, EvalApplyNode* parent) {
 
         switch (node->getType()) {
-/*
             case AST::NodeT::CONDITION:
                 return buildApplyNodeFromCondition (static_cast<const AST::CondNode*> (node), parent);
-            case AST::NodeT::FUNCTION:
+            /*case AST::NodeT::FUNCTION:
                 return buildApplyNodeFromFunction (static_cast<const AST::FuncNode*> (node), parent);*/
             case AST::NodeT::OPERATOR:
                 return buildApplyNodeFromOperator (static_cast<const AST::OperNode*> (node), parent);
@@ -157,8 +156,10 @@ EAScope::EAScope (const AST::ScopeNode* astScope, EvalApplyNode* parent): EvalAp
 
     auto st  = getNode()->childBegin();
     auto fin = getNode()->childEnd();
-    for (; st != fin; ++st) 
-        children_.push_back(buildApplyNode(*st, this));
+    for (; st != fin; ++st) {
+        EvalApplyNode* toPush = buildApplyNode (*st, this);
+        children_.push_back(toPush);
+    }
 
 }
 
@@ -197,9 +198,10 @@ void Interpreter::run () {
 
 std::pair<EvalApplyNode*, EvalApplyNode*> EAScope::eval (Context& context)
 {
+
     const AST::ScopeNode* scope = static_cast<const AST::ScopeNode*> (getNode ());
     if (scope->getLeftChild ()) {
-        
+
         EvalApplyNode* next = nullptr;
         if (curChildrenToExec_ == children_.size ())
             next = parent_;
@@ -272,7 +274,6 @@ std::pair<EvalApplyNode*, EvalApplyNode*> EAVar::eval (Context& context)
     auto findRes = curScope->lookup(name_);
 
     context.calcStack_.push_back (findRes->second);
-
     return {parent_, this};
 
 }

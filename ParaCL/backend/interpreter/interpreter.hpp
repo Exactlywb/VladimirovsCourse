@@ -264,7 +264,7 @@ namespace interpret {
         operApp apply_;
     public:
         EABinOp (const AST::OperNode* astOper, EvalApplyNode* parent):
-            EvalApplyNode (astOper, parent_) {}
+            EvalApplyNode (astOper, parent) {}
         
         std::pair<EvalApplyNode*, EvalApplyNode*> eval (Context& context) override {
 
@@ -301,7 +301,7 @@ namespace interpret {
         operApp apply_;
     public:
         EAUnOp (const AST::OperNode* astOper, EvalApplyNode* parent):
-            EvalApplyNode (astOper, parent_) {}
+            EvalApplyNode (astOper, parent) {}
         
         std::pair<EvalApplyNode*, EvalApplyNode*> eval (Context& context) override {
 
