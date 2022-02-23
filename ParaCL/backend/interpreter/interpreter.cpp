@@ -180,7 +180,6 @@ void Interpreter::run () {
     EvalApplyNode* expr = buildApplyNode (root_, nullptr);
 
     while (expr) {
-        // std::cout << "here" << std::endl;
         //next to implement and prev
         std::pair<EvalApplyNode*, EvalApplyNode*> res = expr->eval (context);
 
@@ -204,7 +203,6 @@ std::pair<EvalApplyNode*, EvalApplyNode*> EAScope::eval (Context& context)
 
         EvalApplyNode* next = nullptr;
         if (curChildrenToExec_ == children_.size ()) {
-            std::cout << parent_ << std::endl;
             next = parent_;
         }
         else
@@ -312,7 +310,6 @@ std::pair<EvalApplyNode*, EvalApplyNode*> EAWhile::eval (Context& context) {
         const NumScope* boolRes = getTopAndPopNum (context);
         if (boolRes->val_) {
 
-            std::cout << "here "  << this << std::endl;
             context.addScope ();
             return {buildApplyNode (scope_, this), this};    //!TODO think about parent
 

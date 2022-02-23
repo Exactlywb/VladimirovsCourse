@@ -103,7 +103,7 @@ namespace interpret {
                 curScope = curScope->parent_;
             }
 
-            return tblIt (nullptr);
+            return tbl_.end();
         }
     };
 
@@ -335,7 +335,7 @@ namespace interpret {
             int tmp;
             std::cin >> tmp;
             context.calcStack_.push_back (new NumScope (tmp));
-            
+
             return {parent_, this};
         }
 
