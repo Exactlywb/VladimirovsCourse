@@ -1,14 +1,14 @@
 #include "interpreter.hpp"
 
 namespace interpret {
-/*
-    std::shared_ptr<EvalApplyNode> buildApplyNodeFromCondition (const AST::CondNode* condNode, std::shared_ptr<EvalApplyNode> parent) {
+
+    EvalApplyNode* buildApplyNodeFromCondition (const AST::CondNode* condNode, EvalApplyNode* parent) {
 
         if (condNode->getConditionType() == AST::CondNode::ConditionType::IF)
-            return (std::make_shared<EAIf> (condNode));
+            return new EAIf (condNode, parent);
                     
-        return (std::make_shared<EAWhile> (condNode));
-    }*/
+        return new EAWhile (condNode, parent);
+    }
 
     EvalApplyNode* buildApplyNodeFromOperator (const AST::OperNode* opNode, EvalApplyNode* parent) {
 
@@ -94,6 +94,14 @@ namespace interpret {
         }
         
         throw std::runtime_error ("unexpected AST::Node type");
+    }
+
+    const NumScope* getTopAndPopNum (Context& context) {
+
+        const NumScope* res = static_cast<NumScope*> (context.calcStack_.back ());
+        context.calcStack_.pop_back ();
+        return res;
+
     }
 
 ScopeTblWrapper::~ScopeTblWrapper () = default;
@@ -250,6 +258,34 @@ std::pair<EvalApplyNode*, EvalApplyNode*> EANum::eval (Context& context) {
 
     context.calcStack_.push_back (new NumScope (val_));
     return {parent_, this};
+
+}
+
+std::pair<EvalApplyNode*, EvalApplyNode*> EAIf::eval (Context& context) {
+
+    const AST::Node* prevASTExecuted = context.prev_->getNode ();
+    if (prevASTExecuted == parent_->getNode ())
+        return {buildApplyNode (expr_, this), this};
+    
+    if (prevASTExecuted == expr_) {
+
+        const NumScope* boolRes = getTopAndPopNum (context);
+        if (boolRes) {
+
+            context.addScope ();
+            return {buildApplyNode (scope_, parent_), this};    //!TODO think about parent
+
+        }
+
+    }
+
+    return {parent_, this};
+
+}
+
+std::pair<EvalApplyNode*, EvalApplyNode*> EAWhile::eval (Context& context) {
+
+    
 
 }
 
