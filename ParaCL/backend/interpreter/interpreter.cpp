@@ -125,6 +125,25 @@ void Context::removeCurScope () {
 
 }
 
+void Context::addScope ()  {
+
+    auto parent = scopeStack_.back();
+    bool noParent = true;
+
+    for (auto curIt = scopeStack_.rbegin(), endIt = scopeStack_.rend (); curIt != endIt; ++curIt) {
+        if ((*curIt)->tbl_empty())
+            continue;
+
+        noParent = false;
+        parent = *curIt;
+    }
+
+    if (noParent)
+        scopeStack_.push_back (new Scope);
+    else 
+        scopeStack_.push_back (new Scope {parent, --(parent->tblEnd())});
+}
+
 EAScope::EAScope (const AST::ScopeNode* astScope, EvalApplyNode* parent): EvalApplyNode (astScope, parent) {
 
     auto st  = getNode()->childBegin();
