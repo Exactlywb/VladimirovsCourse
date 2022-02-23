@@ -202,6 +202,42 @@ namespace interpret {
 
     };
 
+    class EAIf final: public EvalApplyNode {
+
+        const AST::Node*      expr_;
+        const AST::ScopeNode* scope_;
+
+    public:
+        EAIf (const AST::CondNode* astCond, EvalApplyNode* parent):
+            EvalApplyNode (astCond, parent) {
+
+            expr_ = (*astCond) [0];
+            scope_ = static_cast<const AST::ScopeNode*> ((*astCond) [1]);
+
+        }
+
+        std::pair<EvalApplyNode*, EvalApplyNode*> eval (Context& context) override;
+
+    };
+
+    class EAWhile final: public EvalApplyNode {
+
+        const AST::Node*      expr_;
+        const AST::ScopeNode* scope_;
+
+    public:
+        EAWhile (const AST::CondNode* astCond, EvalApplyNode* parent):
+            EvalApplyNode (astCond, parent) {
+
+            expr_ = (*astCond) [0];
+            scope_ = static_cast<const AST::ScopeNode*> ((*astCond) [1]);
+
+        }
+
+        std::pair<EvalApplyNode*, EvalApplyNode*> eval (Context& context) override;
+
+    };
+
 //=======================================================================
 //==================== CONTEXT STRUCT IMPLEMENTATION ====================
 //=======================================================================
@@ -288,17 +324,8 @@ namespace interpret {
 
     };
 
-namespace {
+    const NumScope* getTopAndPopNum (Context& context);
 
-    const NumScope* getTopAndPopNum (Context& context) {
-
-        const NumScope* res = static_cast<NumScope*> (context.calcStack_.back ());
-        context.calcStack_.pop_back ();
-        return res;
-
-    }
-
-}
     struct UnOpPrint {
 
         void operator() (Context& context) const {
