@@ -20,12 +20,12 @@ namespace interpret {
                 // return (std::make_shared<EACall> (opNode));
             // case AST::OperNode::OperType::RETURN:
             //     return (std::make_shared<EAUnaryOp<UnaryOpReturn>> (opNode));
-            // case AST::OperNode::OperType::UNARY_M:
-            //     return (std::make_shared<EAUnaryOp<UnaryOpMinus>> (opNode));
-            // case AST::OperNode::OperType::UNARY_P: 
-            //     return (std::make_shared<EAUnaryOp<UnaryOpPlus>> (opNode));
-            // case AST::OperNode::OperType::PRINT: 
-            //     return (std::make_shared<EAUnaryOp<UnaryOpPrint>> (opNode));
+            case AST::OperNode::OperType::UNARY_M:
+                return new EAUnOp<UnOpMinus> (opNode, parent);
+            case AST::OperNode::OperType::UNARY_P: 
+                return new EAUnOp<UnOpPlus> (opNode, parent);
+            case AST::OperNode::OperType::PRINT: 
+                return new EAUnOp<UnOpPrint> (opNode, parent);
             case AST::OperNode::OperType::ADD:
                 return new EABinOp<BinOpAdd> (opNode, parent);
             case AST::OperNode::OperType::SUB:
@@ -121,7 +121,12 @@ void Context::removeCurScope () {
 
 }
 
-void Context::addScope ()  {
+void Context::addScope ()
+{
+    if (scopeStack_.empty()) {
+        scopeStack_.push_back (new Scope);
+        return;
+    }
 
     auto parent = scopeStack_.back();
     bool noParent = true;
@@ -161,13 +166,12 @@ EAAssign::EAAssign (const AST::OperNode* astAssign, EvalApplyNode* parent): Eval
 void Interpreter::run () {
 
     Context context;
-    EvalApplyNode* globalScope = buildApplyNode (root_, nullptr);
-    context.scopeStack_.push_back (new Scope);
+    context.addScope ();
 
-    EvalApplyNode* expr = globalScope;
+    EvalApplyNode* expr = buildApplyNode (root_, nullptr);
 
     while (expr) {
-
+        // std::cout << "here" << std::endl;
         //next to implement and prev
         std::pair<EvalApplyNode*, EvalApplyNode*> res = expr->eval (context);
 
@@ -183,8 +187,8 @@ void Interpreter::run () {
 
 }
 
-std::pair<EvalApplyNode*, EvalApplyNode*> EAScope::eval (Context& context) {
-
+std::pair<EvalApplyNode*, EvalApplyNode*> EAScope::eval (Context& context)
+{
     const AST::ScopeNode* scope = static_cast<const AST::ScopeNode*> (getNode ());
     if (scope->getLeftChild ()) {
         
@@ -202,8 +206,8 @@ std::pair<EvalApplyNode*, EvalApplyNode*> EAScope::eval (Context& context) {
     return {nextToExec, this};
 }
 
-std::pair<EvalApplyNode*, EvalApplyNode*> EAAssign::eval (Context& context) {
-
+std::pair<EvalApplyNode*, EvalApplyNode*> EAAssign::eval (Context& context)
+{
     if (context.prev_ == rhs_) {
 
         auto next = parent_;
@@ -246,11 +250,22 @@ std::pair<EvalApplyNode*, EvalApplyNode*> EAAssign::eval (Context& context) {
 
 }
 
-std::pair<EvalApplyNode*, EvalApplyNode*> EANum::eval (Context& context) {
-
+std::pair<EvalApplyNode*, EvalApplyNode*> EANum::eval (Context& context)
+{
     context.calcStack_.push_back (new NumScope (val_));
     return {parent_, this};
 
+}
+
+std::pair<EvalApplyNode*, EvalApplyNode*> EAVar::eval (Context& context)
+{ 
+    auto curScope = context.scopeStack_.back();
+
+    auto findRes = curScope->lookup(name_);
+
+    context.calcStack_.push_back (findRes->second);
+
+    return {parent_, this};
 }
 
 }
