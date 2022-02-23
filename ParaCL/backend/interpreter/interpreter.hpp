@@ -324,6 +324,23 @@ namespace interpret {
 
     };
 
+    class EAScan final: public EvalApplyNode {
+
+    public:
+        EAScan (const AST::OperNode* astOper, EvalApplyNode* parent):
+            EvalApplyNode (astOper, parent) {}
+        
+        std::pair<EvalApplyNode*, EvalApplyNode*> eval (Context& context) override {
+
+            int tmp;
+            std::cin >> tmp;
+            context.calcStack_.push_back (new NumScope (tmp));
+            
+            return {parent_, this};
+        }
+
+    };
+
     const NumScope* getTopAndPopNum (Context& context);
 
     struct UnOpPrint {
@@ -357,8 +374,8 @@ namespace interpret {
 
         void operator() (Context& context) const {
 
-            const NumScope* lhs = getTopAndPopNum (context);
             const NumScope* rhs = getTopAndPopNum (context);
+            const NumScope* lhs = getTopAndPopNum (context);
             context.calcStack_.push_back(new NumScope (lhs->val_ + rhs->val_));
         }
     };
@@ -367,8 +384,8 @@ namespace interpret {
 
         void operator() (Context& context) const {
 
-            const NumScope* lhs = getTopAndPopNum (context);
             const NumScope* rhs = getTopAndPopNum (context);
+            const NumScope* lhs = getTopAndPopNum (context);
             context.calcStack_.push_back(new NumScope (lhs->val_ - rhs->val_));
         }
     };
@@ -377,8 +394,8 @@ namespace interpret {
 
         void operator() (Context& context) const {
 
-            const NumScope* lhs = getTopAndPopNum (context);
             const NumScope* rhs = getTopAndPopNum (context);
+            const NumScope* lhs = getTopAndPopNum (context);
             context.calcStack_.push_back(new NumScope (lhs->val_ * rhs->val_));
         }
     };
@@ -387,8 +404,8 @@ namespace interpret {
 
         void operator() (Context& context) const {
 
-            const NumScope* lhs = getTopAndPopNum (context);
             const NumScope* rhs = getTopAndPopNum (context);
+            const NumScope* lhs = getTopAndPopNum (context);
             context.calcStack_.push_back(new NumScope (lhs->val_ / rhs->val_));
         }
     };
@@ -397,8 +414,8 @@ namespace interpret {
 
         void operator() (Context& context) const {
 
-            const NumScope* lhs = getTopAndPopNum (context);
             const NumScope* rhs = getTopAndPopNum (context);
+            const NumScope* lhs = getTopAndPopNum (context);
             context.calcStack_.push_back(new NumScope (lhs->val_ > rhs->val_));
         }
     };
@@ -407,8 +424,8 @@ namespace interpret {
 
         void operator() (Context& context) const {
 
-            const NumScope* lhs = getTopAndPopNum (context);
             const NumScope* rhs = getTopAndPopNum (context);
+            const NumScope* lhs = getTopAndPopNum (context);
             context.calcStack_.push_back(new NumScope (lhs->val_ < rhs->val_));
         }
     };
@@ -417,8 +434,8 @@ namespace interpret {
 
         void operator() (Context& context) const {
 
-            const NumScope* lhs = getTopAndPopNum (context);
             const NumScope* rhs = getTopAndPopNum (context);
+            const NumScope* lhs = getTopAndPopNum (context);
             context.calcStack_.push_back(new NumScope (lhs->val_ <= rhs->val_));
         }
     };
@@ -427,8 +444,8 @@ namespace interpret {
 
         void operator() (Context& context) const {
 
-            const NumScope* lhs = getTopAndPopNum (context);
             const NumScope* rhs = getTopAndPopNum (context);
+            const NumScope* lhs = getTopAndPopNum (context);
             context.calcStack_.push_back(new NumScope (lhs->val_ >= rhs->val_));
         }
     };
@@ -437,8 +454,8 @@ namespace interpret {
 
         void operator() (Context& context) const {
 
-            const NumScope* lhs = getTopAndPopNum (context);
             const NumScope* rhs = getTopAndPopNum (context);
+            const NumScope* lhs = getTopAndPopNum (context);
             context.calcStack_.push_back(new NumScope (lhs->val_ == rhs->val_));
         }
     };
@@ -447,8 +464,8 @@ namespace interpret {
 
         void operator() (Context& context) const {
 
-            const NumScope* lhs = getTopAndPopNum (context);
             const NumScope* rhs = getTopAndPopNum (context);
+            const NumScope* lhs = getTopAndPopNum (context);
             context.calcStack_.push_back(new NumScope (lhs->val_ != rhs->val_));
         }
     };
@@ -457,8 +474,8 @@ namespace interpret {
 
         void operator() (Context& context) const {
 
-            const NumScope* lhs = getTopAndPopNum (context);
             const NumScope* rhs = getTopAndPopNum (context);
+            const NumScope* lhs = getTopAndPopNum (context);
             context.calcStack_.push_back(new NumScope (lhs->val_ || rhs->val_));
         }
     };
@@ -467,8 +484,8 @@ namespace interpret {
 
         void operator() (Context& context) const {
 
-            const NumScope* lhs = getTopAndPopNum (context);
             const NumScope* rhs = getTopAndPopNum (context);
+            const NumScope* lhs = getTopAndPopNum (context);
             context.calcStack_.push_back(new NumScope (lhs->val_ && rhs->val_));
         }
     };
@@ -477,8 +494,8 @@ namespace interpret {
 
         void operator() (Context& context) const {
 
-            const NumScope* lhs = getTopAndPopNum (context);
             const NumScope* rhs = getTopAndPopNum (context);
+            const NumScope* lhs = getTopAndPopNum (context);
             context.calcStack_.push_back(new NumScope (lhs->val_ % rhs->val_));
         }
     };

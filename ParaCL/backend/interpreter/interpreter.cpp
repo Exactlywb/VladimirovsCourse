@@ -52,8 +52,8 @@ namespace interpret {
                 return new EABinOp<BinOpAnd> (opNode, parent);
             case AST::OperNode::OperType::MOD: 
                 return new EABinOp<BinOpMod>  (opNode, parent);
-            // case AST::OperNode::OperType::SCAN: 
-                // return (std::make_shared<EAScan> (opNode));
+            case AST::OperNode::OperType::SCAN: 
+                return new EAScan (opNode, parent);
         }
 
         throw std::runtime_error ("Unexpected operator type");
@@ -203,8 +203,10 @@ std::pair<EvalApplyNode*, EvalApplyNode*> EAScope::eval (Context& context)
     if (scope->getLeftChild ()) {
 
         EvalApplyNode* next = nullptr;
-        if (curChildrenToExec_ == children_.size ())
+        if (curChildrenToExec_ == children_.size ()) {
+            std::cout << parent_ << std::endl;
             next = parent_;
+        }
         else
             next = children_ [curChildrenToExec_++];
         
@@ -286,7 +288,7 @@ std::pair<EvalApplyNode*, EvalApplyNode*> EAIf::eval (Context& context) {
     if (prevASTExecuted == expr_) {
 
         const NumScope* boolRes = getTopAndPopNum (context);
-        if (boolRes) {
+        if (boolRes->val_) {
 
             context.addScope ();
             return {buildApplyNode (scope_, parent_), this};    //!TODO think about parent
@@ -301,7 +303,27 @@ std::pair<EvalApplyNode*, EvalApplyNode*> EAIf::eval (Context& context) {
 
 std::pair<EvalApplyNode*, EvalApplyNode*> EAWhile::eval (Context& context) {
 
+    const AST::Node* prevASTExecuted = context.prev_->getNode ();
+    if (prevASTExecuted == parent_->getNode ())
+        return {buildApplyNode (expr_, this), this};
     
+    if (prevASTExecuted == expr_) {
+
+        const NumScope* boolRes = getTopAndPopNum (context);
+        if (boolRes->val_) {
+
+            std::cout << "here "  << this << std::endl;
+            context.addScope ();
+            return {buildApplyNode (scope_, this), this};    //!TODO think about parent
+
+        }
+
+    }
+
+    if (prevASTExecuted == scope_)
+        return {buildApplyNode (expr_, this), this};
+
+    return {parent_, this};
 
 }
 
