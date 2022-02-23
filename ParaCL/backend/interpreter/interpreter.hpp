@@ -72,7 +72,7 @@ namespace interpret {
         using tblVec = std::vector<tblSource>;
         using tblIt = tblVec::const_iterator;
 
-    private:
+    public:
         tblVec tbl_;
         tblIt endOfVisibleInParent_;
         Scope *parent_;
@@ -96,6 +96,7 @@ namespace interpret {
             Scope *curScope = this;
 
             while (curScope->parent_ != nullptr) {
+                
                 for (tblIt curIt = curScope->parent_->tbl_.begin(), endIt = (curScope->endOfVisibleInParent_) + 1; curIt != endIt; ++curIt)
                     if ((*curIt).first == name)
                         return curIt;

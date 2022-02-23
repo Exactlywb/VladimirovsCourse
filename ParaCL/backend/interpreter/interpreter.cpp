@@ -120,11 +120,10 @@ void Context::replaceScope (Scope* scope, const EAScope* curEAScope) {
 }
 
 void Context::removeCurScope () {
-    // if (scopeStack_.empty ())
-    //     return;
+    if (scopeStack_.empty ())
+        return;
 
-    // scope_ = scopeStack_.back ();
-    // scopeStack_.pop_back ();
+    scopeStack_.pop_back ();
 
 }
 
@@ -144,6 +143,7 @@ void Context::addScope ()
 
         noParent = false;
         parent = *curIt;
+        break;
     }
 
     if (noParent)
@@ -180,6 +180,7 @@ void Interpreter::run () {
     EvalApplyNode* expr = buildApplyNode (root_, nullptr);
 
     while (expr) {
+
         //next to implement and prev
         std::pair<EvalApplyNode*, EvalApplyNode*> res = expr->eval (context);
 
@@ -203,6 +204,7 @@ std::pair<EvalApplyNode*, EvalApplyNode*> EAScope::eval (Context& context)
 
         EvalApplyNode* next = nullptr;
         if (curChildrenToExec_ == children_.size ()) {
+            context.removeCurScope ();
             next = parent_;
         }
         else
