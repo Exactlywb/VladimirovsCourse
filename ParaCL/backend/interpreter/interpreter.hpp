@@ -198,7 +198,7 @@ namespace interpret {
 
         std::string getName () const { return name_; }
         
-        std::pair<EvalApplyNode*, EvalApplyNode*> eval (Context& context) override { return {nullptr, nullptr}; }
+        std::pair<EvalApplyNode*, EvalApplyNode*> eval (Context& context) override;
 
     };
 
@@ -249,6 +249,8 @@ namespace interpret {
 
         EvalApplyNode* prev_ = nullptr;
 
+        Context () {}
+
         void addScope ();
         void replaceScope (Scope* scope, const EAScope* curEAScope);
         void removeCurScope ();
@@ -291,7 +293,65 @@ namespace interpret {
 
     };
 
+//=======================================================================
+
+    template<typename operApp>
+    class EAUnOp final: public EvalApplyNode {
+
+        operApp apply_;
+    public:
+        EAUnOp (const AST::OperNode* astOper, EvalApplyNode* parent):
+            EvalApplyNode (astOper, parent_) {}
+        
+        std::pair<EvalApplyNode*, EvalApplyNode*> eval (Context& context) override {
+
+            const AST::Node* node   = EvalApplyNode::getNode ();
+            const AST::Node* lhs    = (*node) [0];
+
+            const AST::Node* prevExec = context.prev_->getNode ();
+
+            if (prevExec == lhs) {
+
+                apply_ (context);
+                return {parent_, this};
+
+            }
+
+            EvalApplyNode* lhsToExec = buildApplyNode (lhs, this);
+            return {lhsToExec, this};
+
+        }
+
+    };
+
     const NumScope* getTopAndPopNum (Context& context);
+
+    struct UnOpPrint {
+
+        void operator() (Context& context) const {
+
+            const NumScope* lhs = getTopAndPopNum (context);
+            std::cout << lhs->val_ << std::endl;
+        }
+    };
+
+    struct UnOpMinus {
+
+        void operator() (Context& context) const {
+
+            const NumScope* lhs = getTopAndPopNum (context);
+            context.calcStack_.push_back(new NumScope (-lhs->val_));
+        }
+    };
+
+    struct UnOpPlus {
+
+        void operator() (Context& context) const {
+
+            const NumScope* lhs = getTopAndPopNum (context);
+            context.calcStack_.push_back(new NumScope (+lhs->val_));
+        }
+    };
 
     struct BinOpAdd {
 
