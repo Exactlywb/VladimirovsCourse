@@ -67,49 +67,51 @@ namespace interpret {
         
     };
 
-    class Scope final {
+    struct Scope final {
+        using tblSource = std::pair<std::string, ScopeTblWrapper*>;
+        using tblVec = std::vector<tblSource>;
+        using tblIt = tblVec::const_iterator;
 
-        std::vector<std::pair<std::string, ScopeTblWrapper*>> tbl_;
+    private:
+        tblVec tbl_;
+        tblIt endOfVisibleInParent_;
+        Scope *parent_;
 
     public:
-        using tblIt = std::vector<std::pair<std::string, ScopeTblWrapper*>>::const_iterator;
 
-        void push (std::pair<std::string, ScopeTblWrapper*> obj) { tbl_.push_back (obj); }
-        
+        Scope (Scope *parent = nullptr, tblIt it = tblIt(nullptr)) : parent_ (parent), endOfVisibleInParent_ (it) {}
+
+        void push (tblSource obj) { tbl_.push_back (obj); }
+
         tblIt tblBegin () const { return tbl_.cbegin (); }
         tblIt tblEnd () const { return tbl_.cend (); }
+        bool tbl_empty () const { return tbl_.empty(); }
 
         tblIt lookup (const std::string& name) {
-        
-            for (auto obj = tbl_.cbegin (), end = tbl_.cend (); obj != end; ++obj) {
-                if ((*obj).first == name)
-                    return obj;
-            }
             
-            return tbl_.cend ();
+            for (tblIt curIt = tbl_.begin(), endIt = tbl_.end(); curIt != endIt; ++curIt)
+                if ((*curIt).first == name)
+                    return curIt;
 
-        }
+            Scope *curScope = this;
 
-        tblIt lookup (const std::string& name, tblIt end) {
+            while (curScope->parent_ != nullptr) {
+                for (tblIt curIt = curScope->parent_->tbl_.begin(), endIt = (curScope->endOfVisibleInParent_) + 1; curIt != endIt; ++curIt)
+                    if ((*curIt).first == name)
+                        return curIt;
 
-            for (tblIt obj = tbl_.cbegin (); obj != end; ++obj) {
-                
-                if ((*obj).first == name)
-                    return obj;
-
+                curScope = curScope->parent_;
             }
 
-            return tbl_.cend ();
-
+            return tblIt (nullptr);
         }
-
     };
 
 //=======================================================================
 
     struct Context;
 
-    struct EvalApplyNode: public std::enable_shared_from_this<EvalApplyNode> {
+    struct EvalApplyNode {
 
         const AST::Node*    node_   = nullptr;
         EvalApplyNode*      parent_ = nullptr;
@@ -146,17 +148,6 @@ namespace interpret {
         
         T operator[] (const size_t pos) { return stack_ [pos]; }
         const T operator[] (const size_t pos) const { return stack_ [pos]; }        
-
-    };
-
-    class Dummy final: public EvalApplyNode {
-
-    public:
-        std::pair<EvalApplyNode*, EvalApplyNode*> eval (Context& context) override {
-            throw std::runtime_error ("You've called Dummy class to execute");
-        }
-
-        Dummy (): EvalApplyNode (nullptr, nullptr) {}
 
     };
 
@@ -222,6 +213,7 @@ namespace interpret {
 
         EvalApplyNode* prev_ = nullptr;
 
+        void addScope ();
         void replaceScope (Scope* scope, const EAScope* curEAScope);
         void removeCurScope ();
 
