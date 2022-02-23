@@ -16,50 +16,41 @@
 
 namespace interpret {
 
-    struct ScopeWrapper {
+//=======================================================================
+//===================== SCOPE TABLE IMPLEMENTATION ======================
+//=======================================================================
+
+    struct ScopeTblWrapper {
 
         enum class WrapperType {
 
-            ID,
             NUM,
             FUNC
 
         };
 
         WrapperType type_;
-        ScopeWrapper (WrapperType type): type_ (type) {}
-        virtual ~ScopeWrapper () = 0;
+        ScopeTblWrapper (WrapperType type): type_ (type) {}
+        virtual ~ScopeTblWrapper () = 0;
 
     };
 
-//=======================================================================
-//======================== SCOPE IMPLEMENTATION =========================
-//=======================================================================
-
-    struct NumScope final: public ScopeWrapper {
+    struct NumScope final: public ScopeTblWrapper {
         
         int val_;
 
-        NumScope (const int val): ScopeWrapper (ScopeWrapper::WrapperType::NUM), val_ (val) {}
+        NumScope (const int val): ScopeTblWrapper (ScopeTblWrapper::WrapperType::NUM), val_ (val) {}
 
     };
 
-    struct IDScope final: public ScopeWrapper { //!TODO remove?
-
-        const std::string name_;
-
-        IDScope (const std::string& name): ScopeWrapper (ScopeWrapper::WrapperType::ID), name_ (name) {}
-
-    };
-
-    struct FuncScope final: public ScopeWrapper {
+    struct FuncScope final: public ScopeTblWrapper {
 
         const AST::FuncNode* name_ = nullptr;
         const AST::FuncNode* args_ = nullptr;
         const AST::ScopeNode* execScope_ = nullptr;
 
         FuncScope (const AST::FuncNode* funcDecl): 
-            ScopeWrapper (ScopeWrapper::WrapperType::FUNC)
+            ScopeTblWrapper (ScopeTblWrapper::WrapperType::FUNC)
         {
             
             const AST::FuncNode* leftChild = static_cast<const AST::FuncNode*>((*funcDecl)[0]);
@@ -78,12 +69,12 @@ namespace interpret {
 
     class Scope final {
 
-        std::vector<std::pair<std::string, std::shared_ptr<ScopeWrapper>>> tbl_;
+        std::vector<std::pair<std::string, ScopeTblWrapper*>> tbl_;
 
     public:
-        using tblIt = std::vector<std::pair<std::string, std::shared_ptr<ScopeWrapper>>>::const_iterator;
+        using tblIt = std::vector<std::pair<std::string, ScopeTblWrapper*>>::const_iterator;
 
-        void push (std::pair<std::string, std::shared_ptr<ScopeWrapper>> obj) { tbl_.push_back (obj); }
+        void push (std::pair<std::string, ScopeTblWrapper*> obj) { tbl_.push_back (obj); }
         
         tblIt tblBegin () const { return tbl_.cbegin (); }
         tblIt tblEnd () const { return tbl_.cend (); }
@@ -120,24 +111,24 @@ namespace interpret {
 
     struct EvalApplyNode: public std::enable_shared_from_this<EvalApplyNode> {
 
-        const AST::Node* node_ = nullptr;
-        std::shared_ptr<EvalApplyNode> parent_ = nullptr;
+        const AST::Node*    node_   = nullptr;
+        EvalApplyNode*      parent_ = nullptr;
 
     public:
-        EvalApplyNode (const AST::Node* node, std::shared_ptr<EvalApplyNode> parent): node_ (node), parent_(parent) {}
+        EvalApplyNode (const AST::Node* node, EvalApplyNode* parent): node_ (node), parent_(parent) {}
 
         const AST::Node* getNode () const { return node_; }
-        virtual std::pair<std::shared_ptr<EvalApplyNode>, std::shared_ptr<EvalApplyNode>> eval (Context& context) = 0;
+        virtual std::pair<EvalApplyNode*, EvalApplyNode*> eval (Context& context) = 0;
 
     };
 
     template <typename T>
     class StackWrapper {
 
-        std::vector<std::shared_ptr<T>> stack_;
+        std::vector<T> stack_;
 
     public:
-        std::shared_ptr<T> push_back  (std::shared_ptr<T> node) {
+        T push_back  (T* node) {
         
             stack_.push_back (node); 
             return node; 
@@ -149,17 +140,17 @@ namespace interpret {
         bool empty () const { return stack_.empty (); }
         size_t size () const { return stack_.size (); }
 
-        std::shared_ptr<T> back () const { return stack_.back (); }
+        T back () const { return stack_.back (); }
         
-        std::shared_ptr<T> operator[] (const size_t pos) { return stack_ [pos]; }
-        const std::shared_ptr<T> operator[] (const size_t pos) const { return stack_ [pos]; }        
+        T operator[] (const size_t pos) { return stack_ [pos]; }
+        const T operator[] (const size_t pos) const { return stack_ [pos]; }        
 
     };
 
     class Dummy final: public EvalApplyNode {
 
     public:
-        std::pair<std::shared_ptr<EvalApplyNode>, std::shared_ptr<EvalApplyNode>> eval (Context& context) override {
+        std::pair<EvalApplyNode*, EvalApplyNode*> eval (Context& context) override {
             throw std::runtime_error ("You've called Dummy class to execute");
         }
 
@@ -170,37 +161,63 @@ namespace interpret {
     class EAScope final: public EvalApplyNode {
 
         int curChildrenToExec_ = 0;
-        std::vector<std::shared_ptr<EvalApplyNode>> children_;
+        std::vector<EvalApplyNode*> children_;
     public:
-        EAScope (const AST::ScopeNode* astScope, std::shared_ptr<EvalApplyNode>);
+        EAScope (const AST::ScopeNode* astScope, EvalApplyNode* parent);
 
-        std::pair<std::shared_ptr<EvalApplyNode>, std::shared_ptr<EvalApplyNode>> eval (Context& context) override;
+        std::pair<EvalApplyNode*, EvalApplyNode*> eval (Context& context) override;
 
-        std::shared_ptr<EvalApplyNode> getLastChildren () const { return children_.back (); }
+        EvalApplyNode* getLastChildren () const { return children_.back (); }
     };
 
     class EAAssign final: public EvalApplyNode {
 
-        std::shared_ptr<IDScope>        lhs_;
-        std::shared_ptr<EvalApplyNode>  rhs_;
+        std::string         lhs_;
+        EvalApplyNode*      rhs_;
     public:
-        EAAssign (const AST::OperNode* astAssign, std::shared_ptr<EvalApplyNode>);
+        EAAssign (const AST::OperNode* astAssign, EvalApplyNode* parent);
 
-        std::pair<std::shared_ptr<EvalApplyNode>, std::shared_ptr<EvalApplyNode>> eval (Context& context) override;
+        std::pair<EvalApplyNode*, EvalApplyNode*> eval (Context& context) override;
 
-        std::shared_ptr<IDScope> getLhs () const {return lhs_;}
-        std::shared_ptr<EvalApplyNode> getRhs () const {return rhs_;} 
+        std::string getLhs () const {return lhs_;}
+        EvalApplyNode* getRhs () const {return rhs_;} 
+    };
+
+    class EANum final: public EvalApplyNode {
+
+        int val_;
+    public:
+        EANum (const AST::NumNode* astNum, EvalApplyNode* parent):
+            EvalApplyNode (astNum, parent), val_ (astNum->getValue ()) {}
+
+        int getVal () const { return val_; }
+        
+        std::pair<EvalApplyNode*, EvalApplyNode*> eval (Context& context) override;
+
+    };
+
+    class EAVar final: public EvalApplyNode {
+
+        std::string name_;
+    public:
+        EAVar (const AST::VarNode* astVar, EvalApplyNode* parent):
+            EvalApplyNode (astVar, parent), name_ (astVar->getName ()) {}
+
+        std::string getName () const { return name_; }
+        
+        std::pair<EvalApplyNode*, EvalApplyNode*> eval (Context& context) override { return {nullptr, nullptr}; }
+
     };
 
     struct Context final {
         
-        std::vector<std::shared_ptr<Scope>>             scopeStack_;
-        std::vector<std::shared_ptr<ScopeWrapper>>      calcStack_;
-        std::vector<std::shared_ptr<EvalApplyNode>>     retStack_;
+        std::vector<Scope*>             scopeStack_;
+        std::vector<ScopeTblWrapper*>   calcStack_;
+        std::vector<EvalApplyNode*>     retStack_;
 
-        std::shared_ptr<EvalApplyNode> prev_ = nullptr;
+        EvalApplyNode* prev_ = nullptr;
 
-        void replaceScope (std::shared_ptr<Scope> scope, std::shared_ptr<const EAScope> curEAScope);
+        void replaceScope (Scope* scope, const EAScope* curEAScope);
         void removeCurScope ();
 
     };
@@ -213,9 +230,7 @@ namespace interpret {
 
         void run ();
 
-    }; 
-
-    
+    };
 
 }  // namespace interpret
 
