@@ -122,6 +122,8 @@ namespace interpret {
 
     };
 
+    EvalApplyNode* buildApplyNode (const AST::Node* node, EvalApplyNode* parent);
+
     template <typename T>
     class StackWrapper {
 
@@ -209,6 +211,9 @@ namespace interpret {
 
     };
 
+//=======================================================================
+//==================== CONTEXT STRUCT IMPLEMENTATION ====================
+//=======================================================================
     struct Context final {
         
         std::vector<Scope*>             scopeStack_;
@@ -220,6 +225,184 @@ namespace interpret {
         void replaceScope (Scope* scope, const EAScope* curEAScope);
         void removeCurScope ();
 
+    };
+//=======================================================================
+
+    template<typename operApp>
+    class EABinOp final: public EvalApplyNode {
+
+        operApp apply_;
+    public:
+        EABinOp (const AST::OperNode* astOper, EvalApplyNode* parent):
+            EvalApplyNode (astOper, parent_) {}
+        
+        std::pair<EvalApplyNode*, EvalApplyNode*> eval (Context& context) override {
+
+            const AST::Node* node   = EvalApplyNode::getNode ();
+            const AST::Node* rhs    = (*node) [1];
+            const AST::Node* lhs    = (*node) [0];
+
+            const AST::Node* prevExec = context.prev_->getNode ();
+
+            if (prevExec == rhs) {
+
+                apply_ (context);
+                return {parent_, this};
+
+            } else if (prevExec == lhs) {
+
+                EvalApplyNode* rhsToExec = buildApplyNode (rhs, this);
+                return {rhsToExec, this};
+
+            }
+
+            EvalApplyNode* lhsToExec = buildApplyNode (lhs, this);
+            return {lhsToExec, this};
+
+        }
+
+    };
+
+namespace {
+
+    const NumScope* getTopAndPopNum (Context& context) {
+
+        const NumScope* res = static_cast<NumScope*> (context.calcStack_.back ());
+        context.calcStack_.pop_back ();
+        return res;
+
+    }
+
+}
+
+    struct BinOpAdd {
+
+        void operator() (Context& context) const {
+
+            const NumScope* lhs = getTopAndPopNum (context);
+            const NumScope* rhs = getTopAndPopNum (context);
+            context.calcStack_.push_back(new NumScope (lhs->val_ + rhs->val_));
+        }
+    };
+
+    struct BinOpSub {
+
+        void operator() (Context& context) const {
+
+            const NumScope* lhs = getTopAndPopNum (context);
+            const NumScope* rhs = getTopAndPopNum (context);
+            context.calcStack_.push_back(new NumScope (lhs->val_ - rhs->val_));
+        }
+    };
+
+    struct BinOpMul {
+
+        void operator() (Context& context) const {
+
+            const NumScope* lhs = getTopAndPopNum (context);
+            const NumScope* rhs = getTopAndPopNum (context);
+            context.calcStack_.push_back(new NumScope (lhs->val_ * rhs->val_));
+        }
+    };
+
+    struct BinOpDiv {
+
+        void operator() (Context& context) const {
+
+            const NumScope* lhs = getTopAndPopNum (context);
+            const NumScope* rhs = getTopAndPopNum (context);
+            context.calcStack_.push_back(new NumScope (lhs->val_ / rhs->val_));
+        }
+    };
+
+    struct BinOpMore {
+
+        void operator() (Context& context) const {
+
+            const NumScope* lhs = getTopAndPopNum (context);
+            const NumScope* rhs = getTopAndPopNum (context);
+            context.calcStack_.push_back(new NumScope (lhs->val_ > rhs->val_));
+        }
+    };
+
+    struct BinOpLess {
+
+        void operator() (Context& context) const {
+
+            const NumScope* lhs = getTopAndPopNum (context);
+            const NumScope* rhs = getTopAndPopNum (context);
+            context.calcStack_.push_back(new NumScope (lhs->val_ < rhs->val_));
+        }
+    };
+
+    struct BinOpLTE {
+
+        void operator() (Context& context) const {
+
+            const NumScope* lhs = getTopAndPopNum (context);
+            const NumScope* rhs = getTopAndPopNum (context);
+            context.calcStack_.push_back(new NumScope (lhs->val_ <= rhs->val_));
+        }
+    };
+
+    struct BinOpGTE {
+
+        void operator() (Context& context) const {
+
+            const NumScope* lhs = getTopAndPopNum (context);
+            const NumScope* rhs = getTopAndPopNum (context);
+            context.calcStack_.push_back(new NumScope (lhs->val_ >= rhs->val_));
+        }
+    };
+
+    struct BinOpEQ {
+
+        void operator() (Context& context) const {
+
+            const NumScope* lhs = getTopAndPopNum (context);
+            const NumScope* rhs = getTopAndPopNum (context);
+            context.calcStack_.push_back(new NumScope (lhs->val_ == rhs->val_));
+        }
+    };
+
+    struct BinOpNEQ {
+
+        void operator() (Context& context) const {
+
+            const NumScope* lhs = getTopAndPopNum (context);
+            const NumScope* rhs = getTopAndPopNum (context);
+            context.calcStack_.push_back(new NumScope (lhs->val_ != rhs->val_));
+        }
+    };
+
+    struct BinOpOr {
+
+        void operator() (Context& context) const {
+
+            const NumScope* lhs = getTopAndPopNum (context);
+            const NumScope* rhs = getTopAndPopNum (context);
+            context.calcStack_.push_back(new NumScope (lhs->val_ || rhs->val_));
+        }
+    };
+
+    struct BinOpAnd {
+
+        void operator() (Context& context) const {
+
+            const NumScope* lhs = getTopAndPopNum (context);
+            const NumScope* rhs = getTopAndPopNum (context);
+            context.calcStack_.push_back(new NumScope (lhs->val_ && rhs->val_));
+        }
+    };
+
+    struct BinOpMod {
+
+        void operator() (Context& context) const {
+
+            const NumScope* lhs = getTopAndPopNum (context);
+            const NumScope* rhs = getTopAndPopNum (context);
+            context.calcStack_.push_back(new NumScope (lhs->val_ % rhs->val_));
+        }
     };
 
     class Interpreter final {
