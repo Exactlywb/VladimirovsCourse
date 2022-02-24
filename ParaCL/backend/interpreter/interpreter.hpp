@@ -24,7 +24,8 @@ namespace interpret {
         enum class WrapperType {
 
             NUM,
-            FUNC
+            FUNC,
+            INLINE
 
         };
 
@@ -54,6 +55,10 @@ namespace interpret {
             args_ = leftChild;
             execScope_ = static_cast<const AST::ScopeNode *> (funcDecl->getRightChild ());
         }
+    };
+
+    struct InlineScope final : public ScopeTblWrapper {
+        InlineScope () : ScopeTblWrapper (ScopeTblWrapper::WrapperType::INLINE) {}
     };
 
     struct Scope final {
@@ -141,14 +146,6 @@ namespace interpret {
     public:
         EAScope (const AST::ScopeNode *astScope, EvalApplyNode *parent, Context& context);
 
-        ~EAScope () {   
-            
-            // std::cout << "Delete children" << std::endl;
-            // for (auto v : children_) {
-            //     std::cout << "Tuk " << v << std::endl; 
-            //     delete v;
-            // }
-        }
         std::pair<EvalApplyNode *, EvalApplyNode *> eval (Context &context) override;
 
         EvalApplyNode *getLastChildren () const { return children_.back (); }
@@ -165,6 +162,13 @@ namespace interpret {
 
         std::string getLhs () const { return lhs_; }
         EvalApplyNode *getRhs () const { return rhs_; }
+    };
+
+    class EAInlineScope final : public EvalApplyNode {
+    public:
+        EAInlineScope (const AST::InlineScopeNode *astNode, EvalApplyNode *parent) : EvalApplyNode (astNode, parent) {}
+
+        std::pair<EvalApplyNode *, EvalApplyNode *> eval (Context &context) override;
     };
 
     class EANum final : public EvalApplyNode {
@@ -249,10 +253,6 @@ namespace interpret {
 
 
         ~Context () {
-
-        
-
-            std::cout << "calcStack size = " << calcStack_.size() << std::endl;
 
             for (auto v : rubbishStack_)
                 delete v;
