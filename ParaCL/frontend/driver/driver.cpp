@@ -38,7 +38,7 @@ int main (int argc, char **argv)
         driver.printWarnings ();
 
     }
-
+    
     driver.printError ();
 
     std::cin.rdbuf (cinbuf);

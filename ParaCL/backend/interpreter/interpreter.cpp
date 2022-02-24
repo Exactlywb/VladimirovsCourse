@@ -291,6 +291,7 @@ namespace interpret {
 
             auto varName = static_cast<const AST::VarNode*> (*(--beginNameArgs))->getName();
             NumScope* valueNode = static_cast <NumScope*> (context.calcStack_.back());
+            context.calcStack_.pop_back ();
             funcScope->push({varName, valueNode});
         }
 
