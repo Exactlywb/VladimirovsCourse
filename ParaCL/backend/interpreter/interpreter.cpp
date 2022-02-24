@@ -60,11 +60,13 @@ namespace interpret {
         throw std::runtime_error ("unexpected AST::Node type");
     }
 
-    NumScope *getTopAndPopNum (Context &context)
+    int getTopAndPopNum (Context &context)
     {
         NumScope *res = static_cast<NumScope *> (context.calcStack_.back ());
         context.calcStack_.pop_back ();
-        return res;
+
+        return res->val_;
+        delete res;
     }
 
     ScopeTblWrapper::~ScopeTblWrapper () = default;
@@ -229,8 +231,8 @@ namespace interpret {
             return {buildApplyNode (expr_, this), this};
 
         if (prevASTExecuted == expr_) {
-            const NumScope *boolRes = getTopAndPopNum (context);
-            if (boolRes->val_) {
+
+            if (getTopAndPopNum (context)) {
                 context.addScope ();
                 return {buildApplyNode (scope_, parent_), this};  //! TODO think about parent
             }
@@ -246,8 +248,8 @@ namespace interpret {
             return {buildApplyNode (expr_, this), this};
 
         if (prevASTExecuted == expr_) {
-            const NumScope *boolRes = getTopAndPopNum (context);
-            if (boolRes->val_) {
+
+            if (getTopAndPopNum (context)) {
                 context.addScope ();
                 return {buildApplyNode (scope_, this), this};  //! TODO think about parent
             }
@@ -284,7 +286,7 @@ namespace interpret {
         for (int curChild = 0; curChild < args->getChildrenNum (); ++curChild) {
 
             auto varName = static_cast<const AST::VarNode*> (*(--beginNameArgs))->getName();
-            NumScope* valueNode = getTopAndPopNum (context);
+            NumScope* valueNode = static_cast <NumScope*> (context.calcStack_.back());
             funcScope->push({varName, valueNode});
         }
 
