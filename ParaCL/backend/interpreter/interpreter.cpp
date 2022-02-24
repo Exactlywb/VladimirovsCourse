@@ -46,6 +46,9 @@ namespace interpret {
 
     EvalApplyNode *buildApplyNodeFromScope (const AST::ScopeNode *scopeNode, EvalApplyNode *parent) { return new EAScope (scopeNode, parent); }
 
+    EvalApplyNode *buildApplyNodeFromInlineScope (const AST::InlineScopeNode *inlineScopeNode, EvalApplyNode *parent) 
+                                                                                                    { return new EAInlineScope (inlineScopeNode, parent);  }
+
     EvalApplyNode *buildApplyNode (const AST::Node *node, EvalApplyNode *parent)
     {
         switch (node->getType ()) {
@@ -55,6 +58,7 @@ namespace interpret {
             case AST::NodeT::VARIABLE: return buildApplyNodeFromVariable (static_cast<const AST::VarNode *> (node), parent);
             case AST::NodeT::NUMBER: return buildApplyNodeFromNumber (static_cast<const AST::NumNode *> (node), parent);
             case AST::NodeT::SCOPE: return buildApplyNodeFromScope (static_cast<const AST::ScopeNode *> (node), parent);
+            case AST::NodeT::INLINESCOPE: return buildApplyNodeFromInlineScope (static_cast<const AST::InlineScopeNode *> (node), parent);
         }
 
         throw std::runtime_error ("unexpected AST::Node type");
@@ -183,7 +187,7 @@ namespace interpret {
                         const AST::VarNode *getFuncName = static_cast<const AST::VarNode *> ((*predFuncName)[0]);
                         curScopeToFind->push ({getFuncName->getName (), funcToPush});
                         
-                    } 
+                    }
                     
                     curScopeToFind->push ({lhs_, funcToPush});
                 }
@@ -314,6 +318,23 @@ namespace interpret {
 
         EvalApplyNode *lhsToExec = buildApplyNode (lhs, this);
         return {lhsToExec, this};
+    }
+
+    std::pair<EvalApplyNode *, EvalApplyNode *> EAInlineScope::eval (Context &context)
+    {
+        const AST::Node *node = EvalApplyNode::getNode ();
+        const AST::ScopeNode *scopeNode = static_cast<const AST::ScopeNode *> ((*node)[0]);
+        
+        if (!context.retStack_.empty() && context.retStack_.back ().second == this) {
+            context.retStack_.pop_back ();
+            return {parent_, this};
+        }
+
+        context.retStack_.push_back ({context.scopeStack_.size(), this});
+
+        context.addScope();
+
+        return {new EAScope (scopeNode, parent_), this};
     }
 
 }  // namespace interpret

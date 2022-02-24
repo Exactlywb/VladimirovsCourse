@@ -24,7 +24,8 @@ namespace interpret {
         enum class WrapperType {
 
             NUM,
-            FUNC
+            FUNC,
+            INLINE
 
         };
 
@@ -54,6 +55,10 @@ namespace interpret {
             args_ = leftChild;
             execScope_ = static_cast<const AST::ScopeNode *> (funcDecl->getRightChild ());
         }
+    };
+
+    struct InlineScope final : public ScopeTblWrapper {
+        InlineScope () : ScopeTblWrapper (ScopeTblWrapper::WrapperType::INLINE) {}
     };
 
     struct Scope final {
@@ -157,6 +162,13 @@ namespace interpret {
 
         std::string getLhs () const { return lhs_; }
         EvalApplyNode *getRhs () const { return rhs_; }
+    };
+
+    class EAInlineScope final : public EvalApplyNode {
+    public:
+        EAInlineScope (const AST::InlineScopeNode *astNode, EvalApplyNode *parent) : EvalApplyNode (astNode, parent) {}
+
+        std::pair<EvalApplyNode *, EvalApplyNode *> eval (Context &context) override;
     };
 
     class EANum final : public EvalApplyNode {
