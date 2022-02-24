@@ -161,7 +161,7 @@ namespace {
 
 /* FUNCTIONS IN THE NEAR FUTURE HAS TO BE ADDED HERE */
 translationStart            :   statementHandler                {
-                                                                    AST::ScopeNode* globalScope = new AST::ScopeNode ();
+                                                                    AST::ScopeNode* globalScope = new AST::ScopeNode (@1, nullptr);
                                                                     if ($1) {
                                                                         for (auto curStmtNode: *($1))             
                                                                         {   
@@ -251,7 +251,7 @@ ifStatement                 :   IF conditionExpression body     {
                                                                 }
                             |   IF conditionExpression statement {
                                                                     if ($2 && $3) {
-                                                                        AST::ScopeNode* newScope = new AST::ScopeNode ();
+                                                                        AST::ScopeNode* newScope = new AST::ScopeNode (@3, nullptr);
                                                                         newScope->addChild ($3);
                                                                         $$ = makeCondNode (AST::CondNode::ConditionType::IF, $2, newScope, @1);
                                                                     } else {
@@ -273,7 +273,7 @@ whileStatement              :   WHILE conditionExpression body  {
                             |   WHILE conditionExpression statement
                                                                 {
                                                                    if ($2 && $3) {
-                                                                        AST::ScopeNode* newScope = new AST::ScopeNode ();
+                                                                        AST::ScopeNode* newScope = new AST::ScopeNode (@3, nullptr);
                                                                         newScope->addChild ($3);
                                                                         $$ = makeCondNode (AST::CondNode::ConditionType::WHILE, $2, newScope, @1);
                                                                     } else {
@@ -290,7 +290,7 @@ conditionExpression         :   OPCIRCBRACK assignStatement CLCIRCBRACK
 
 body                        :   OPCURVBRACK statementHandler CLCURVBRACK 
                                                                 {
-                                                                    AST::ScopeNode* newScope = new AST::ScopeNode ();
+                                                                    AST::ScopeNode* newScope = new AST::ScopeNode (@1);
                                                                     if ($2) {
                                                                         for (auto curStmtNode: *($2))
                                                                            newScope->addChild (curStmtNode);
