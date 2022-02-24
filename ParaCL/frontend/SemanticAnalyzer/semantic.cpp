@@ -134,7 +134,7 @@ void SemanticAnalyzer::UselessStatementRecognizer (AST::Node *curNode)
                 case AST::OperNode::OperType::SCAN:
                 case AST::OperNode::OperType::ASSIGN:
                 case AST::OperNode::OperType::RETURN: break;
-                default: pushWarning_ (operNode->getLocation (), "useless statement");
+                default: pushError_ (operNode->getLocation (), "useless statement");
             }
         }
     }
