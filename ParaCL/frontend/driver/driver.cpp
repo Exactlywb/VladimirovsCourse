@@ -31,26 +31,20 @@ int main (int argc, char **argv)
         std::cout << err.what () << std::endl;
         return 0;
     }
-#if 0
-    driver.callDump (std::cout);
-#endif
 
-    driver.semantic ();
-    driver.printWarnings ();
+    if (driver.isNoErrors ()) {
 
-#if 0
-        driver.callDump (std::cout);
-#endif
+        driver.semantic ();
+        driver.printWarnings ();
+
+    }
 
     driver.printError ();
-    driver.cleanError ();
 
     std::cin.rdbuf (cinbuf);
 
     if (driver.isNoErrors ())
         driver.interpret ();
-
-    //    driver.compile ();
 
     return 0;
 }
