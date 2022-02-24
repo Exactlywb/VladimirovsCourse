@@ -311,146 +311,156 @@ namespace interpret {
         }
     };
 
-    NumScope *getTopAndPopNum (Context &context);
+    int getTopAndPopNum (Context &context);
 
     struct UnOpPrint {
         void operator() (Context &context) const
         {
-            const NumScope *lhs = getTopAndPopNum (context);
-            std::cout << lhs->val_ << std::endl;
+            std::cout << getTopAndPopNum (context) << std::endl;
         }
     };
 
     struct UnOpMinus {
         void operator() (Context &context) const
         {
-            const NumScope *lhs = getTopAndPopNum (context);
-            context.calcStack_.push_back (new NumScope (-lhs->val_));
+            context.calcStack_.push_back (new NumScope (-getTopAndPopNum (context)));
         }
     };
 
     struct UnOpPlus {
         void operator() (Context &context) const
         {
-            const NumScope *lhs = getTopAndPopNum (context);
-            context.calcStack_.push_back (new NumScope (+lhs->val_));
+            context.calcStack_.push_back (new NumScope (+getTopAndPopNum (context)));
         }
     };
 
     struct BinOpAdd {
         void operator() (Context &context) const
         {
-            const NumScope *rhs = getTopAndPopNum (context);
-            const NumScope *lhs = getTopAndPopNum (context);
-            context.calcStack_.push_back (new NumScope (lhs->val_ + rhs->val_));
+            const int first = getTopAndPopNum (context);
+            const int second = getTopAndPopNum (context);
+    
+            context.calcStack_.push_back (new NumScope (first + second));
         }
     };
 
     struct BinOpSub {
         void operator() (Context &context) const
         {
-            const NumScope *rhs = getTopAndPopNum (context);
-            const NumScope *lhs = getTopAndPopNum (context);
-            context.calcStack_.push_back (new NumScope (lhs->val_ - rhs->val_));
+            const int first = getTopAndPopNum (context);
+            const int second = getTopAndPopNum (context);
+
+            context.calcStack_.push_back (new NumScope (second - first));
         }
     };
 
     struct BinOpMul {
         void operator() (Context &context) const
         {
-            const NumScope *rhs = getTopAndPopNum (context);
-            const NumScope *lhs = getTopAndPopNum (context);
-            context.calcStack_.push_back (new NumScope (lhs->val_ * rhs->val_));
+            const int first = getTopAndPopNum (context);
+            const int second = getTopAndPopNum (context);
+
+            context.calcStack_.push_back (new NumScope (first * second));
         }
     };
 
     struct BinOpDiv {
         void operator() (Context &context) const
         {
-            const NumScope *rhs = getTopAndPopNum (context);
-            const NumScope *lhs = getTopAndPopNum (context);
-            context.calcStack_.push_back (new NumScope (lhs->val_ / rhs->val_));
+            const int first = getTopAndPopNum (context);
+            const int second = getTopAndPopNum (context);
+
+            context.calcStack_.push_back (new NumScope (second / first));
         }
     };
 
     struct BinOpMore {
         void operator() (Context &context) const
         {
-            const NumScope *rhs = getTopAndPopNum (context);
-            const NumScope *lhs = getTopAndPopNum (context);
-            context.calcStack_.push_back (new NumScope (lhs->val_ > rhs->val_));
+            const int first = getTopAndPopNum (context);
+            const int second = getTopAndPopNum (context);
+
+            context.calcStack_.push_back (new NumScope (second > first));
         }
     };
 
     struct BinOpLess {
         void operator() (Context &context) const
         {
-            const NumScope *rhs = getTopAndPopNum (context);
-            const NumScope *lhs = getTopAndPopNum (context);
-            context.calcStack_.push_back (new NumScope (lhs->val_ < rhs->val_));
+            const int first = getTopAndPopNum (context);
+            const int second = getTopAndPopNum (context);
+
+            context.calcStack_.push_back (new NumScope (second < first));
         }
     };
 
     struct BinOpLTE {
         void operator() (Context &context) const
         {
-            const NumScope *rhs = getTopAndPopNum (context);
-            const NumScope *lhs = getTopAndPopNum (context);
-            context.calcStack_.push_back (new NumScope (lhs->val_ <= rhs->val_));
+            const int first = getTopAndPopNum (context);
+            const int second = getTopAndPopNum (context);
+
+            context.calcStack_.push_back (new NumScope (second <= first));
         }
     };
 
     struct BinOpGTE {
         void operator() (Context &context) const
         {
-            const NumScope *rhs = getTopAndPopNum (context);
-            const NumScope *lhs = getTopAndPopNum (context);
-            context.calcStack_.push_back (new NumScope (lhs->val_ >= rhs->val_));
+            const int first = getTopAndPopNum (context);
+            const int second = getTopAndPopNum (context);
+
+            context.calcStack_.push_back (new NumScope (second >= first));
         }
     };
 
     struct BinOpEQ {
         void operator() (Context &context) const
         {
-            const NumScope *rhs = getTopAndPopNum (context);
-            const NumScope *lhs = getTopAndPopNum (context);
-            context.calcStack_.push_back (new NumScope (lhs->val_ == rhs->val_));
+            const int first = getTopAndPopNum (context);
+            const int second = getTopAndPopNum (context);
+
+            context.calcStack_.push_back (new NumScope (second == first));
         }
     };
 
     struct BinOpNEQ {
         void operator() (Context &context) const
         {
-            const NumScope *rhs = getTopAndPopNum (context);
-            const NumScope *lhs = getTopAndPopNum (context);
-            context.calcStack_.push_back (new NumScope (lhs->val_ != rhs->val_));
+            const int first = getTopAndPopNum (context);
+            const int second = getTopAndPopNum (context);
+
+            context.calcStack_.push_back (new NumScope (second != first));
         }
     };
 
     struct BinOpOr {
         void operator() (Context &context) const
         {
-            const NumScope *rhs = getTopAndPopNum (context);
-            const NumScope *lhs = getTopAndPopNum (context);
-            context.calcStack_.push_back (new NumScope (lhs->val_ || rhs->val_));
+            const int first = getTopAndPopNum (context);
+            const int second = getTopAndPopNum (context);
+
+            context.calcStack_.push_back (new NumScope (second || first));
         }
     };
 
     struct BinOpAnd {
         void operator() (Context &context) const
         {
-            const NumScope *rhs = getTopAndPopNum (context);
-            const NumScope *lhs = getTopAndPopNum (context);
-            context.calcStack_.push_back (new NumScope (lhs->val_ && rhs->val_));
+            const int first = getTopAndPopNum (context);
+            const int second = getTopAndPopNum (context);
+
+            context.calcStack_.push_back (new NumScope (second && first));
         }
     };
 
     struct BinOpMod {
         void operator() (Context &context) const
         {
-            const NumScope *rhs = getTopAndPopNum (context);
-            const NumScope *lhs = getTopAndPopNum (context);
-            context.calcStack_.push_back (new NumScope (lhs->val_ % rhs->val_));
+            const int first = getTopAndPopNum (context);
+            const int second = getTopAndPopNum (context);
+
+            context.calcStack_.push_back (new NumScope (second % first));
         }
     };
 
