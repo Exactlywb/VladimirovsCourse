@@ -113,6 +113,8 @@ namespace interpret {
 
         const AST::Node *getNode () const { return node_; }
         virtual std::pair<EvalApplyNode *, EvalApplyNode *> eval (Context &context) = 0;
+
+        virtual ~EvalApplyNode () {}
     };
 
     EvalApplyNode *buildApplyNode (const AST::Node *node, EvalApplyNode *parent);
@@ -240,7 +242,9 @@ namespace interpret {
         std::vector<Scope *> scopeStack_;
         std::vector<ScopeTblWrapper *> calcStack_;
         std::vector<std::pair <int, EvalApplyNode *>> retStack_;
-        std::vector<EvalApplyNode *> rubbishStack_;
+        std::vector<EvalApplyNode *> rubbishEANodeStack_;
+        std::vector<Scope *> rubbishScopeStack_;
+        std::vector<ScopeTblWrapper *> rubbishCalcStack_;
 
         EvalApplyNode *prev_ = nullptr;
 
@@ -253,8 +257,12 @@ namespace interpret {
 
 
         ~Context () {
-
-            for (auto v : rubbishStack_)
+            
+            for (auto v : rubbishScopeStack_)
+                delete v;
+            for (auto v : rubbishEANodeStack_)
+                delete v;
+            for (auto v : rubbishCalcStack_)
                 delete v;
         }
 
@@ -265,6 +273,29 @@ namespace interpret {
         void addScope ();
         void removeCurScope ();
 
+        InlineScope* buildScopeWrapper () {
+
+            rubbishCalcStack_.push_back(new InlineScope);
+            return static_cast<InlineScope*> (rubbishCalcStack_.back());
+        } 
+
+        NumScope* buildScopeWrapper (const int val) {
+
+            rubbishCalcStack_.push_back(new NumScope(val));
+            return static_cast <NumScope*> (rubbishCalcStack_.back());
+        }
+
+        FuncScope* buildScopeWrapper (const AST::FuncNode *funcDecl) {
+
+            rubbishCalcStack_.push_back(new FuncScope(funcDecl));
+            return static_cast <FuncScope*> (rubbishCalcStack_.back());
+        }
+
+        Scope* buildScope (Scope *parent = nullptr, tblIt it = tblIt (nullptr)) {
+
+            rubbishScopeStack_.push_back(new Scope(parent, it));
+            return rubbishScopeStack_.back();
+        }
         EvalApplyNode *buildApplyNode (const AST::Node *node, EvalApplyNode *parent);
     };
     //=======================================================================
@@ -332,8 +363,8 @@ namespace interpret {
         {
             int tmp;
             std::cin >> tmp;
-            context.calcStack_.push_back (new NumScope (tmp));
-
+            
+            context.calcStack_.push_back (context.buildScopeWrapper(tmp));
             return {parent_, this};
         }
     };
@@ -350,14 +381,14 @@ namespace interpret {
     struct UnOpMinus {
         void operator() (Context &context) const
         {
-            context.calcStack_.push_back (new NumScope (-getTopAndPopNum (context)));
+            context.calcStack_.push_back (context.buildScopeWrapper (-getTopAndPopNum (context))); //WAT????
         }
     };
 
     struct UnOpPlus {
         void operator() (Context &context) const
         {
-            context.calcStack_.push_back (new NumScope (+getTopAndPopNum (context)));
+            context.calcStack_.push_back (context.buildScopeWrapper (+getTopAndPopNum (context)));
         }
     };
 
@@ -367,7 +398,7 @@ namespace interpret {
             const int first = getTopAndPopNum (context);
             const int second = getTopAndPopNum (context);
     
-            context.calcStack_.push_back (new NumScope (first + second));
+            context.calcStack_.push_back (context.buildScopeWrapper (first + second));
         }
     };
 
@@ -377,7 +408,7 @@ namespace interpret {
             const int first = getTopAndPopNum (context);
             const int second = getTopAndPopNum (context);
 
-            context.calcStack_.push_back (new NumScope (second - first));
+            context.calcStack_.push_back (context.buildScopeWrapper (second - first));
         }
     };
 
@@ -387,7 +418,7 @@ namespace interpret {
             const int first = getTopAndPopNum (context);
             const int second = getTopAndPopNum (context);
 
-            context.calcStack_.push_back (new NumScope (first * second));
+            context.calcStack_.push_back ((context.buildScopeWrapper (first * second)));
         }
     };
 
@@ -397,7 +428,7 @@ namespace interpret {
             const int first = getTopAndPopNum (context);
             const int second = getTopAndPopNum (context);
 
-            context.calcStack_.push_back (new NumScope (second / first));
+            context.calcStack_.push_back ((context.buildScopeWrapper ( second / first)));
         }
     };
 
@@ -407,7 +438,7 @@ namespace interpret {
             const int first = getTopAndPopNum (context);
             const int second = getTopAndPopNum (context);
 
-            context.calcStack_.push_back (new NumScope (second > first));
+            context.calcStack_.push_back ((context.buildScopeWrapper ( second > first)));
         }
     };
 
@@ -417,7 +448,7 @@ namespace interpret {
             const int first = getTopAndPopNum (context);
             const int second = getTopAndPopNum (context);
 
-            context.calcStack_.push_back (new NumScope (second < first));
+            context.calcStack_.push_back (((context.buildScopeWrapper ( second < first))));
         }
     };
 
@@ -427,7 +458,7 @@ namespace interpret {
             const int first = getTopAndPopNum (context);
             const int second = getTopAndPopNum (context);
 
-            context.calcStack_.push_back (new NumScope (second <= first));
+            context.calcStack_.push_back (((context.buildScopeWrapper ( second <= first))));
         }
     };
 
@@ -437,7 +468,7 @@ namespace interpret {
             const int first = getTopAndPopNum (context);
             const int second = getTopAndPopNum (context);
 
-            context.calcStack_.push_back (new NumScope (second >= first));
+            context.calcStack_.push_back (((context.buildScopeWrapper ( second >= first))));
         }
     };
 
@@ -447,7 +478,7 @@ namespace interpret {
             const int first = getTopAndPopNum (context);
             const int second = getTopAndPopNum (context);
 
-            context.calcStack_.push_back (new NumScope (second == first));
+            context.calcStack_.push_back (((context.buildScopeWrapper ( second == first))));
         }
     };
 
@@ -457,7 +488,7 @@ namespace interpret {
             const int first = getTopAndPopNum (context);
             const int second = getTopAndPopNum (context);
 
-            context.calcStack_.push_back (new NumScope (second != first));
+            context.calcStack_.push_back (((context.buildScopeWrapper ( second != first))));
         }
     };
 
@@ -467,7 +498,7 @@ namespace interpret {
             const int first = getTopAndPopNum (context);
             const int second = getTopAndPopNum (context);
 
-            context.calcStack_.push_back (new NumScope (second || first));
+            context.calcStack_.push_back (((context.buildScopeWrapper ( second || first))));
         }
     };
 
@@ -477,7 +508,7 @@ namespace interpret {
             const int first = getTopAndPopNum (context);
             const int second = getTopAndPopNum (context);
 
-            context.calcStack_.push_back (new NumScope (second && first));
+            context.calcStack_.push_back (((context.buildScopeWrapper ( second && first))));
         }
     };
 
@@ -487,7 +518,7 @@ namespace interpret {
             const int first = getTopAndPopNum (context);
             const int second = getTopAndPopNum (context);
 
-            context.calcStack_.push_back (new NumScope (second % first));
+            context.calcStack_.push_back (((context.buildScopeWrapper ( second % first))));
         }
     };
 

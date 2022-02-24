@@ -54,26 +54,26 @@ namespace interpret {
         
         switch (node->getType ()) {
             case AST::NodeT::CONDITION: 
-            rubbishStack_.push_back(buildApplyNodeFromCondition (static_cast<const AST::CondNode *> (node), parent));
-            return rubbishStack_.back();
+            rubbishEANodeStack_.push_back(buildApplyNodeFromCondition (static_cast<const AST::CondNode *> (node), parent));
+            return rubbishEANodeStack_.back();
             case AST::NodeT::FUNCTION: 
-            rubbishStack_.push_back(buildApplyNodeFromFunction (static_cast<const AST::FuncNode*> (node), parent));
-            return rubbishStack_.back();
+            rubbishEANodeStack_.push_back(buildApplyNodeFromFunction (static_cast<const AST::FuncNode*> (node), parent));
+            return rubbishEANodeStack_.back();
             case AST::NodeT::OPERATOR: 
-            rubbishStack_.push_back(buildApplyNodeFromOperator (static_cast<const AST::OperNode *> (node), parent, *this));
-            return rubbishStack_.back();
+            rubbishEANodeStack_.push_back(buildApplyNodeFromOperator (static_cast<const AST::OperNode *> (node), parent, *this));
+            return rubbishEANodeStack_.back();
             case AST::NodeT::VARIABLE: 
-            rubbishStack_.push_back(buildApplyNodeFromVariable (static_cast<const AST::VarNode *> (node), parent));
-            return rubbishStack_.back();
+            rubbishEANodeStack_.push_back(buildApplyNodeFromVariable (static_cast<const AST::VarNode *> (node), parent));
+            return rubbishEANodeStack_.back();
             case AST::NodeT::NUMBER: 
-            rubbishStack_.push_back(buildApplyNodeFromNumber (static_cast<const AST::NumNode *> (node), parent));
-            return rubbishStack_.back();
+            rubbishEANodeStack_.push_back(buildApplyNodeFromNumber (static_cast<const AST::NumNode *> (node), parent));
+            return rubbishEANodeStack_.back();
             case AST::NodeT::SCOPE: 
-            rubbishStack_.push_back(buildApplyNodeFromScope (static_cast<const AST::ScopeNode *> (node), parent, *this));
-            return rubbishStack_.back();
+            rubbishEANodeStack_.push_back(buildApplyNodeFromScope (static_cast<const AST::ScopeNode *> (node), parent, *this));
+            return rubbishEANodeStack_.back();
             case AST::NodeT::INLINESCOPE: 
-            rubbishStack_.push_back(buildApplyNodeFromInlineScope (static_cast<const AST::InlineScopeNode *> (node), parent));
-            return rubbishStack_.back();
+            rubbishEANodeStack_.push_back(buildApplyNodeFromInlineScope (static_cast<const AST::InlineScopeNode *> (node), parent));
+            return rubbishEANodeStack_.back();
         }
         
         throw std::runtime_error ("unexpected AST::Node type");
@@ -95,14 +95,14 @@ namespace interpret {
         if (scopeStack_.empty ())
             return;
     
-        delete scopeStack_.back();
+        // delete scopeStack_.back();
         scopeStack_.pop_back ();
     }
 
     void Context::addScope ()
     {
         if (scopeStack_.empty ()) {
-            scopeStack_.push_back (new Scope);
+            scopeStack_.push_back (buildScope());
             return;
         }
 
@@ -117,9 +117,9 @@ namespace interpret {
             }
 
         if (noParent)
-            scopeStack_.push_back (new Scope);
+            scopeStack_.push_back (buildScope());
         else
-            scopeStack_.push_back (new Scope{parent, --(parent->tblEnd ())});
+            scopeStack_.push_back (buildScope (parent, --(parent->tblEnd ())));
     }
 
     EAScope::EAScope (const AST::ScopeNode *astScope, EvalApplyNode *parent, Context& context) : EvalApplyNode (astScope, parent)
@@ -192,8 +192,8 @@ namespace interpret {
             Scope *curScopeToFind = context.scopeStack_.back ();
             auto find = curScopeToFind->lookup (lhs_).second;
             if (find == curScopeToFind->tblEnd ()) {
-                if (res->type_ == ScopeTblWrapper::WrapperType::NUM)                 
-                    curScopeToFind->push ({lhs_, new NumScope (static_cast<NumScope *> (res)->val_)});
+                if (res->type_ == ScopeTblWrapper::WrapperType::NUM)  
+                    curScopeToFind->push ({lhs_, context.buildScopeWrapper(static_cast<NumScope *> (res)->val_)});               
                 else {
 
                     FuncScope *funcToPush = static_cast<FuncScope *> (res);
@@ -221,7 +221,7 @@ namespace interpret {
 
     std::pair<EvalApplyNode *, EvalApplyNode *> EANum::eval (Context &context)
     {
-        context.calcStack_.push_back (new NumScope (val_));
+        context.calcStack_.push_back (context.buildScopeWrapper(val_));
         return {parent_, this};
     }
 
@@ -239,7 +239,7 @@ namespace interpret {
     {
         auto curScope = context.scopeStack_.back ();
 
-        context.calcStack_.push_back (new FuncScope (static_cast <const AST::FuncNode *> (EvalApplyNode::getNode())));
+        context.calcStack_.push_back (context.buildScopeWrapper (static_cast <const AST::FuncNode *> (EvalApplyNode::getNode())));
         return {parent_, this};
     }
 
@@ -300,7 +300,7 @@ namespace interpret {
         auto funcNode = static_cast<const FuncScope*> (funcInfo.second->second);
 
         auto beginNameArgs = funcNode->args_->childEnd ();
-        auto funcScope = new Scope (funcInfo.first, funcInfo.second);
+        auto funcScope = context.buildScope (funcInfo.first, funcInfo.second);
 
         for (int curChild = 0; curChild < args->getChildrenNum (); ++curChild) {
 
@@ -312,8 +312,8 @@ namespace interpret {
 
         context.scopeStack_.push_back (funcScope);
         const AST::ScopeNode *scope = (static_cast<const FuncScope*> (funcInfo.second->second))->execScope_;
-
-        return {new EAScope (scope, parent_, context), this};
+        
+        return {context.buildApplyNode(scope, parent_), this};
     }
 
     std::pair<EvalApplyNode *, EvalApplyNode *> EAReturn::eval (Context &context)
@@ -350,7 +350,7 @@ namespace interpret {
 
         context.addScope();
 
-        return {new EAScope (scopeNode, parent_, context), this};
+        return {context.buildApplyNode (scopeNode, parent_), this};
     }
 
 }  // namespace interpret
