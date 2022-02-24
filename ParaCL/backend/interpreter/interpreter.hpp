@@ -139,8 +139,16 @@ namespace interpret {
         std::vector<EvalApplyNode *> children_;
 
     public:
-        EAScope (const AST::ScopeNode *astScope, EvalApplyNode *parent);
+        EAScope (const AST::ScopeNode *astScope, EvalApplyNode *parent, Context& context);
 
+        ~EAScope () {   
+            
+            // std::cout << "Delete children" << std::endl;
+            // for (auto v : children_) {
+            //     std::cout << "Tuk " << v << std::endl; 
+            //     delete v;
+            // }
+        }
         std::pair<EvalApplyNode *, EvalApplyNode *> eval (Context &context) override;
 
         EvalApplyNode *getLastChildren () const { return children_.back (); }
@@ -151,7 +159,7 @@ namespace interpret {
         EvalApplyNode *rhs_;
 
     public:
-        EAAssign (const AST::OperNode *astAssign, EvalApplyNode *parent);
+        EAAssign (const AST::OperNode *astAssign, EvalApplyNode *parent, Context& context);
 
         std::pair<EvalApplyNode *, EvalApplyNode *> eval (Context &context) override;
 
@@ -228,10 +236,27 @@ namespace interpret {
         std::vector<Scope *> scopeStack_;
         std::vector<ScopeTblWrapper *> calcStack_;
         std::vector<std::pair <int, EvalApplyNode *>> retStack_;
+        std::vector<EvalApplyNode *> rubbishStack_;
 
         EvalApplyNode *prev_ = nullptr;
 
         Context () {}
+
+        Context (const Context& rhs)             = delete;
+        Context (Context&& rhs)                  = delete;
+        Context &operator=(const Context &other) = delete;  
+        Context &operator=(Context &&other)      = delete;       
+
+
+        ~Context () {
+
+        
+
+            std::cout << "calcStack size = " << calcStack_.size() << std::endl;
+
+            for (auto v : rubbishStack_)
+                delete v;
+        }
 
         using tblSource = std::pair<std::string, ScopeTblWrapper *>;
         using tblVec = std::vector<tblSource>;
@@ -239,6 +264,8 @@ namespace interpret {
 
         void addScope ();
         void removeCurScope ();
+
+        EvalApplyNode *buildApplyNode (const AST::Node *node, EvalApplyNode *parent);
     };
     //=======================================================================
 
@@ -262,11 +289,11 @@ namespace interpret {
                 return {parent_, this};
             }
             else if (prevExec == lhs) {
-                EvalApplyNode *rhsToExec = buildApplyNode (rhs, this);
+                EvalApplyNode *rhsToExec = context.buildApplyNode (rhs, this);
                 return {rhsToExec, this};
             }
 
-            EvalApplyNode *lhsToExec = buildApplyNode (lhs, this);
+            EvalApplyNode *lhsToExec = context.buildApplyNode (lhs, this);
             return {lhsToExec, this};
         }
     };
@@ -292,7 +319,7 @@ namespace interpret {
                 return {parent_, this};
             }
 
-            EvalApplyNode *lhsToExec = buildApplyNode (lhs, this);
+            EvalApplyNode *lhsToExec = context.buildApplyNode (lhs, this);
             return {lhsToExec, this};
         }
     };
