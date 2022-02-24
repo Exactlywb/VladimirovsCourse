@@ -60,9 +60,9 @@ namespace interpret {
         throw std::runtime_error ("unexpected AST::Node type");
     }
 
-    const NumScope *getTopAndPopNum (Context &context)
+    NumScope *getTopAndPopNum (Context &context)
     {
-        const NumScope *res = static_cast<NumScope *> (context.calcStack_.back ());
+        NumScope *res = static_cast<NumScope *> (context.calcStack_.back ());
         context.calcStack_.pop_back ();
         return res;
     }
@@ -126,7 +126,6 @@ namespace interpret {
         EvalApplyNode *expr = buildApplyNode (root_, nullptr);
 
         while (expr) {
-            // std::cout << "here " << std::endl;
             // next to implement and prev
             std::pair<EvalApplyNode *, EvalApplyNode *> res = expr->eval (context);
 
@@ -163,10 +162,11 @@ namespace interpret {
     std::pair<EvalApplyNode *, EvalApplyNode *> EAAssign::eval (Context &context)
     {
         if (context.prev_ == rhs_) {
-            std::cout << "second assign " << std::endl;
 
             auto next = parent_;
             auto res = context.calcStack_.back ();
+            if (parent_->getNode ()->getType () == AST::NodeT::SCOPE)
+                context.calcStack_.pop_back ();
 
             Scope *curScopeToFind = context.scopeStack_.back ();
             auto find = curScopeToFind->lookup (lhs_).second;
@@ -174,7 +174,7 @@ namespace interpret {
                 if (res->type_ == ScopeTblWrapper::WrapperType::NUM)
                     curScopeToFind->push ({lhs_, new NumScope (static_cast<NumScope *> (res)->val_)});
                 else {
-                    std::cout << "find func " << std::endl;
+
                     FuncScope *funcToPush = static_cast<FuncScope *> (res);
                     const AST::FuncNode *predFuncName = funcToPush->name_;
                     if (predFuncName) {
@@ -189,12 +189,11 @@ namespace interpret {
             else {
                 auto val = (*find).second;
                 NumScope *curNum = static_cast<NumScope *> (val);
-                curNum->val_ = static_cast<NumScope *> (res)->val_;
+                curNum->val_ = static_cast<const NumScope *> (res)->val_;
             }
 
             return {next, this};
         }
-        std::cout << "first assign " << std::endl;
 
         return {rhs_, this};
     }
@@ -217,7 +216,6 @@ namespace interpret {
 
     std::pair<EvalApplyNode *, EvalApplyNode *> EAFunc::eval (Context &context)
     {
-        std::cout << "EAFunc" << std::endl;
         auto curScope = context.scopeStack_.back ();
 
         context.calcStack_.push_back (new FuncScope (static_cast <const AST::FuncNode *> (EvalApplyNode::getNode())));
@@ -264,45 +262,40 @@ namespace interpret {
     std::pair<EvalApplyNode *, EvalApplyNode *> EACall::eval (Context &context)
     {
         const AST::Node *node = EvalApplyNode::getNode ();
+        const AST::VarNode *nameNode = static_cast<const AST::VarNode *> ((*node)[0]);
+        const AST::FuncNode *args = static_cast<const AST::FuncNode*>((*node)[1]);
 
         if (!context.retStack_.empty() && context.retStack_.back ().second == this) {
             context.retStack_.pop_back ();
             return {parent_, this};
         }
 
-        context.retStack_.push_back ({context.scopeStack_.size(), this});
-        std::cout << "in call " << context.retStack_.size() << std::endl;
+        if (curArgsToCalc_ != args->getChildrenNum ())
+            return {buildApplyNode ((*args)[curArgsToCalc_++], this), this};
 
-        const AST::VarNode *nameNode = static_cast<const AST::VarNode *> ((*node)[0]);
-        std::cout << "in call" << std::endl;
+        context.retStack_.push_back ({context.scopeStack_.size(), this});
+
         auto funcInfo = context.scopeStack_.back()->lookup(nameNode->getName());
-        auto funcNode = static_cast<FuncScope *> (funcInfo.second->second);
-        std::cout << "in call after " << funcNode << std::endl;
-        auto beginNameArgs = funcNode->args_->childBegin();
+        auto funcNode = static_cast<const FuncScope*> (funcInfo.second->second);
+
+        auto beginNameArgs = funcNode->args_->childEnd ();
         auto funcScope = new Scope (funcInfo.first, funcInfo.second);
 
-        for (auto begin = ((*node)[1])->childBegin(), end = ((*node)[1])->childEnd(); begin != end; ++begin) {  //TODO: we want calculate args
-            auto varName = static_cast<const AST::VarNode *> (*beginNameArgs)->getName();
-            auto valueNode = new NumScope (static_cast<AST::NumNode *> (*begin)->getValue());
+        for (int curChild = 0; curChild < args->getChildrenNum (); ++curChild) {
+
+            auto varName = static_cast<const AST::VarNode*> (*(--beginNameArgs))->getName();
+            NumScope* valueNode = getTopAndPopNum (context);
             funcScope->push({varName, valueNode});
         }
 
-        if (funcNode->name_) {
-            std::string name = static_cast<AST::VarNode *> (*(funcNode->name_->childBegin()))->getName();
-            // std::cout << name << std::endl;
-            funcScope->push({name, funcNode});
-        }
-
         context.scopeStack_.push_back (funcScope);
-
-        const AST::ScopeNode *scope = (static_cast<FuncScope *> (funcInfo.second->second))->execScope_;
+        const AST::ScopeNode *scope = (static_cast<const FuncScope*> (funcInfo.second->second))->execScope_;
 
         return {new EAScope (scope, parent_), this};
     }
 
     std::pair<EvalApplyNode *, EvalApplyNode *> EAReturn::eval (Context &context)
     {
-        std::cout << "in return " << std::endl;
 
         const AST::Node *node = EvalApplyNode::getNode ();
         const AST::Node *lhs = (*node)[0];
@@ -310,6 +303,7 @@ namespace interpret {
         const AST::Node *prevExec = context.prev_->getNode ();
 
         if (prevExec == lhs) {
+            
             auto retAddress = context.retStack_.back ();
             context.scopeStack_.erase (context.scopeStack_.begin() + retAddress.first, context.scopeStack_.end());
 
