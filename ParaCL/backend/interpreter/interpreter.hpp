@@ -75,23 +75,23 @@ namespace interpret {
         tblIt tblEnd () const { return tbl_.cend (); }
         bool tbl_empty () const { return tbl_.empty (); }
 
-        tblIt lookup (const std::string &name)
+        std::pair <Scope *, tblIt> lookup (const std::string &name)
         {
             for (tblIt curIt = tbl_.begin (), endIt = tbl_.end (); curIt != endIt; ++curIt)
                 if ((*curIt).first == name)
-                    return curIt;
+                    return {this, curIt};
 
             Scope *curScope = this;
 
             while (curScope->parent_ != nullptr) {
                 for (tblIt curIt = curScope->parent_->tbl_.begin (), endIt = (curScope->endOfVisibleInParent_) + 1; curIt != endIt; ++curIt)
                     if ((*curIt).first == name)
-                        return curIt;
+                        return {curScope->parent_, curIt};
 
                 curScope = curScope->parent_;
             }
 
-            return tbl_.end ();
+            return {nullptr, tbl_.end ()};
         }
     };
 
@@ -181,6 +181,18 @@ namespace interpret {
         std::pair<EvalApplyNode *, EvalApplyNode *> eval (Context &context) override;
     };
 
+    class EAFunc final : public EvalApplyNode {
+        std::string name_;
+
+    public:
+        EAFunc (const AST::FuncNode *astVar, EvalApplyNode *parent) : EvalApplyNode (astVar, parent), 
+                                                                        name_ (static_cast <AST::VarNode *> (astVar->getParent()->getLeftChild())->getName()) {}
+
+        std::string getName () const { return name_; }
+
+        std::pair<EvalApplyNode *, EvalApplyNode *> eval (Context &context) override;
+    };
+
     class EAIf final : public EvalApplyNode {
         const AST::Node *expr_;
         const AST::ScopeNode *scope_;
@@ -215,14 +227,17 @@ namespace interpret {
     struct Context final {
         std::vector<Scope *> scopeStack_;
         std::vector<ScopeTblWrapper *> calcStack_;
-        std::vector<EvalApplyNode *> retStack_;
+        std::vector<std::pair <int, EvalApplyNode *>> retStack_;
 
         EvalApplyNode *prev_ = nullptr;
 
         Context () {}
 
+        using tblSource = std::pair<std::string, ScopeTblWrapper *>;
+        using tblVec = std::vector<tblSource>;
+        using tblIt = tblVec::const_iterator;
+
         void addScope ();
-        void replaceScope (Scope *scope, const EAScope *curEAScope);
         void removeCurScope ();
     };
     //=======================================================================
@@ -437,6 +452,20 @@ namespace interpret {
             const NumScope *lhs = getTopAndPopNum (context);
             context.calcStack_.push_back (new NumScope (lhs->val_ % rhs->val_));
         }
+    };
+
+    struct EACall final : public EvalApplyNode {
+    public:
+        EACall (const AST::OperNode *astOper, EvalApplyNode *parent) : EvalApplyNode (astOper, parent) {}
+
+        std::pair<EvalApplyNode *, EvalApplyNode *> eval (Context &context) override;
+    };
+
+    struct EAReturn final : public EvalApplyNode {
+    public:
+        EAReturn (const AST::OperNode *astOper, EvalApplyNode *parent) : EvalApplyNode (astOper, parent) {}
+
+        std::pair<EvalApplyNode *, EvalApplyNode *> eval (Context &context) override;
     };
 
     class Interpreter final {

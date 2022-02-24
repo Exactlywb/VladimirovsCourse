@@ -14,10 +14,8 @@ namespace interpret {
     {
         switch (opNode->getOpType ()) {
             case AST::OperNode::OperType::ASSIGN: return new EAAssign (opNode, parent);
-            // case AST::OperNode::OperType::CALL:
-            // return (std::make_shared<EACall> (opNode));
-            // case AST::OperNode::OperType::RETURN:
-            //     return (std::make_shared<EAUnaryOp<UnaryOpReturn>> (opNode));
+            case AST::OperNode::OperType::CALL: return new EACall (opNode, parent);
+            case AST::OperNode::OperType::RETURN: return new EAReturn (opNode, parent);
             case AST::OperNode::OperType::UNARY_M: return new EAUnOp<UnOpMinus> (opNode, parent);
             case AST::OperNode::OperType::UNARY_P: return new EAUnOp<UnOpPlus> (opNode, parent);
             case AST::OperNode::OperType::PRINT: return new EAUnOp<UnOpPrint> (opNode, parent);
@@ -42,10 +40,8 @@ namespace interpret {
 
     EvalApplyNode *buildApplyNodeFromVariable (const AST::VarNode *varNode, EvalApplyNode *parent) { return (new EAVar (varNode, parent)); }
 
-    /*
-        std::shared_ptr<EvalApplyNode> buildApplyNodeFromFunction (const AST::FuncNode* funcNode,   std::shared_ptr<EvalApplyNode> parent)
-                                                                    { return (std::make_shared<EAFunc> (funcNode, parent));      }
-    */
+    EvalApplyNode * buildApplyNodeFromFunction (const AST::FuncNode* funcNode, EvalApplyNode *parent) { return (new EAFunc (funcNode, parent));      }
+
     EvalApplyNode *buildApplyNodeFromNumber (const AST::NumNode *numNode, EvalApplyNode *parent) { return new EANum (numNode, parent); }
 
     EvalApplyNode *buildApplyNodeFromScope (const AST::ScopeNode *scopeNode, EvalApplyNode *parent) { return new EAScope (scopeNode, parent); }
@@ -54,8 +50,7 @@ namespace interpret {
     {
         switch (node->getType ()) {
             case AST::NodeT::CONDITION: return buildApplyNodeFromCondition (static_cast<const AST::CondNode *> (node), parent);
-            /*case AST::NodeT::FUNCTION:
-                return buildApplyNodeFromFunction (static_cast<const AST::FuncNode*> (node), parent);*/
+            case AST::NodeT::FUNCTION: return buildApplyNodeFromFunction (static_cast<const AST::FuncNode*> (node), parent);
             case AST::NodeT::OPERATOR: return buildApplyNodeFromOperator (static_cast<const AST::OperNode *> (node), parent);
             case AST::NodeT::VARIABLE: return buildApplyNodeFromVariable (static_cast<const AST::VarNode *> (node), parent);
             case AST::NodeT::NUMBER: return buildApplyNodeFromNumber (static_cast<const AST::NumNode *> (node), parent);
@@ -73,20 +68,6 @@ namespace interpret {
     }
 
     ScopeTblWrapper::~ScopeTblWrapper () = default;
-
-    void Context::replaceScope (Scope *scope, const EAScope *curEAScope)
-    {
-        // if (scope_ != nullptr) {
-        //     scopeStack_.push_back (scope_);
-        // }
-
-        // if (scope)
-        //     scope_ = scope;
-        // else
-        //     scope_ = std::shared_ptr<Scope>(new Scope);
-
-        // curEAScope_ = curEAScope;
-    }
 
     void Context::removeCurScope ()
     {
@@ -145,6 +126,7 @@ namespace interpret {
         EvalApplyNode *expr = buildApplyNode (root_, nullptr);
 
         while (expr) {
+            // std::cout << "here " << std::endl;
             // next to implement and prev
             std::pair<EvalApplyNode *, EvalApplyNode *> res = expr->eval (context);
 
@@ -174,28 +156,33 @@ namespace interpret {
         }
 
         auto nextToExec = context.retStack_.back ();
-        return {nextToExec, this};
+        
+        return {nextToExec.second, this};
     }
 
     std::pair<EvalApplyNode *, EvalApplyNode *> EAAssign::eval (Context &context)
     {
         if (context.prev_ == rhs_) {
+            std::cout << "second assign " << std::endl;
+
             auto next = parent_;
             auto res = context.calcStack_.back ();
 
             Scope *curScopeToFind = context.scopeStack_.back ();
-            auto find = curScopeToFind->lookup (lhs_);
+            auto find = curScopeToFind->lookup (lhs_).second;
             if (find == curScopeToFind->tblEnd ()) {
                 if (res->type_ == ScopeTblWrapper::WrapperType::NUM)
                     curScopeToFind->push ({lhs_, new NumScope (static_cast<NumScope *> (res)->val_)});
                 else {
+                    std::cout << "find func " << std::endl;
                     FuncScope *funcToPush = static_cast<FuncScope *> (res);
                     const AST::FuncNode *predFuncName = funcToPush->name_;
                     if (predFuncName) {
                         const AST::VarNode *getFuncName = static_cast<const AST::VarNode *> ((*predFuncName)[0]);
                         curScopeToFind->push ({getFuncName->getName (), funcToPush});
-                    }
-
+                        
+                    } 
+                    
                     curScopeToFind->push ({lhs_, funcToPush});
                 }
             }
@@ -207,6 +194,7 @@ namespace interpret {
 
             return {next, this};
         }
+        std::cout << "first assign " << std::endl;
 
         return {rhs_, this};
     }
@@ -221,9 +209,18 @@ namespace interpret {
     {
         auto curScope = context.scopeStack_.back ();
 
-        auto findRes = curScope->lookup (name_);
+        auto findRes = curScope->lookup (name_).second;
 
         context.calcStack_.push_back (findRes->second);
+        return {parent_, this};
+    }
+
+    std::pair<EvalApplyNode *, EvalApplyNode *> EAFunc::eval (Context &context)
+    {
+        std::cout << "EAFunc" << std::endl;
+        auto curScope = context.scopeStack_.back ();
+
+        context.calcStack_.push_back (new FuncScope (static_cast <const AST::FuncNode *> (EvalApplyNode::getNode())));
         return {parent_, this};
     }
 
@@ -262,6 +259,65 @@ namespace interpret {
             return {buildApplyNode (expr_, this), this};
 
         return {parent_, this};
+    }
+
+    std::pair<EvalApplyNode *, EvalApplyNode *> EACall::eval (Context &context)
+    {
+        const AST::Node *node = EvalApplyNode::getNode ();
+
+        if (!context.retStack_.empty() && context.retStack_.back ().second == this) {
+            context.retStack_.pop_back ();
+            return {parent_, this};
+        }
+
+        context.retStack_.push_back ({context.scopeStack_.size(), this});
+        std::cout << "in call " << context.retStack_.size() << std::endl;
+
+        const AST::VarNode *nameNode = static_cast<const AST::VarNode *> ((*node)[0]);
+        std::cout << "in call" << std::endl;
+        auto funcInfo = context.scopeStack_.back()->lookup(nameNode->getName());
+        auto funcNode = static_cast<FuncScope *> (funcInfo.second->second);
+        std::cout << "in call after " << funcNode << std::endl;
+        auto beginNameArgs = funcNode->args_->childBegin();
+        auto funcScope = new Scope (funcInfo.first, funcInfo.second);
+
+        for (auto begin = ((*node)[1])->childBegin(), end = ((*node)[1])->childEnd(); begin != end; ++begin) {  //TODO: we want calculate args
+            auto varName = static_cast<const AST::VarNode *> (*beginNameArgs)->getName();
+            auto valueNode = new NumScope (static_cast<AST::NumNode *> (*begin)->getValue());
+            funcScope->push({varName, valueNode});
+        }
+
+        if (funcNode->name_) {
+            std::string name = static_cast<AST::VarNode *> (*(funcNode->name_->childBegin()))->getName();
+            // std::cout << name << std::endl;
+            funcScope->push({name, funcNode});
+        }
+
+        context.scopeStack_.push_back (funcScope);
+
+        const AST::ScopeNode *scope = (static_cast<FuncScope *> (funcInfo.second->second))->execScope_;
+
+        return {new EAScope (scope, parent_), this};
+    }
+
+    std::pair<EvalApplyNode *, EvalApplyNode *> EAReturn::eval (Context &context)
+    {
+        std::cout << "in return " << std::endl;
+
+        const AST::Node *node = EvalApplyNode::getNode ();
+        const AST::Node *lhs = (*node)[0];
+
+        const AST::Node *prevExec = context.prev_->getNode ();
+
+        if (prevExec == lhs) {
+            auto retAddress = context.retStack_.back ();
+            context.scopeStack_.erase (context.scopeStack_.begin() + retAddress.first, context.scopeStack_.end());
+
+            return {retAddress.second, this};
+        }
+
+        EvalApplyNode *lhsToExec = buildApplyNode (lhs, this);
+        return {lhsToExec, this};
     }
 
 }  // namespace interpret
