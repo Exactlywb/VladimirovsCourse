@@ -61,8 +61,8 @@ public:
     using tblIt = std::unordered_map<std::string, TypeWrapper *>::iterator;
     using constScopeIt = std::vector<Scope *>::const_iterator;
 
-    void nameCopy (Scope* other)  {
-        
+    void nameCopy (Scope *other)
+    {
         for (auto v : other->tbl_)
             std::cout << v.first << std::endl;
         tbl_ = other->tbl_;

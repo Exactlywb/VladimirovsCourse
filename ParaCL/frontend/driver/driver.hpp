@@ -89,10 +89,7 @@ namespace yy {
                 std::cout << e << std::endl;
         }
 
-        bool isNoErrors () const
-        {
-            return error_.empty ();
-        }
+        bool isNoErrors () const { return error_.empty (); }
 
         void cleanError () { error_.clear (); }
 
@@ -144,11 +141,9 @@ namespace yy {
         void callDump (std::ostream &out) { tree_.dump (out); }
 
         void interpret ()
-        {  
-
-            interpret::Interpreter interpret (static_cast<AST::ScopeNode*>(tree_.getRoot()));
+        {
+            interpret::Interpreter interpret (static_cast<AST::ScopeNode *> (tree_.getRoot ()));
             interpret.run ();
-            
         }
 
         // void compile ()
