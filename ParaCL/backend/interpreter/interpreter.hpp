@@ -311,7 +311,7 @@ namespace interpret {
         }
     };
 
-    const NumScope *getTopAndPopNum (Context &context);
+    NumScope *getTopAndPopNum (Context &context);
 
     struct UnOpPrint {
         void operator() (Context &context) const
@@ -455,6 +455,7 @@ namespace interpret {
     };
 
     struct EACall final : public EvalApplyNode {
+        int curArgsToCalc_ = 0;
     public:
         EACall (const AST::OperNode *astOper, EvalApplyNode *parent) : EvalApplyNode (astOper, parent) {}
 
