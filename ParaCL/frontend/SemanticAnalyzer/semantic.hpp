@@ -41,6 +41,9 @@ private:
     // SCOPES ANALYZING
     void AnalyzeScopes (Scope *curScope, AST::ScopeNode *node);
 
+    // RETURN POSITION ANALYZING
+    void AnalyzeReturnPosition (Tree::NAryTree<AST::Node *> *tree);
+
     void HandleBinaryOperation (Scope *curScope, AST::Node *node);
     void CheckUnaryOperScope (Scope *curScope, AST::Node *node);
     void CheckExprScope (Scope *curScope, AST::OperNode *node);

@@ -14,6 +14,8 @@ void SemanticAnalyzer::run (Tree::NAryTree<AST::Node *> *tree,
     AST::ScopeNode *startScope = static_cast<AST::ScopeNode *> (tree->getRoot ());
     if (startScope)
         AnalyzeScopes (globalScope_->getRoot (), startScope);
+
+    AnalyzeReturnPosition (tree);
 }
 
 //===========================================================================================
@@ -512,5 +514,61 @@ void SemanticAnalyzer::CheckOperatorInExpr (Scope *curScope, AST::OperNode *node
         }
 
             // for the future...
+    }
+}
+
+void SemanticAnalyzer::AnalyzeReturnPosition (Tree::NAryTree<AST::Node *> *tree) {
+
+    AST::Node *curNode = tree->getRoot();
+    if (!curNode)
+        return;
+
+    std::stack<AST::Node *> stack;
+    std::vector<AST::Node *> queueOnSearchReturn;
+    stack.push (curNode);
+
+    while (stack.size ()) {
+        curNode = stack.top ();
+        stack.pop ();
+        queueOnSearchReturn.push_back (curNode);
+
+        auto childrenSt = curNode->childBegin ();
+        auto childrenFin = curNode->childEnd ();
+
+        while (childrenSt != childrenFin) {
+            stack.push (*childrenSt);
+            childrenSt = std::next (childrenSt, 1);
+        }
+    }
+
+    for (auto curIt = queueOnSearchReturn.rbegin(), endIt = queueOnSearchReturn.rend(); curIt != endIt; ++curIt) {
+        AST::NodeT type = (*curIt)->getType();
+        if (type == AST::NodeT::OPERATOR) {
+            AST::OperNode::OperType operType = static_cast <AST::OperNode *> (*curIt)->getOpType();
+            if (operType == AST::OperNode::OperType::RETURN) {
+                AST::Node *parent = (*curIt)->getParent();
+                
+                while (parent) {
+                    AST::NodeT parentType = parent->getType();
+                    if (parentType == AST::NodeT::FUNCTION)
+                        break;
+
+                    if (parentType == AST::NodeT::OPERATOR) {   // only assign
+                        AST::InlineScopeNode *inlineScope = new AST::InlineScopeNode (parent);
+                        inlineScope->addChild ((*parent)[1]);
+                        parent->eraseChild(1);
+                        parent->addChild (inlineScope);
+                        break;
+                    }
+
+                    parent = parent->getParent();
+                }
+
+                if (!parent) {
+                    pushError_ ((*curIt)->getLocation(), "return is not in function");
+                }
+                    
+            }
+        }
     }
 }

@@ -21,7 +21,8 @@ namespace AST {
         CONDITION,
         FUNCTION,
 
-        SCOPE
+        SCOPE,
+        INLINESCOPE
 
     };
 
@@ -236,6 +237,13 @@ namespace AST {
         ScopeNode (yy::location loc, Node *parent = nullptr) : Node (NodeT::SCOPE, loc, parent) {}
 
         void nodeDump (std::ostream &out) const override { out << "SCOPE"; }
+    };
+
+    class InlineScopeNode final : public Node {
+    public:
+        InlineScopeNode (Node *parent = nullptr) : Node (NodeT::INLINESCOPE, parent) {}
+
+        void nodeDump (std::ostream &out) const override { out << "INLINESCOPE"; }
     };
 
     class CondNode final : public Node {
