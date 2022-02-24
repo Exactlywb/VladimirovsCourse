@@ -208,7 +208,16 @@ void SemanticAnalyzer::AnalyzeNewScope (Scope *curScope, AST::Node *newScopeNode
 void SemanticAnalyzer::CheckConditionScopeExpr (Scope *curScope, AST::CondNode *node)
 {
     // HandleBinaryOperation (curScope, (*node)[0]);
-    CheckExprScope (curScope, static_cast<AST::OperNode *> ((*node)[0]));
+    switch ((*node)[0]->getType ()) {
+
+        case AST::NodeT::OPERATOR:
+            CheckExprScope (curScope, static_cast<AST::OperNode *> ((*node)[0]));
+            break;
+        case AST::NodeT::VARIABLE:
+            CheckScopeVarInExpr (curScope, static_cast<AST::VarNode*> ((*node)[0]));
+
+    }
+    
     AnalyzeNewScope (curScope, (*node)[1]);
 }
 
