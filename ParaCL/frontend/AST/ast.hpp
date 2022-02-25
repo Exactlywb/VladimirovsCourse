@@ -34,7 +34,10 @@ namespace AST {
     public:
         Node (const NodeT type, Node *parent = nullptr) : type_ (type), parent_ (parent) {}
 
-        Node (const NodeT type, yy::location loc, Node *parent = nullptr) : NodeLocator (loc), type_ (type), parent_ (parent) {}
+        Node (const NodeT type, yy::location loc, Node *parent = nullptr)
+            : NodeLocator (loc), type_ (type), parent_ (parent)
+        {
+        }
 
         virtual ~Node () = default;
 
@@ -110,7 +113,10 @@ namespace AST {
         std::string name_;
 
     public:
-        VarNode (const std::string &name, yy::location loc, Node *parent = nullptr) : Node (NodeT::VARIABLE, loc, parent), name_ (name) {}
+        VarNode (const std::string &name, yy::location loc, Node *parent = nullptr)
+            : Node (NodeT::VARIABLE, loc, parent), name_ (name)
+        {
+        }
 
         void nodeDump (std::ostream &out) const override { out << name_; }
 
@@ -131,7 +137,8 @@ namespace AST {
         FuncComponents compType_;
 
     public:
-        FuncNode (const FuncComponents compType, yy::location loc, Node *parent = nullptr) : Node (NodeT::FUNCTION, loc, parent), compType_ (compType)
+        FuncNode (const FuncComponents compType, yy::location loc, Node *parent = nullptr)
+            : Node (NodeT::FUNCTION, loc, parent), compType_ (compType)
         {
         }
 
@@ -186,7 +193,10 @@ namespace AST {
 
         };
 
-        OperNode (const OperType opType, yy::location loc, Node *parent = nullptr) : Node (NodeT::OPERATOR, loc, parent), opType_ (opType) {}
+        OperNode (const OperType opType, yy::location loc, Node *parent = nullptr)
+            : Node (NodeT::OPERATOR, loc, parent), opType_ (opType)
+        {
+        }
 
         OperNode (const OperType opType, Node *parent = nullptr) : Node (NodeT::OPERATOR, parent), opType_ (opType) {}
 
@@ -259,7 +269,8 @@ namespace AST {
         ConditionType condType_;
 
     public:
-        CondNode (const ConditionType condType, yy::location loc, Node *parent = nullptr) : Node (NodeT::CONDITION, loc, parent), condType_ (condType)
+        CondNode (const ConditionType condType, yy::location loc, Node *parent = nullptr)
+            : Node (NodeT::CONDITION, loc, parent), condType_ (condType)
         {
         }
 

@@ -33,18 +33,14 @@ int main (int argc, char **argv)
     }
 
     if (driver.isNoErrors ()) {
-
         driver.semantic ();
         driver.printWarnings ();
-
     }
-    
+
     driver.printError ();
 
     std::cin.rdbuf (cinbuf);
 
     if (driver.isNoErrors ())
         driver.interpret ();
-
-    return 0;
 }
