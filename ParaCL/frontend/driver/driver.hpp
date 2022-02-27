@@ -31,7 +31,9 @@ namespace yy {
 
     public:
         FrontendDriver (const char *input)
-            : lexer_ (std::unique_ptr<ParaCLexer>{new ParaCLexer}), analyzer_ (std::unique_ptr<SemanticAnalyzer>{new SemanticAnalyzer}), tree_ ()
+            : lexer_ (std::unique_ptr<ParaCLexer>{new ParaCLexer}),
+              analyzer_ (std::unique_ptr<SemanticAnalyzer>{new SemanticAnalyzer}),
+              tree_ ()
         {
             std::fstream inputFile (input, std::ios_base::in);
             while (inputFile) {
@@ -66,13 +68,11 @@ namespace yy {
 
         void semantic ()
         {
-            std::function<void (yy::location, const std::string &)> pushWarningFunc = [=, this] (yy::location loc, const std::string &warn) {
-                this->pushWarning (loc, warn);
-            };
+            std::function<void (yy::location, const std::string &)> pushWarningFunc =
+                [=, this] (yy::location loc, const std::string &warn) { this->pushWarning (loc, warn); };
 
-            std::function<void (yy::location, const std::string &)> pushErrorFunc = [=, this] (yy::location loc, const std::string &err) {
-                this->pushError (loc, err);
-            };
+            std::function<void (yy::location, const std::string &)> pushErrorFunc =
+                [=, this] (yy::location loc, const std::string &err) { this->pushError (loc, err); };
 
             analyzer_->run (&tree_, pushWarningFunc, pushErrorFunc);
         }
@@ -99,8 +99,8 @@ namespace yy {
 
         void pushError (yy::location curLocation, const std::string &err)
         {
-            std::string errPos = std::string ("ERROR::#") + std::to_string (curLocation.begin.line) + std::string (", ") +
-                                 std::to_string (curLocation.begin.column) + std::string (": ");
+            std::string errPos = std::string ("ERROR::#") + std::to_string (curLocation.begin.line) +
+                                 std::string (", ") + std::to_string (curLocation.begin.column) + std::string (": ");
             std::string errMsg = err + std::string (": ");
             std::string codePart = code_[curLocation.begin.line - 1];
 
@@ -113,8 +113,8 @@ namespace yy {
 
         void pushWarning (yy::location curLocation, const std::string &warn)
         {
-            std::string warnPos = std::string ("WARNING::#") + std::to_string (curLocation.begin.line) + std::string (", ") +
-                                  std::to_string (curLocation.begin.column) + std::string (": ");
+            std::string warnPos = std::string ("WARNING::#") + std::to_string (curLocation.begin.line) +
+                                  std::string (", ") + std::to_string (curLocation.begin.column) + std::string (": ");
             std::string warnMsg = warn + std::string (": ");
             std::string codePart = code_[curLocation.begin.line - 1];
 
@@ -145,18 +145,6 @@ namespace yy {
             interpret::Interpreter interpret (static_cast<AST::ScopeNode *> (tree_.getRoot ()));
             interpret.run ();
         }
-
-        // void compile ()
-        // {
-        //     ParaCompiler::ParaCLLVMCompiler compiler (&tree_);
-
-        //     try {
-        //         compiler.run ();
-        //     }
-        //     catch (const std::runtime_error &err) {
-        //         std::cout << "Runtime error: " << err.what ();
-        //     }
-        // }
     };
 
 }  // namespace yy

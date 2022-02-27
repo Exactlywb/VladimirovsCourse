@@ -1,17 +1,23 @@
+#include <iostream>
 #include "matrix.hpp"
 
-int main () {
+int main () { 
 
-    int n = 0;
-    std::cin >> n;
+    int size = 0;
+    std::cin >> size;
 
-    Math::Matrix<double> mainMatrix {n};
+    Matrix::Matrix<int> matr (size, size);
 
-    for (int i = 0; i < n * n; ++i)
-        std::cin >> mainMatrix [i];
+    for (int y = 0; y < size; ++y) {
 
-    std::cout << (mainMatrix.calcDet ()) << std::endl;
+        for (int x = 0; x < size; ++x)
+            std::cin >> matr [y] [x];
 
-    return 0;
+    }
+
+    matr.textDump ();
+
+//    std::cout << matr.det () << std::endl;
 
 }
+

@@ -34,7 +34,7 @@ namespace {
 
     void SetPoisonReturn (AST::Node *curNode)
     {
-        int poison;  // free garbage generator
+        int poison = -666;  // free garbage generator
 
         AST::OperNode *returnNode = new AST::OperNode (AST::OperNode::OperType::RETURN);
         AST::NumNode *numNode = new AST::NumNode (poison);
@@ -98,7 +98,8 @@ void SemanticAnalyzer::HiddenReturnNodesAnalyze (AST::Node *curNode)
     else {
         switch (rightNode->getType ()) {
             case AST::NodeT::CONDITION: {
-                pushWarning_ (static_cast<AST::CondNode *> (rightNode)->getLocation (), "can't find return after condition statement");
+                pushWarning_ (static_cast<AST::CondNode *> (rightNode)->getLocation (),
+                              "can't find return after condition statement");
                 SetPoisonReturn (curNode);
                 break;
             }
@@ -211,15 +212,10 @@ void SemanticAnalyzer::CheckConditionScopeExpr (Scope *curScope, AST::CondNode *
 {
     // HandleBinaryOperation (curScope, (*node)[0]);
     switch ((*node)[0]->getType ()) {
-
-        case AST::NodeT::OPERATOR:
-            CheckExprScope (curScope, static_cast<AST::OperNode *> ((*node)[0]));
-            break;
-        case AST::NodeT::VARIABLE:
-            CheckScopeVarInExpr (curScope, static_cast<AST::VarNode*> ((*node)[0]));
-
+        case AST::NodeT::OPERATOR: CheckExprScope (curScope, static_cast<AST::OperNode *> ((*node)[0])); break;
+        case AST::NodeT::VARIABLE: CheckScopeVarInExpr (curScope, static_cast<AST::VarNode *> ((*node)[0]));
     }
-    
+
     AnalyzeNewScope (curScope, (*node)[1]);
 }
 
@@ -235,7 +231,10 @@ void SemanticAnalyzer::CheckCondScope (Scope *curScope, AST::CondNode *node)
     }
 }
 
-void SemanticAnalyzer::HandleExistVarInScope (Scope *curScope, AST::VarNode *clearID, AST::OperNode *node, std::pair<Scope *, Scope::tblIt> findRes)
+void SemanticAnalyzer::HandleExistVarInScope (Scope *curScope,
+                                              AST::VarNode *clearID,
+                                              AST::OperNode *node,
+                                              std::pair<Scope *, Scope::tblIt> findRes)
 {
     Scope::tblIt foundedIt = findRes.second;
     TypeWrapper *foundedWrap = (*foundedIt).second;
@@ -251,8 +250,12 @@ void SemanticAnalyzer::HandleExistVarInScope (Scope *curScope, AST::VarNode *cle
             CheckExprScope (curScope, static_cast<AST::OperNode *> (rightNode));
         else {
             switch (rType) {
-                case AST::NodeT::FUNCTION: pushError_ (clearID->getLocation (), "variable can't be overriden by a function"); break;
-                case AST::NodeT::VARIABLE: CheckScopeVarInExpr (curScope, static_cast<AST::VarNode *> (rVal.second)); break;
+                case AST::NodeT::FUNCTION:
+                    pushError_ (clearID->getLocation (), "variable can't be overriden by a function");
+                    break;
+                case AST::NodeT::VARIABLE:
+                    CheckScopeVarInExpr (curScope, static_cast<AST::VarNode *> (rVal.second));
+                    break;
                 case AST::NodeT::SCOPE: AnalyzeNewScope (curScope, rVal.second); break;
             }
         }
@@ -304,7 +307,10 @@ void SemanticAnalyzer::CreateNewObjectInScope (Scope *curScope, AST::OperNode *n
     }
 }
 
-void SemanticAnalyzer::CreateNewVariableViaScope (Scope *curScope, AST::OperNode *node, AST::VarNode *clearID, AST::Node *rNode)
+void SemanticAnalyzer::CreateNewVariableViaScope (Scope *curScope,
+                                                  AST::OperNode *node,
+                                                  AST::VarNode *clearID,
+                                                  AST::Node *rNode)
 {
     CreateNewVariableInScope (curScope, node, clearID);
     AnalyzeNewScope (curScope, rNode);
@@ -319,14 +325,14 @@ void SemanticAnalyzer::CreateNewVariableInScope (Scope *curScope, AST::OperNode 
 
     if (rightChild->getType () == AST::NodeT::OPERATOR) {
         AST::OperNode *operNode = static_cast<AST::OperNode *> (rightChild);
-        // if (operNode->getOpType() == AST::OperNode::OperType::CALL)
-        //     CheckCallOperatorInExpr(curScope, operNode);
-        // else
         CheckOperatorInExpr (curScope, operNode);
     }
 }
 
-void SemanticAnalyzer::CreateNewFunctionInScope (Scope *curScope, AST::OperNode *node, AST::VarNode *clearID, AST::Node *rNode)
+void SemanticAnalyzer::CreateNewFunctionInScope (Scope *curScope,
+                                                 AST::OperNode *node,
+                                                 AST::VarNode *clearID,
+                                                 AST::Node *rNode)
 {
     FuncObject *newFunc = new FuncObject (static_cast<AST::FuncNode *> (rNode));
     curScope->add (clearID->getName (), newFunc);
@@ -415,7 +421,8 @@ void SemanticAnalyzer::HandleBinaryOperation (Scope *curScope, AST::Node *node)
     }
 }
 
-void SemanticAnalyzer::BuildExecStackFromExpression (std::vector<AST::Node *> &execVector, AST::Node *node)  //! TODO stack?
+void SemanticAnalyzer::BuildExecStackFromExpression (std::vector<AST::Node *> &execVector,
+                                                     AST::Node *node)  //! TODO stack?
 {
     AST::Node *curNode = node;
     std::stack<AST::Node *> descent;
@@ -517,57 +524,66 @@ void SemanticAnalyzer::CheckOperatorInExpr (Scope *curScope, AST::OperNode *node
     }
 }
 
-void SemanticAnalyzer::AnalyzeReturnPosition (Tree::NAryTree<AST::Node *> *tree) {
+namespace {
 
-    AST::Node *curNode = tree->getRoot();
-    if (!curNode)
-        return;
+    void BuildQueueAfterDFS (std::vector<AST::Node *> &queueOnSearchReturn, AST::Node *curNode)
+    {
+        std::stack<AST::Node *> stack;
 
-    std::stack<AST::Node *> stack;
-    std::vector<AST::Node *> queueOnSearchReturn;
-    stack.push (curNode);
+        stack.push (curNode);
 
-    while (stack.size ()) {
-        curNode = stack.top ();
-        stack.pop ();
-        queueOnSearchReturn.push_back (curNode);
+        while (stack.size ()) {
+            curNode = stack.top ();
+            stack.pop ();
+            queueOnSearchReturn.push_back (curNode);
 
-        auto childrenSt = curNode->childBegin ();
-        auto childrenFin = curNode->childEnd ();
+            auto childrenSt = curNode->childBegin ();
+            auto childrenFin = curNode->childEnd ();
 
-        while (childrenSt != childrenFin) {
-            stack.push (*childrenSt);
-            childrenSt = std::next (childrenSt, 1);
+            while (childrenSt != childrenFin) {
+                stack.push (*childrenSt);
+                childrenSt = std::next (childrenSt, 1);
+            }
         }
     }
 
-    for (auto curIt = queueOnSearchReturn.rbegin(), endIt = queueOnSearchReturn.rend(); curIt != endIt; ++curIt) {
-        AST::NodeT type = (*curIt)->getType();
+}  // namespace
+
+void SemanticAnalyzer::AnalyzeReturnPosition (Tree::NAryTree<AST::Node *> *tree)
+{
+    AST::Node *curNode = tree->getRoot ();
+    if (!curNode)
+        return;
+
+    std::vector<AST::Node *> queueOnSearchReturn;
+    BuildQueueAfterDFS (queueOnSearchReturn, curNode);
+
+    for (auto curIt = queueOnSearchReturn.rbegin (), endIt = queueOnSearchReturn.rend (); curIt != endIt; ++curIt) {
+        AST::NodeT type = (*curIt)->getType ();
         if (type == AST::NodeT::OPERATOR) {
-            AST::OperNode::OperType operType = static_cast <AST::OperNode *> (*curIt)->getOpType();
+            AST::OperNode::OperType operType = static_cast<AST::OperNode *> (*curIt)->getOpType ();
             if (operType == AST::OperNode::OperType::RETURN) {
-                AST::Node *parent = (*curIt)->getParent();
-                
+                AST::Node *parent = (*curIt)->getParent ();
+
                 while (parent) {
-                    AST::NodeT parentType = parent->getType();
+                    AST::NodeT parentType = parent->getType ();
                     if (parentType == AST::NodeT::FUNCTION)
                         break;
 
-                    if (parentType == AST::NodeT::OPERATOR) {   // only assign
+                    if (parentType == AST::NodeT::OPERATOR) {  // only assign
                         AST::InlineScopeNode *inlineScope = new AST::InlineScopeNode (parent);
                         inlineScope->addChild ((*parent)[1]);
-                        parent->eraseChild(1);
+                        parent->eraseChild (1);
                         parent->addChild (inlineScope);
                         break;
                     }
 
-                    parent = parent->getParent();
+                    parent = parent->getParent ();
                 }
 
                 if (!parent) {
-                    pushError_ ((*curIt)->getLocation(), "return is not in function");
+                    pushError_ ((*curIt)->getLocation (), "return is not in function");
                 }
-                    
             }
         }
     }
