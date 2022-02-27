@@ -26,24 +26,11 @@
 namespace TreeImpl {
 
     template <typename T = int>
-    struct BinNode {
-        BinNode *left_ = nullptr;
-        BinNode *right_ = nullptr;
-
-        T val_{};
-
-        BinNode () = default;
-        BinNode (T val) : val_ (val) {}
-
-        virtual ~BinNode () = default;
-    };
-
-    template <typename T = int>
     class SplayTree final {
-        struct SplayNode final : public BinNode<T> {
-            using BinNode<T>::left_;
-            using BinNode<T>::right_;
-            using BinNode<T>::val_;
+        struct SplayNode final {
+            SplayNode *left_;
+            SplayNode *right_;
+            T val_;
 
             enum class AddSide { LEFT, RIGHT };
 
@@ -51,7 +38,7 @@ namespace TreeImpl {
             int subtreeSize = 1;
 
             SplayNode () = default;
-            SplayNode (T val) : BinNode<T> (val) {}
+            SplayNode (T val) : val_ (val) {}
 
             ~SplayNode () = default;
 
@@ -111,9 +98,9 @@ namespace TreeImpl {
 
             while (curNode) {
                 if (curNode->left_)                                        //
-                    curNode = static_cast<SplayNode *> (curNode->left_);   // here we go down by our tree
+                    curNode = curNode->left_;   // here we go down by our tree
                 else if (curNode->right_)                                  //
-                    curNode = static_cast<SplayNode *> (curNode->right_);  //
+                    curNode = curNode->right_;  //
                 else if (curNode->parent_ && curNode != highestNode) {     // if we have papa &&
                     // we are not in the highest point
 
@@ -251,11 +238,11 @@ namespace TreeImpl {
             MyIterator &operator++ ()
             {
                 if (ptr_->right_) {
-                    ptr_ = static_cast<SplayNode *> (ptr_->right_);
+                    ptr_ = ptr_->right_;
                     while (ptr_->left_)
-                        ptr_ = static_cast<SplayNode *> (ptr_->left_);
+                        ptr_ = ptr_->left_;
 
-                    *this = MyIterator (static_cast<SplayNode *> (ptr_));
+                    *this = MyIterator (ptr_);
                     return *this;
                 }
 
@@ -278,11 +265,11 @@ namespace TreeImpl {
             MyIterator &operator-- ()
             {
                 if (ptr_->left_) {
-                    ptr_ = static_cast<SplayNode *> (ptr_->left_);
+                    ptr_ = ptr_->left_;
 
                     while (ptr_->right_)
-                        ptr_ = static_cast<SplayNode *> (ptr_->right_);
-                    *this = MyIterator (static_cast<SplayNode *> (ptr_));
+                        ptr_ = ptr_->right_;
+                    *this = MyIterator (ptr_);
                     return *this;
                 }
 
@@ -314,7 +301,7 @@ namespace TreeImpl {
         {
             SplayNode *tmp = root_;
             while (tmp->left_)
-                tmp = static_cast<SplayNode *> (tmp->left_);
+                tmp = tmp->left_;
             return MyIterator (tmp);
         }
 
@@ -326,10 +313,10 @@ namespace TreeImpl {
 
             while (tmp) {
                 if (tmp->val_ > val) {
-                    tmp = static_cast<SplayNode *> (tmp->left_);
+                    tmp = tmp->left_;
                 }
                 else if (tmp->val_ < val) {
-                    tmp = static_cast<SplayNode *> (tmp->right_);
+                    tmp = tmp->right_;
                 }
                 else if (tmp->val_ == val) {
 
@@ -357,15 +344,15 @@ namespace TreeImpl {
 
             while (curNode) {
                 if (curNode->val_ == val) {
-                    curNode = static_cast<SplayNode *> (curNode->right_);
+                    curNode = curNode->right_;
                     continue;
                 }
                 if (curNode->val_ < val) {
-                    curNode = static_cast<SplayNode *> (curNode->right_);
+                    curNode = curNode->right_;
                 }
                 else {
                     tmp = curNode;
-                    curNode = static_cast<SplayNode *> (curNode->left_);
+                    curNode = curNode->left_;
                 }
             }
             splay (tmp);
@@ -388,10 +375,10 @@ namespace TreeImpl {
 
                 if (curNode->val_ > val) {
                     tmp = curNode;
-                    curNode = static_cast<SplayNode *> (curNode->left_);
+                    curNode = curNode->left_;
                 }
                 else {
-                    curNode = static_cast<SplayNode *> (curNode->right_);
+                    curNode = curNode->right_;
                 }
             }
             splay (tmp);
@@ -409,14 +396,14 @@ namespace TreeImpl {
             while (curNode) {
                 if (border > curNode->val_) {
                     if (curNode->left_)
-                        amount += static_cast<SplayNode *> (curNode->left_)->subtreeSize + 1;
+                        amount += curNode->left_->subtreeSize + 1;
                     else
                         ++amount;
 
-                    curNode = static_cast<SplayNode *> (curNode->right_);
+                    curNode = curNode->right_;
                 }
                 else
-                    curNode = static_cast<SplayNode *> (curNode->left_);
+                    curNode = curNode->left_;
                 
             }
             return amount;
@@ -434,10 +421,10 @@ namespace TreeImpl {
         void rotateLeft (SplayNode *node)
         {
             SplayNode *parent = node->parent_;
-            SplayNode *right = static_cast<SplayNode *> (node->right_);
+            SplayNode *right = node->right_;
 
             right->subtreeSize = node->subtreeSize;
-            int leftSize = (right->left_) ? static_cast<SplayNode *> (right->left_)->subtreeSize : 0, rightSize = (node->left_) ? static_cast<SplayNode *> (node->left_)->subtreeSize : 0;
+            int leftSize = (right->left_) ? right->left_->subtreeSize : 0, rightSize = (node->left_) ? node->left_->subtreeSize : 0;
             node->subtreeSize = leftSize + rightSize + 1;
 
             if (parent) {
@@ -447,23 +434,23 @@ namespace TreeImpl {
                     parent->right_ = right;
             }
 
-            SplayNode *tmp = static_cast<SplayNode *> (right->left_);
+            SplayNode *tmp = right->left_;
             right->left_ = node;
             node->right_ = tmp;
             node->parent_ = right;
             right->parent_ = parent;
 
             if (node->right_)
-                static_cast<SplayNode *> (node->right_)->parent_ = node;
+                node->right_->parent_ = node;
         }
 
         void rotateRight (SplayNode *node)
         {
             SplayNode *parent = node->parent_;
-            SplayNode *left = static_cast<SplayNode *> (node->left_);
+            SplayNode *left = node->left_;
 
             left->subtreeSize = node->subtreeSize;
-            int leftSize = (left->right_) ? static_cast<SplayNode *> (left->right_)->subtreeSize : 0, rightSize = (node->right_) ? static_cast<SplayNode *> (node->right_)->subtreeSize : 0;
+            int leftSize = (left->right_) ? left->right_->subtreeSize : 0, rightSize = (node->right_) ? node->right_->subtreeSize : 0;
             node->subtreeSize = leftSize + rightSize + 1;
 
             if (parent) {
@@ -473,14 +460,14 @@ namespace TreeImpl {
                     parent->right_ = left;
             }
 
-            SplayNode *tmp = static_cast<SplayNode *> (left->right_);
+            SplayNode *tmp = left->right_;
             left->right_ = node;
             node->left_ = tmp;
             node->parent_ = left;
             left->parent_ = parent;
 
             if (node->left_)
-                static_cast<SplayNode *> (node->left_)->parent_ = node;
+                node->left_->parent_ = node;
         }
 
         void splay (SplayNode *node)
@@ -554,9 +541,9 @@ namespace TreeImpl {
                 }
 
                 if (val < tmp->val_)
-                    tmp = static_cast<SplayNode *> (tmp->left_);
+                    tmp = tmp->left_;
                 else
-                    tmp = static_cast<SplayNode *> (tmp->right_);
+                    tmp = tmp->right_;
             }
 
             node->parent_ = curNode;

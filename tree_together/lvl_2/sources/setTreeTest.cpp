@@ -33,8 +33,8 @@ int main ()
         answ.push_back (static_cast<int> (std::distance (tree.find(minBorder),tree.find(maxBorder))));
     }
 
-    // for (auto v : answ)
-    //     std::cout << v << std::endl;
+    for (auto v : answ)
+        std::cout << v << std::endl;
 
     return 0;
 }
