@@ -4,7 +4,6 @@
 #include <iostream>
 #include <exception>
 #include <iomanip>
-#include <vector>
 
 namespace Matrix {
 
@@ -291,8 +290,21 @@ namespace Matrix {
 
         void eliminate (const int border) {
 
-            T coeff {};
+            double coeff {};
+            for (int row = border + 1; row < nRows_; ++row) {
+
+                coeff = data_ [row * nCols_ + border] / data_ [border * (nCols_ + 1)];
+                
+                for (int col = 0; col < nCols_; ++col) {
+
+                    int pos = row * nRows_ + col;
+                    data_ [pos] -= data_ [border * nCols_ + col] * coeff;
+                    if (std::abs (data_ [pos]) < Epsilon)
+                        data_ [pos] = T {};
+
+                }
             
+            }
 
         }
 
