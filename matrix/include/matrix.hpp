@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <exception>
+#include <iomanip>
 
 namespace Matrix {
 
@@ -35,6 +36,10 @@ namespace Matrix {
         }
 
     public:
+
+        //====================================================================================
+        //========================== BIG FIVE RULE IMPLEMENTATION ============================
+        //====================================================================================
         Matrix (const int nRows, const int nCols):
             nRows_ (nRows), nCols_ (nCols) {
 
@@ -140,6 +145,54 @@ namespace Matrix {
             //after T destructor.
 
         } 
+        //====================================================================================
+
+        struct Proxy {
+
+            T* row_;
+            int nCols_;
+
+            Proxy (T* row, const int nCols):
+                row_ (row), nCols_ (nCols) {}
+
+            const T& operator[] (const int col) const {
+
+                if (col > nCols_)
+                    throw std::runtime_error ("bad column number to get element");
+
+                return row_ [col]; 
+
+            }
+
+            T& operator[] (const int col) { 
+            
+                if (col > nCols_)
+                    throw std::runtime_error ("bad column number to get element");
+
+                return row_ [col]; 
+            }
+    
+        };
+
+        Proxy operator[] (int row) {
+
+            Proxy ret {data_ + row * nCols_, nCols_};
+            return ret;
+
+        }
+
+        void textDump () const {
+
+            for (int y = 0; y < nRows_; ++y) {
+                
+                for (int x = 0; x < nCols_; ++x)
+                    std::cout << std::setw (5) << data_ [y * nCols_ + x];
+                
+                std::cout << std::endl;
+
+            }
+
+        }
 
     };  
 
