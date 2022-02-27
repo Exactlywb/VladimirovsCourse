@@ -7,7 +7,7 @@
 
 namespace Matrix {
 
-    const double Epsilon = 1e-5;
+    const double Epsilon = 1e-10;
 
     template <typename T = double>
     class Matrix final {
@@ -201,36 +201,38 @@ namespace Matrix {
         T det () const {
 
             Matrix<T> copyMatr (*this);
-            T det = copyMatr.Gauss ();
+            double det = copyMatr.Gauss ();
 
             return det;
 
         }        
 
-        T calcDiagMul () const {
+        double calcDiagMul () const {
 
             if (nCols_ != nRows_)
                 throw std::runtime_error ("not a square matrix to evaluate diagonal multiplication");
 
-            T diagMul {};
+            double diagMul {1};
 
             int size = nCols_;
             for (int i = 0; i < nCols_; ++i)
                 diagMul *= data_ [i * (nCols_ + 1)];
-
+    
             return diagMul;
 
         }
 
     protected:
 
-        T Gauss () {    //|!| THIS FUNCTION DESTROYS MATRIX
+        double Gauss () {    //|!| THIS FUNCTION DESTROYS MATRIX
 
             if (nCols_ != nRows_)
                 std::runtime_error ("not a square matrix to evaluate determinant");
 
             int sgn = 1;
             for (int curIt = 0; curIt < nCols_; ++curIt) {
+                
+                //textDump ();
 
                 //row, column
                 std::pair<int, int> curMaxElem = maxSubmatrixElem (curIt);
@@ -253,18 +255,44 @@ namespace Matrix {
 
                 if (std::abs (data_ [curIt * (nCols_ + 1)]) < Epsilon)
                     return T {};
-
+                
+                textDump ();
                 eliminate (curIt);
 
             }
 
-            T determinant = calcDiagMul ();
+            double determinant = calcDiagMul ();
             return sgn * determinant;
 
         }
 
     private:
-        std::pair<int, int> maxSubmatrixElem (const int border) { return {0, 0}; }
+        std::pair<int, int> maxSubmatrixElem (const int border) { 
+        
+            T curMax = data_ [border * (nCols_ + 1)];
+            std::pair<int, int> res {border, border};
+            for (int y = border; y < nRows_; ++y) {
+
+                for (int x = border; x < nCols_; ++x) {
+
+                    T toCmp = data_ [y * nCols_ + x];
+                    if (std::abs (curMax) - std::abs (toCmp) < Epsilon &&
+                        std::abs (toCmp) >= Epsilon) {
+                        
+                        res.first   = y;
+                        res.second  = x;
+
+                        curMax      = toCmp;
+
+                    }
+
+                }
+
+            }
+
+            return res;
+        
+        }
         
         void swapCols (const int border, const int col) {
 
@@ -293,8 +321,10 @@ namespace Matrix {
             double coeff {};
             for (int row = border + 1; row < nRows_; ++row) {
 
-                coeff = data_ [row * nCols_ + border] / data_ [border * (nCols_ + 1)];
-                
+                coeff = (double)data_ [row * nCols_ + border] / data_ [border * (nCols_ + 1)];
+                std::cout << data_ [row * nCols_ + border] << std::endl;
+                std::cout << data_ [border * (nCols_ + 1)] << std::endl;
+                std::cout << "coeff = " << coeff << std::endl; 
                 for (int col = 0; col < nCols_; ++col) {
 
                     int pos = row * nRows_ + col;
