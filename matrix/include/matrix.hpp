@@ -87,7 +87,7 @@ namespace Matrix {
         
             }
 
-            copyMatrix (other, size);
+            copyMatr (other, size);
 
         }
 
@@ -147,6 +147,9 @@ namespace Matrix {
         } 
         //====================================================================================
 
+        //====================================================================================
+        //=========================== operator[] implementation ==============================
+        //====================================================================================
         struct Proxy {
 
             T* row_;
@@ -180,6 +183,7 @@ namespace Matrix {
             return ret;
 
         }
+        //====================================================================================
 
         void textDump () const {
 
@@ -194,7 +198,117 @@ namespace Matrix {
 
         }
 
-    };  
+        T det () const {
+
+            Matrix<T> copyMatr (*this);
+            T det = copyMatr.Gauss ();
+
+            return det;
+
+        }        
+
+        T calcDiagMul () const {
+
+            if (nCols_ != nRows_)
+                throw std::runtime_error ("not a square matrix to evaluate diagonal multiplication");
+
+            T diagMul {};
+
+            int size = nCols_;
+            for (int i = 0; i < nCols_; ++i)
+                diagMul *= data_ [i * (nCols_ + 1)];
+
+            return diagMul;
+
+        }
+
+    protected:
+
+        T Gauss () {    //|!| THIS FUNCTION DESTROYS MATRIX
+
+            if (nCols_ != nRows_)
+                std::runtime_error ("not a square matrix to evaluate determinant");
+
+            int sgn = 1;
+            for (int curIt = 0; curIt < nCols_; ++curIt) {
+
+                //row, column
+                std::pair<int, int> curMaxElem = maxSubmatrixElem (curIt);
+                
+                if (curMaxElem.second != curIt) {
+                    
+                    swapCols (curIt, curMaxElem.second);
+                    sgn *= -1;
+                    curMaxElem.second = curIt;
+
+                }
+
+                if (curMaxElem.first != curIt) {
+
+                    swapRows (curIt, curMaxElem.first);
+                    sgn *= -1;
+                    curMaxElem.first = curIt;
+
+                }
+
+                if (std::abs (data_ [curIt * (nCols_ + 1)]) < Epsilon)
+                    return T {};
+
+                eliminate (curIt);
+
+            }
+
+            T determinant = calcDiagMul ();
+            return sgn * determinant;
+
+        }
+
+    private:
+        std::pair<int, int> maxSubmatrixElem (const int border) { return {0, 0}; }
+        
+        void swapCols (const int border, const int col) {
+
+            for (int row = border; row < nRows_; ++row) {
+
+                std::swap (data_ [row * nCols_ + border],
+                           data_ [row * nCols_ + col]);
+
+            }
+
+        }
+
+        void swapRows (const int border, const int row) {
+
+            for (int col = border; col < nCols_; ++col) {
+
+                std::swap (data_ [border * nCols_ + col],
+                           data_ [row    * nCols_ + col]);                
+
+            }
+
+        }
+
+        void eliminate (const int border) {
+
+            double coeff {};
+            for (int row = border + 1; row < nRows_; ++row) {
+
+                coeff = data_ [row * nCols_ + border] / data_ [border * (nCols_ + 1)];
+                
+                for (int col = 0; col < nCols_; ++col) {
+
+                    int pos = row * nRows_ + col;
+                    data_ [pos] -= data_ [border * nCols_ + col] * coeff;
+                    if (std::abs (data_ [pos]) < Epsilon)
+                        data_ [pos] = T {};
+
+                }
+            
+            }
+
+        }
+
+    };
 
 }
 
