@@ -53,10 +53,6 @@ set (GENERATOR
     generator/generator.cpp
 )
 
-set (HEADERS
-    include/matrix.hpp
-)
-
 add_executable(${EXEC_FILE} ${SOURCES})
 add_executable(${GEN_FILE}  ${GENERATOR})
 add_executable(${SET_TEST_EXEC} ${SET_SOURCES})

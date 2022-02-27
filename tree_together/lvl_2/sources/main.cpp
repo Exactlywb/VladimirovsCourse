@@ -1,3 +1,4 @@
+#include <chrono>
 #include <vector>
 
 #include "tree.hpp"
@@ -15,8 +16,6 @@ int main ()
         tree.insert (num);
     }
 
-    // tree.graphDump("out.dot");
-
     int requests = 0;
     std::cin >> requests;
 
@@ -24,6 +23,9 @@ int main ()
 
     int minBorder = 0;
     int maxBorder = 0;
+
+    auto start = std::chrono::steady_clock::now ();
+
     for (int i = 0; i < requests; ++i) {
         std::cin >> minBorder >> maxBorder;
 
@@ -32,20 +34,17 @@ int main ()
             continue;
         }
 
-#if 0
-        auto minIt = tree.upperBound (minBorder);
-        auto maxIt = tree.lowerBound (maxBorder);
-        int length = static_cast<int>(std::distance (minIt, maxIt));
-        int myL = tree.range (minBorder, maxBorder);
-        
-        answ.push_back (static_cast<int>(std::distance (minIt, maxIt)));
-#endif
-
         answ.push_back (tree.range (minBorder, maxBorder));
     }
+    auto end = std::chrono::steady_clock::now ();
 
-    // for (auto v : answ)
-    //     std::cout << v << std::endl;
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    std::cout << "elapsed time: " << elapsed_seconds.count () << "s\n";
+
+#if 0
+    for (auto v : answ)
+        std::cout << v << std::endl;
+#endif
 
     return 0;
 }

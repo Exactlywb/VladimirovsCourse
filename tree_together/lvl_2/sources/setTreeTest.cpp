@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <chrono>
 #include <iostream>
 #include <set>
 #include <vector>
@@ -22,6 +23,9 @@ int main ()
 
     int minBorder = 0;
     int maxBorder = 0;
+
+    auto start = std::chrono::steady_clock::now ();
+
     for (int i = 0; i < requests; ++i) {
         std::cin >> minBorder >> maxBorder;
 
@@ -30,11 +34,18 @@ int main ()
             continue;
         }
 
-        answ.push_back (static_cast<int> (std::distance (tree.find(minBorder),tree.find(maxBorder))));
+        answ.push_back (static_cast<int> (std::distance (tree.upper_bound (minBorder), tree.lower_bound (maxBorder))));
     }
 
+    auto end = std::chrono::steady_clock::now ();
+
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    std::cout << "elapsed time: " << elapsed_seconds.count () << "s\n";
+
+#if 0
     for (auto v : answ)
         std::cout << v << std::endl;
+#endif
 
     return 0;
 }

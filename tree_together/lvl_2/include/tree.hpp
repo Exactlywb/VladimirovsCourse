@@ -1,27 +1,24 @@
 #ifndef TREE_H__
 #define TREE_H__
 
+#include <math.h>
+#include <stdio.h>
 #include <string.h>
+#include <time.h>
 
+#include <algorithm>
 #include <cassert>
+#include <complex>
 #include <fstream>
 #include <iostream>
 #include <iterator>
-
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
-#include <time.h>
-#include <iostream>
-#include <vector>
 #include <list>
-#include <string>
-#include <algorithm>
-#include <queue>
-#include <stack>
-#include <set>
 #include <map>
-#include <complex>
+#include <queue>
+#include <set>
+#include <stack>
+#include <string>
+#include <vector>
 
 namespace TreeImpl {
 
@@ -97,11 +94,11 @@ namespace TreeImpl {
             SplayNode *toDelete = nullptr;
 
             while (curNode) {
-                if (curNode->left_)                                        //
-                    curNode = curNode->left_;   // here we go down by our tree
-                else if (curNode->right_)                                  //
-                    curNode = curNode->right_;  //
-                else if (curNode->parent_ && curNode != highestNode) {     // if we have papa &&
+                if (curNode->left_)                                     //
+                    curNode = curNode->left_;                           // here we go down by our tree
+                else if (curNode->right_)                               //
+                    curNode = curNode->right_;                          //
+                else if (curNode->parent_ && curNode != highestNode) {  // if we have papa &&
                     // we are not in the highest point
 
                     toDelete = curNode;
@@ -159,7 +156,6 @@ namespace TreeImpl {
                     curCopy->subtreeSize = curOther->subtreeSize;
 
                     curCopy->val_ = curOther->val_;
-                    curCopy->color_ = curOther->color_;
 
                     if (curCopy != root_) {
                         curCopy = curCopy->parent_;
@@ -319,8 +315,7 @@ namespace TreeImpl {
                     tmp = tmp->right_;
                 }
                 else if (tmp->val_ == val) {
-
-                    // splay (tmp);
+                    splay (tmp);
                     return MyIterator (tmp);
                 }
             }
@@ -404,7 +399,6 @@ namespace TreeImpl {
                 }
                 else
                     curNode = curNode->left_;
-                
             }
             return amount;
         }
@@ -413,8 +407,10 @@ namespace TreeImpl {
 
         long range (T left, T right)
         {
+            auto leftIt = upperBound (left);
+            auto rightIt = lowerBound (right);
 
-            return std::distance(find(left), find(right));
+            return getNLessThan ((*rightIt)->val_) - getNLessThan ((*leftIt)->val_);
         }
 
         //-----------------------------------------------------------------------------------------------------
@@ -553,8 +549,6 @@ namespace TreeImpl {
                 curNode->left_ = node;
             else
                 curNode->right_ = node;
-
-            splay (node);
         }
 
         void graphDump (const char *fileName) const
