@@ -15,8 +15,6 @@ int main () {
 
     }
 
-    matr.textDump ();
-
     std::cout << matr.det () << std::endl;
 
 }

@@ -4,8 +4,16 @@
 #include <iostream>
 #include <exception>
 #include <iomanip>
+#include <algorithm>
 
 namespace Matrix {
+
+    template <typename From, typename To>
+    struct StaticCaster {
+
+        To operator() (From fr) const { return static_cast<To> (fr); }
+
+    };
 
     const double Epsilon = 1e-10;
 
@@ -21,21 +29,23 @@ namespace Matrix {
     private:
         void copyMatr (const Matrix& other, const int size) {
 
-        
-            try {
-                std::copy (other.data_, other.data_ + size, data_);
-            } catch (std::bad_alloc& err) {
-            
-                std::cout << "bad allocation in std::copy algorithm: " << err.what ()<< std::endl;
-                
-                ::operator delete (data_);
-                data_ = nullptr;
-            
-            }
+            std::copy (other.data_, other.data_ + size, data_);
+
+        }
+
+        template <typename anotherT>
+        void copyMatrAnother (const Matrix<anotherT>& other, const int size) {
+
+            std::transform (other.getData (), other.getData () + size, data_, StaticCaster<anotherT, T> ());
 
         }
 
     public:
+
+        T* getData () const { return data_; }
+
+        int getNRows () const { return nRows_; }
+        int getNCols () const { return nCols_; }
 
         //====================================================================================
         //========================== BIG FIVE RULE IMPLEMENTATION ============================
@@ -108,6 +118,23 @@ namespace Matrix {
 
         }
 
+        //coercion constructor
+        template <typename anotherT>
+        Matrix (const Matrix<anotherT> &other): nRows_ (other.getNRows ()), nCols_ (other.getNCols ()) {
+
+            int size = nRows_ * nCols_;
+            if (size) {
+
+                data_ = static_cast<T*> (::operator new (size * sizeof (T)));
+
+                
+            } else
+                data_ = nullptr;
+
+            copyMatrAnother (other, size);
+
+        } 
+
         ~Matrix () {
 
             ::operator delete (data_);
@@ -171,10 +198,10 @@ namespace Matrix {
 
         T det () const {
 
-            Matrix<T> copyMatr (*this);
+            Matrix<double> copyMatr (*this);
             double det = copyMatr.Gauss ();
 
-            return det;
+            return static_cast<T> (det);
 
         }        
 
@@ -193,7 +220,6 @@ namespace Matrix {
 
         }
 
-    protected:
 
         double Gauss () {    //|!| THIS FUNCTION DESTROYS MATRIX
 
