@@ -41,7 +41,6 @@ namespace Matrix {
         }
 
     public:
-
         T* getData () const { return data_; }
 
         int getNRows () const { return nRows_; }
@@ -63,7 +62,7 @@ namespace Matrix {
     
         Matrix (Matrix<T> &&other) noexcept:
             data_ (other.data_),
-            nRows_ (other.nRows_), nCols_ (other.nCols) { //move constructor
+            nRows_ (other.nRows_), nCols_ (other.nCols_) { //move constructor
         
             other.data_ = nullptr;
 
@@ -114,7 +113,9 @@ namespace Matrix {
             else
                 data_ = nullptr;
 
-            copyMatrix (other, size);
+            copyMatr (other, size);
+
+            return *this;
 
         }
 
@@ -331,6 +332,18 @@ namespace Matrix {
         }
 
     };
+
+    template <typename T = double>
+    bool operator== (const Matrix<T> &first, const Matrix<T> &second)
+    {
+
+        if (first.getNCols () != second.getNCols () ||
+            first.getNRows () != second.getNRows ()) {
+                return false; 
+        }
+
+        return std::equal (first.getData (), first.getData () + first.getNRows () * first.getNCols (), second.getData ());
+    }
 
 }
 
