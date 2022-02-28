@@ -28,7 +28,7 @@ namespace Matrix {
             
                 std::cout << "bad allocation in std::copy algorithm: " << err.what ()<< std::endl;
                 
-                delete [] data_;
+                ::operator delete (data_);
                 data_ = nullptr;
             
             }
@@ -43,20 +43,11 @@ namespace Matrix {
         Matrix (const int nRows, const int nCols):
             nRows_ (nRows), nCols_ (nCols) {
 
-            try {
-                
-                int size = nRows_ * nCols_;        
-                if (size)
-                    data_ = new T [size];
-                else
-                    data_ = nullptr;
-
-            } catch (std::bad_alloc& err) {
-               
-                std::cout << "bad allocation for memory: " << err.what () << std::endl;
-                data_ = nullptr;
-
-            }
+            int size = nRows_ * nCols_;
+            if (size)
+                data_ = static_cast<T*> (::operator new (sizeof (T) * size));
+            else
+                data_ = nullptr;        
 
         }
     
@@ -72,20 +63,10 @@ namespace Matrix {
             nRows_ (other.nRows_), nCols_ (other.nCols_) { //copy constructor
             
             int size = nRows_ * nCols_;
-            try {
-
-                if (size)
-                    data_ = new T [size];
-                else
-                    data_ = nullptr;
-
-            } catch (std::bad_alloc& err) {
-        
-                std::cout << "bad allocation for memory: " << err.what () << std::endl;
-                data_  = nullptr;
-                return;
-        
-            }
+            if (size)
+                data_ = static_cast<T*> (::operator new (sizeof (T) * size));
+            else
+                data_ = nullptr;
 
             copyMatr (other, size);
 
@@ -96,7 +77,7 @@ namespace Matrix {
             if (this == &other)
                 return *this;
 
-            delete [] data_;
+            ::operator delete (data_);
             data_ = other.data_;
             other.data_ = nullptr;
             
@@ -115,23 +96,13 @@ namespace Matrix {
             nRows_ = other.nRows_;
             nCols_ = other.nCols_;
 
-            delete [] data_;
+            ::operator delete (data_);
             
             int size = nRows_ * nCols_;
-            try {
-
-                if (size)
-                    data_ = new T [size];
-                else
-                    data_ = nullptr;
-
-            } catch (std::bad_alloc& err) {
-                
-                std::cout << "bad memory allocation: " << err.what () << std::endl;
+            if (size)
+                data_ = static_cast<T*> (::operator new (sizeof (T) * size));
+            else
                 data_ = nullptr;
-                return *this;
-
-            }
 
             copyMatrix (other, size);
 
@@ -139,7 +110,7 @@ namespace Matrix {
 
         ~Matrix () {
 
-            delete [] data_;
+            ::operator delete (data_);
             // Here is no reason to catch exceptions after delete.
             // We don't know what kind of exception can be throwed
             //after T destructor.
@@ -231,8 +202,6 @@ namespace Matrix {
 
             int sgn = 1;
             for (int curIt = 0; curIt < nCols_; ++curIt) {
-                
-                //textDump ();
 
                 //row, column
                 std::pair<int, int> curMaxElem = maxSubmatrixElem (curIt);
@@ -256,7 +225,6 @@ namespace Matrix {
                 if (std::abs (data_ [curIt * (nCols_ + 1)]) < Epsilon)
                     return T {};
                 
-                textDump ();
                 eliminate (curIt);
 
             }
@@ -322,9 +290,7 @@ namespace Matrix {
             for (int row = border + 1; row < nRows_; ++row) {
 
                 coeff = (double)data_ [row * nCols_ + border] / data_ [border * (nCols_ + 1)];
-                std::cout << data_ [row * nCols_ + border] << std::endl;
-                std::cout << data_ [border * (nCols_ + 1)] << std::endl;
-                std::cout << "coeff = " << coeff << std::endl; 
+
                 for (int col = 0; col < nCols_; ++col) {
 
                     int pos = row * nRows_ + col;
