@@ -9,9 +9,9 @@
 namespace Matrix {
 
     template <typename From, typename To>
-    struct StaticCaster {
+    struct StaticCasterCopier {
 
-        To operator() (From fr) const { return static_cast<To> (fr); }
+        To operator() (From fr) const { return static_cast<To> (new From (fr)); }
 
     };
 
@@ -36,7 +36,7 @@ namespace Matrix {
         template <typename anotherT>
         void copyMatrAnother (const Matrix<anotherT>& other, const int size) {
 
-            std::transform (other.getData (), other.getData () + size, data_, StaticCaster<anotherT, T> ());
+            std::transform (other.getData (), other.getData () + size, data_, StaticCasterCopier<anotherT, T> ());
 
         }
 
