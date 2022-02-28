@@ -4,3 +4,7 @@
 [submodule "triangles_together/3rdparty/glm"]
 	path = triangles_together/3rdparty/glm
 	url = https://github.com/g-truc/glm
+
+[submodule "matrix/3rdparty/googletest"]
+	path = matrix/3rdparty/googletest
+	url = https://github.com/google/googletest
