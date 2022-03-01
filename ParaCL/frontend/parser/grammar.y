@@ -76,6 +76,10 @@ namespace {
 
 %token                      ADD         "+"
 %token                      SUB         "-"
+
+%token                      UN_ADD      '+'
+%token                      UN_SUB      '-'
+
 %token                      MUL         "*"
 %token                      DIV         "/"
 %token                      MOD         "%"
@@ -115,45 +119,21 @@ namespace {
 
 %token                      LEXERR
 
-%left '+' '-' '*' '/' '%'
-%right '=' 
+/*PRIORITIES*/
+%left OR
+%left AND
+%left EQ NEQ
+%left MORE LESS GTE LTE
+%left ADD SUB
+%left MUL DIV MOD
+%precedence UNARY_OP
 
 /* AST TREE */
-%type <AST::Node*>                  assignStatement
-%type <AST::Node*>                  orStatement
-%type <AST::Node*>                  andStatement
-%type <AST::Node*>                  eqStatement
-%type <AST::Node*>                  cmpStatement
-%type <AST::Node*>                  addStatement
-%type <AST::Node*>                  mulStatement
-%type <AST::Node*>                  unaryStatement
-
-%type <AST::Node*>                  term
-%type <AST::Node*>                  atomic
-
-%type <AST::Node*>                  assignment
-
+%type <std::vector<AST::Node*>*>    statementHandler
 %type <AST::Node*>                  statement
 
-%type <AST::Node*>                  ifStatement
-%type <AST::Node*>                  whileStatement
-
-%type <AST::Node*>                  body
-
-%type <AST::Node*>                  conditionExpression
-
-%type <AST::Node*>                  printStatement
-
-%type <AST::Node*>                  func
-%type <AST::Node*>                  returnStatement
-
-%type <std::vector<AST::Node*>*>    argsList
-%type <std::vector<AST::Node*>*>    args
-
-%type <std::vector<AST::Node*>*>    exprList
-%type <std::vector<AST::Node*>*>    expA
-
-%type <std::vector<AST::Node*>*>    statementHandler
+%type <AST::Node*>                  expression
+%type <AST::Node*>                  opStatement
 
 %start translationStart
 
@@ -173,8 +153,9 @@ translationStart            :   statementHandler                {
                                                                         delete $1;
                                                                     }
                                                                     driver->setRoot (globalScope);
-                                                                    #if 0
+                                                                    #if 1
                                                                         driver->callDump (std::cout);
+                                                                        exit (1);
                                                                     #endif
                                                                 };
 
@@ -201,191 +182,28 @@ statementHandler            :   statement                       {
                                                                 };
 
 
-statement                   :   assignment                      {   $$ = $1;    }
-                            |   ifStatement                     {   $$ = $1;    }
-                            |   whileStatement                  {   $$ = $1;    }
-                            |   orStatement SEMICOLON           {   $$ = $1;    }
-                            |   printStatement                  {   $$ = $1;    }
-                            |   body                            {   $$ = $1;    }
-                            |   returnStatement                 {   $$ = $1;    }
-                            |   error SEMICOLON                 {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   }
-                            |   error END                       {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   };
+statement                   :   expression                      {   $$ = $1;        }
+                            |   SEMICOLON                       {   $$ = nullptr;   };
 
-returnStatement             :   RET assignStatement SEMICOLON   {   $$ = makeUnaryOperNode (AST::OperNode::OperType::RETURN, $2, @1);   };                                    
+expression                  :   opStatement                     {   $$ = $1;        };
 
-printStatement              :   PRINT assignStatement SEMICOLON {   $$ = makeUnaryOperNode (AST::OperNode::OperType::PRINT, $2, @1);     }
-                            |   PRINT error SEMICOLON           {   driver->pushError (@2, "Undefined expression in print");    $$ = nullptr;   }
-                            |   PRINT error END                 {   driver->pushError (@2, "Undefined expression in print");    $$ = nullptr;   };
-
-argsList                    :   OPCIRCBRACK args CLCIRCBRACK    {   $$ = $2;        }
-                            |   OPCIRCBRACK CLCIRCBRACK         {   $$ = nullptr;   };
-
-args                        :   ID                              {
-                                                                    $$ = new std::vector<AST::Node*>;
-                                                                    AST::VarNode* newParam = new AST::VarNode ($1, @1);
-                                                                    $$->push_back (newParam);
-                                                                }
-                            |   args COMMA ID                   {
-                                                                    AST::VarNode* newParam = new AST::VarNode ($3, @3);
-                                                                    $1->push_back (newParam);
-                                                                    $$ = $1;
-                                                                };
-
-exprList                    :   OPCIRCBRACK expA CLCIRCBRACK    {   $$ = $2;        }
-                            |   OPCIRCBRACK CLCIRCBRACK         {   $$ = nullptr;   };
-
-expA                        :   assignStatement                 {
-                                                                    $$ = new std::vector<AST::Node*>;
-                                                                    $$->push_back ($1);
-                                                                }
-                            |   expA COMMA assignStatement      {   $1->push_back ($3); $$ = $1;    };
-
-ifStatement                 :   IF conditionExpression statement{
-                                                                    if ($2 && $3) {
-                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::IF, $2, $3, @1);
-                                                                    } else {
-                                                                        $$ = nullptr;
-                                                                        delete $2;
-                                                                        delete $3;
-                                                                    }
-                                                                };
-
-whileStatement              :   WHILE conditionExpression statement
-                                                                {
-                                                                   if ($2 && $3) {
-                                                                        AST::ScopeNode* newScope = new AST::ScopeNode (@3, nullptr);
-                                                                        newScope->addChild ($3);
-                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::WHILE, $2, newScope, @1);
-                                                                    } else {
-                                                                        $$ = nullptr;
-                                                                        delete $2;
-                                                                        delete $3;
-                                                                    } 
-                                                                };
-
-conditionExpression         :   OPCIRCBRACK assignStatement CLCIRCBRACK   
-                                                                {   $$ = $2;    }
-                            |   OPCIRCBRACK error CLCIRCBRACK   {   driver->pushError (@2, "Bad expression for condition"); $$ = nullptr;   };
-
-
-body                        :   OPCURVBRACK statementHandler CLCURVBRACK 
-                                                                {
-                                                                    AST::ScopeNode* newScope = new AST::ScopeNode (@1);
-                                                                    if ($2) {
-                                                                        for (auto curStmtNode: *($2))
-                                                                           newScope->addChild (curStmtNode);
-                                                                    }
-                                                                    delete $2;
-                                                                    $$ = newScope;
-                                                                }
-                            |   OPCURVBRACK CLCURVBRACK         {   $$ = new AST::ScopeNode (@1);   };
-
-
-assignment                  :   ID ASSIGN assignStatement SEMICOLON       
-                                                                {   $$ = makeAssign ($1, $3, @2, @1);   }
-                            |   ID ASSIGN func SEMICOLON        {   $$ = makeAssign ($1, $3, @2, @1);   }
-                            |   ID ASSIGN func                  {   $$ = makeAssign ($1, $3, @2, @1);   }
-                            |   ID ASSIGN error SEMICOLON       {   driver->pushError (@3, "Bad expression after assignment");  
-                                                                    $$ = nullptr;   
-                                                                }
-                            |   ID ASSIGN body                  {   $$ = makeAssign ($1, $3, @2, @1);   }
-                            |   ID error SEMICOLON              {   driver->pushError (@1, "Unexpected operation with variable");   
-                                                                    $$ = nullptr;
-                                                                }
-                            |   error ASSIGN assignStatement SEMICOLON 
-                                                                {   
-                                                                    driver->pushError (@1, "rvalue can't become lvalue"); 
-                                                                    $$ = nullptr; 
-                                                                };
-
-func                        :   FUNC_DECL argsList body         {
-                                                                    AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL, @1);
-                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS, @2);
-                                                                    if ($2) {
-                                                                        for (auto v: *($2))
-                                                                            funcArgs->addChild (v);
-                                                                        delete $2;
-                                                                    }
-                                                                    funcDecl->addChild (funcArgs);
-                                                                    funcDecl->addChild ($3);
-                                                                    $$ = funcDecl;
-                                                                }
-                            |   FUNC_DECL argsList COLON ID body
-                                                                {
-                                                                    AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL, @1);
-                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS, @2);
-                                                                    if ($2) {
-                                                                        for (auto v: *($2))
-                                                                            funcArgs->addChild (v);
-                                                                        delete $2;
-                                                                    }
-
-                                                                    AST::FuncNode* funcName = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_NAME, @4);
-                                                                    AST::VarNode*  funcID   = new AST::VarNode ($4, @4);
-                                                                    funcName->addChild (funcID);
-
-                                                                    funcDecl->addChild (funcName);
-                                                                    funcDecl->addChild (funcArgs);
-                                                                    funcDecl->addChild ($5);
-                                                                    $$ = funcDecl;
-                                                                };
-
-assignStatement             :   orStatement                     {   $$ = $1;        }
-                            |   ID ASSIGN assignStatement       {   $$ = makeAssign ($1, $3, @2, @1);  };
-
-orStatement                 :   andStatement                    {   $$ = $1;        }
-                            |   orStatement OR andStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::OR, $1, $3, @2);     };
-
-
-andStatement                :   eqStatement                     {   $$ = $1;        }
-                            |   andStatement AND eqStatement    {   $$ = makeBinOperNode (AST::OperNode::OperType::AND, $1, $3, @2);    };
-
-eqStatement                 :   cmpStatement                    {   $$ = $1;        }
-                            |   eqStatement EQ cmpStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::EQ, $1, $3, @2);     }
-                            |   eqStatement NEQ cmpStatement    {   $$ = makeBinOperNode (AST::OperNode::OperType::NEQ, $1, $3, @2);    };
-
-cmpStatement                :   addStatement                    {   $$ = $1;        }
-                            |   cmpStatement MORE addStatement  {   $$ = makeBinOperNode (AST::OperNode::OperType::MORE, $1, $3, @2);  }
-                            |   cmpStatement LESS addStatement  {   $$ = makeBinOperNode (AST::OperNode::OperType::LESS, $1, $3, @2);  }
-                            |   cmpStatement GTE addStatement   {   $$ = makeBinOperNode (AST::OperNode::OperType::GTE, $1, $3, @2);   }
-                            |   cmpStatement LTE addStatement   {   $$ = makeBinOperNode (AST::OperNode::OperType::LTE, $1, $3, @2);   };
-
-addStatement                :   mulStatement                    {   $$ = $1;        }
-                            |   addStatement ADD mulStatement   {   $$ = makeBinOperNode (AST::OperNode::OperType::ADD, $1, $3, @2);   }
-                            |   addStatement SUB mulStatement   {   $$ = makeBinOperNode (AST::OperNode::OperType::SUB, $1, $3, @2);   };
-
-mulStatement                :   unaryStatement                  {   $$ = $1;        }
-                            |   mulStatement MUL unaryStatement {   $$ = makeBinOperNode (AST::OperNode::OperType::MUL, $1, $3, @2);   }
-                            |   mulStatement DIV unaryStatement {   $$ = makeBinOperNode (AST::OperNode::OperType::DIV, $1, $3, @2);   }
-                            |   mulStatement MOD unaryStatement {   $$ = makeBinOperNode (AST::OperNode::OperType::MOD, $1, $3, @2);   };
-
-unaryStatement              :   term                            {   $$ = $1;        }
-                            |   SUB unaryStatement              {   $$ = makeUnaryOperNode (AST::OperNode::OperType::UNARY_M, $2, @1); }
-                            |   ADD unaryStatement              {   $$ = makeUnaryOperNode (AST::OperNode::OperType::UNARY_P, $2, @1); };
-
-term                        :   atomic                          {   $$ = $1;    }
-                            |   OPCIRCBRACK assignStatement CLCIRCBRACK
-                                                                {   $$ = $2;    };
-
-atomic                      :   NUMBER                          {   $$ = new AST::NumNode   ($1);                                   }
-                            |   SCAN                            {   $$ = new AST::OperNode  (AST::OperNode::OperType::SCAN, @1);    }
-                            |   ID exprList                     {
-                                                                    $$ = new AST::OperNode  (AST::OperNode::OperType::CALL, @1);
-                                                                    AST::VarNode* funcName  = new AST::VarNode ($1, @1);
-
-                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS, @2);
-                                                                    if ($2) {
-                                                                        for (auto v: *($2))
-                                                                            funcArgs->addChild (v);
-                                                                        delete $2;
-                                                                    }
-
-                                                                    $$->addChild (funcName);
-                                                                    $$->addChild (funcArgs);
-
-                                                                }
-                            /* |   body                            {   $$ = $1;    } */
-                            |   ID                              {   $$ = new AST::VarNode   ($1, @1);                               };
+/*OPERATORS*/
+opStatement                 :   NUMBER                          {   $$ = new AST::NumNode   ($1);                                       }
+                            |   opStatement OR opStatement      {   $$ = makeBinOperNode (AST::OperNode::OperType::OR, $1, $3, @2);     }
+                            |   opStatement AND opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::AND, $1, $3, @2);    }
+                            |   opStatement EQ opStatement      {   $$ = makeBinOperNode (AST::OperNode::OperType::EQ, $1, $3, @2);     }
+                            |   opStatement NEQ opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::NEQ, $1, $3, @2);    }
+                            |   opStatement MORE opStatement    {   $$ = makeBinOperNode (AST::OperNode::OperType::MORE, $1, $3, @2);   }
+                            |   opStatement LESS opStatement    {   $$ = makeBinOperNode (AST::OperNode::OperType::LESS, $1, $3, @2);   }
+                            |   opStatement GTE opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::GTE, $1, $3, @2);    }
+                            |   opStatement LTE opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::LTE, $1, $3, @2);    }
+                            |   opStatement ADD opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::ADD, $1, $3, @2);    }
+                            |   opStatement SUB opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::SUB, $1, $3, @2);    }
+                            |   opStatement MUL opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::MUL, $1, $3, @2);    }
+                            |   opStatement DIV opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::DIV, $1, $3, @2);    }
+                            |   opStatement MOD opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::MOD, $1, $3, @2);    }
+                            |   UN_SUB opStatement %prec UNARY_OP  {   $$ = makeUnaryOperNode (AST::OperNode::OperType::UNARY_M, $2, @1);  }
+                            |   UN_ADD opStatement %prec UNARY_OP  {   $$ = makeUnaryOperNode (AST::OperNode::OperType::UNARY_P, $2, @1);  };
 
 %%
 
