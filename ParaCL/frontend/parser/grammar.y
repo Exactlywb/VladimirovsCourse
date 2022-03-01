@@ -127,12 +127,14 @@ namespace {
 %left ADD SUB
 %left MUL DIV MOD
 %precedence UNARY_OP
+%right ASSIGN
 
 /* AST TREE */
 %type <std::vector<AST::Node*>*>    statementHandler
 %type <AST::Node*>                  statement
 
-%type <AST::Node*>                  assign
+%type <AST::Node*>                  conditionStmt
+%type <AST::Node*>                  body
 
 %type <AST::Node*>                  expression
 %type <AST::Node*>                  opStatement
@@ -144,8 +146,9 @@ namespace {
 translationStart            :   statementHandler                {
                                                                     AST::ScopeNode* globalScope = new AST::ScopeNode (@1, nullptr);
                                                                     if ($1) {
+                                                                        printf ("here\n");
                                                                         for (auto curStmtNode: *($1))             
-                                                                        {   
+                                                                        {
                                                                             if (!curStmtNode)
                                                                                 continue;
                                                                             
@@ -170,7 +173,8 @@ statementHandler            :   statement                       {
                                                                 }
                             |   statementHandler statement      {
                                                                     if ($1 && $2) {
-                                                                        $1->push_back ($2);
+                                                                        if ($2->getType () != AST::NodeT::FILLER)
+                                                                            $1->push_back ($2);
                                                                         $$ = $1;
                                                                     } else {
                                                                         $$ = nullptr;
@@ -183,15 +187,41 @@ statementHandler            :   statement                       {
                                                                     }
                                                                 };
 
+statement                   :   conditionStmt                   {   $$ = $1;                    }
+                            |   expression                      {   $$ = $1;                    }
+                            |   SEMICOLON                       {   $$ = new AST::Filler ();    };
 
-statement                   :   expression                      {   $$ = $1;        }
-                            |   SEMICOLON                       {   $$ = nullptr;   };
+conditionStmt               :   IF OPCIRCBRACK opStatement CLCIRCBRACK statement        
+                                                                {
 
-expression                  :   opStatement                     {   $$ = $1;        }
-                            |   assign                          {   $$ = $1;        };
+                                                                    if ($3 && $5) {
+                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::IF, $3, $5, @1);
+                                                                    } else {
+                                                                        $$ = nullptr;
+                                                                        delete $3;
+                                                                        delete $5;
+                                                                    }
+
+                                                                }
+                            |   WHILE OPCIRCBRACK opStatement CLCIRCBRACK statement     
+                                                                {
+
+                                                                    if ($3 && $5) {
+                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::WHILE, $3, $5, @1);
+                                                                    } else {
+                                                                        $$ = nullptr;
+                                                                        delete $3;
+                                                                        delete $5;
+                                                                    }
+
+                                                                };
+
+expression                  :   ID ASSIGN expression            {   $$ = makeAssign ($1, $3, @2, @1);   }
+                            |   opStatement                     {   $$ = $1;                            };
 
 /*OPERATORS*/
 opStatement                 :   NUMBER                          {   $$ = new AST::NumNode   ($1);                                       }
+                            |   body                            {   $$ = $1;                                                            }
                             |   opStatement OR opStatement      {   $$ = makeBinOperNode (AST::OperNode::OperType::OR, $1, $3, @2);     }
                             |   opStatement AND opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::AND, $1, $3, @2);    }
                             |   opStatement EQ opStatement      {   $$ = makeBinOperNode (AST::OperNode::OperType::EQ, $1, $3, @2);     }
@@ -207,6 +237,18 @@ opStatement                 :   NUMBER                          {   $$ = new AST
                             |   opStatement MOD opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::MOD, $1, $3, @2);    }
                             |   UN_SUB opStatement %prec UNARY_OP  {   $$ = makeUnaryOperNode (AST::OperNode::OperType::UNARY_M, $2, @1);  }
                             |   UN_ADD opStatement %prec UNARY_OP  {   $$ = makeUnaryOperNode (AST::OperNode::OperType::UNARY_P, $2, @1);  };
+
+body                        :   OPCURVBRACK statementHandler CLCURVBRACK 
+                                                                {
+                                                                    AST::ScopeNode* newScope = new AST::ScopeNode (@1);
+                                                                    if ($2) {
+                                                                        for (auto curStmtNode: *($2))
+                                                                           newScope->addChild (curStmtNode);
+                                                                    }
+                                                                    delete $2;
+                                                                    $$ = newScope;
+                                                                }
+                            |   OPCURVBRACK CLCURVBRACK         {   $$ = new AST::ScopeNode (@1);   };
 
 %%
 

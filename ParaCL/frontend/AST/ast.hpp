@@ -22,7 +22,8 @@ namespace AST {
         FUNCTION,
 
         SCOPE,
-        INLINESCOPE
+        INLINESCOPE,
+        FILLER
 
     };
 
@@ -108,6 +109,17 @@ namespace AST {
 //**************************** AST Node inheritors ****************************
 //*****************************************************************************
 namespace AST {
+    
+    class Filler final : public Node {
+
+    public:
+        Filler (Node *parent = nullptr)
+            : Node (NodeT::FILLER, parent)
+        {
+        }
+
+        void nodeDump (std::ostream &out) const override { out << "FILLER"; }
+    };
 
     class VarNode final : public Node {
         std::string name_;
