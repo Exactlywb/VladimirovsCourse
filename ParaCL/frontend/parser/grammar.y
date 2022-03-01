@@ -127,6 +127,7 @@ namespace {
 %left ADD SUB
 %left MUL DIV MOD
 %precedence UNARY_OP
+%right ASSIGN
 
 /* AST TREE */
 %type <std::vector<AST::Node*>*>    statementHandler
@@ -142,8 +143,9 @@ namespace {
 translationStart            :   statementHandler                {
                                                                     AST::ScopeNode* globalScope = new AST::ScopeNode (@1, nullptr);
                                                                     if ($1) {
+                                                                        printf ("here\n");
                                                                         for (auto curStmtNode: *($1))             
-                                                                        {   
+                                                                        {
                                                                             if (!curStmtNode)
                                                                                 continue;
                                                                             
@@ -168,7 +170,8 @@ statementHandler            :   statement                       {
                                                                 }
                             |   statementHandler statement      {
                                                                     if ($1 && $2) {
-                                                                        $1->push_back ($2);
+                                                                        if ($2->getType () != AST::NodeT::FILLER)
+                                                                            $1->push_back ($2);
                                                                         $$ = $1;
                                                                     } else {
                                                                         $$ = nullptr;
@@ -181,11 +184,11 @@ statementHandler            :   statement                       {
                                                                     }
                                                                 };
 
-
 statement                   :   expression                      {   $$ = $1;        }
-                            |   SEMICOLON                       {   $$ = nullptr;   };
+                            |   SEMICOLON                       {   $$ = new AST::Filler ();   };
 
-expression                  :   opStatement                     {   $$ = $1;        };
+expression                  :   ID ASSIGN expression            {   $$ = makeAssign ($1, $3, @2, @1); std::cout << "Green" << std::endl;  }
+                            |   opStatement                     {   $$ = $1;     std::cout << "OpStatement" << std::endl;                       };
 
 /*OPERATORS*/
 opStatement                 :   NUMBER                          {   $$ = new AST::NumNode   ($1);                                       }
@@ -197,7 +200,7 @@ opStatement                 :   NUMBER                          {   $$ = new AST
                             |   opStatement LESS opStatement    {   $$ = makeBinOperNode (AST::OperNode::OperType::LESS, $1, $3, @2);   }
                             |   opStatement GTE opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::GTE, $1, $3, @2);    }
                             |   opStatement LTE opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::LTE, $1, $3, @2);    }
-                            |   opStatement ADD opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::ADD, $1, $3, @2);    }
+                            |   opStatement ADD opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::ADD, $1, $3, @2); printf ("add\n");   }
                             |   opStatement SUB opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::SUB, $1, $3, @2);    }
                             |   opStatement MUL opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::MUL, $1, $3, @2);    }
                             |   opStatement DIV opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::DIV, $1, $3, @2);    }
