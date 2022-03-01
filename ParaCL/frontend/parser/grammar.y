@@ -95,6 +95,7 @@ namespace {
 %token                      OR          "||"
 
 %token                      IF          "if"
+%token                      ELSE        "else"
 
 %token                      WHILE       "while"
 %token                      PRINT       "print"
@@ -120,6 +121,7 @@ namespace {
 %token                      LEXERR
 
 /*PRIORITIES*/
+%right ELSE THEN
 %left OR
 %left AND
 %left EQ NEQ
@@ -139,6 +141,8 @@ namespace {
 %type <AST::Node*>                  expression
 %type <AST::Node*>                  opStatement
 
+%type <AST::Node*>                  fixSemicolon
+
 %start translationStart
 
 %%
@@ -146,7 +150,7 @@ namespace {
 translationStart            :   statementHandler                {
                                                                     AST::ScopeNode* globalScope = new AST::ScopeNode (@1, nullptr);
                                                                     if ($1) {
-                                                                        printf ("here\n");
+
                                                                         for (auto curStmtNode: *($1))             
                                                                         {
                                                                             if (!curStmtNode)
@@ -187,11 +191,26 @@ statementHandler            :   statement                       {
                                                                     }
                                                                 };
 
-statement                   :   conditionStmt                   {   $$ = $1;                    }
-                            |   expression                      {   $$ = $1;                    }
-                            |   SEMICOLON                       {   $$ = new AST::Filler ();    };
+statement                   :   conditionStmt   {   $$ = $1;                    }
+                            |   expression fixSemicolon     {   $$ = $1;                    };
 
-conditionStmt               :   IF OPCIRCBRACK opStatement CLCIRCBRACK statement        
+fixSemicolon                :   %empty          {   $$ = new AST::Filler ();    }
+                            |   SEMICOLON       {   $$ = new AST::Filler ();    };
+
+conditionStmt               :   IF OPCIRCBRACK opStatement CLCIRCBRACK statement ELSE statement
+                                                                {
+
+                                                                    if ($3 && $5) {
+                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::IF, $3, $5, @1);
+                                                                        $$->addChild ($7);
+                                                                    } else {
+                                                                        $$ = nullptr;
+                                                                        delete $3;
+                                                                        delete $5;
+                                                                    }
+
+                                                                }
+                            |   IF OPCIRCBRACK opStatement CLCIRCBRACK statement %prec THEN
                                                                 {
 
                                                                     if ($3 && $5) {
