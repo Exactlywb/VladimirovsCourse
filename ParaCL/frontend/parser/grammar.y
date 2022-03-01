@@ -132,6 +132,8 @@ namespace {
 %type <std::vector<AST::Node*>*>    statementHandler
 %type <AST::Node*>                  statement
 
+%type <AST::Node*>                  assign
+
 %type <AST::Node*>                  expression
 %type <AST::Node*>                  opStatement
 
@@ -185,7 +187,8 @@ statementHandler            :   statement                       {
 statement                   :   expression                      {   $$ = $1;        }
                             |   SEMICOLON                       {   $$ = nullptr;   };
 
-expression                  :   opStatement                     {   $$ = $1;        };
+expression                  :   opStatement                     {   $$ = $1;        }
+                            |   assign                          {   $$ = $1;        };
 
 /*OPERATORS*/
 opStatement                 :   NUMBER                          {   $$ = new AST::NumNode   ($1);                                       }
