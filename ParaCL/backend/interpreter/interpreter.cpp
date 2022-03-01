@@ -372,11 +372,13 @@ namespace interpret {
     std::pair<EvalApplyNode *, EvalApplyNode *> EAReturn::eval (Context &context)
     {
         const AST::Node *node = EvalApplyNode::getNode ();
-        const AST::Node *lhs = (*node)[0];
+        const AST::Node *lhs = nullptr;
+        
+        if (node->getChildrenNum())
+            lhs = (*node)[0];
 
         const AST::Node *prevExec = context.prev_->getNode ();
-
-        if (prevExec == lhs) {
+        if (lhs == nullptr || prevExec == lhs) {
             auto retAddress = context.retStack_.back ();
             std::vector<Scope *> &scopeStack = context.scopeStack_;
             scopeStack.erase (scopeStack.begin () + retAddress.first, scopeStack.end ());

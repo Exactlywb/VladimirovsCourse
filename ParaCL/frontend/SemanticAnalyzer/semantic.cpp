@@ -8,7 +8,7 @@ void SemanticAnalyzer::run (Tree::NAryTree<AST::Node *> *tree,
 {
     pushWarning_ = pushWarning;
     pushError_ = pushError;
-
+    
     AnalyzeHiddenReturn (tree);
 
     AST::ScopeNode *startScope = static_cast<AST::ScopeNode *> (tree->getRoot ());
@@ -32,13 +32,9 @@ namespace {
         curNode->addChild (returnNode);
     }
 
-    void SetPoisonReturn (AST::Node *curNode)
+    void SetFillerReturn (AST::Node *curNode)
     {
-        int poison = -666;  // free garbage generator
-
         AST::OperNode *returnNode = new AST::OperNode (AST::OperNode::OperType::RETURN);
-        AST::NumNode *numNode = new AST::NumNode (poison);
-        returnNode->addChild (numNode);
         curNode->addChild (returnNode);
     }
 
@@ -92,15 +88,12 @@ void SemanticAnalyzer::HiddenReturnNodesAnalyze (AST::Node *curNode)
     AST::Node *rightNode = curNode->getRightChild ();
 
     if (rightNode == nullptr) {
-        pushWarning_ (static_cast<AST::ScopeNode *> (curNode)->getLocation (), "empty scope");
-        SetPoisonReturn (curNode);
+        SetFillerReturn (curNode);
     }
     else {
         switch (rightNode->getType ()) {
             case AST::NodeT::CONDITION: {
-                pushWarning_ (static_cast<AST::CondNode *> (rightNode)->getLocation (),
-                              "can't find return after condition statement");
-                SetPoisonReturn (curNode);
+                SetFillerReturn (curNode);
                 break;
             }
             case AST::NodeT::OPERATOR: {
@@ -111,8 +104,7 @@ void SemanticAnalyzer::HiddenReturnNodesAnalyze (AST::Node *curNode)
                     SetHiddenReturn (curNode, oper);
                 }
                 else {
-                    pushWarning_ (oper->getLocation (), "unexpected statement in the scope end");
-                    SetPoisonReturn (curNode);
+                    SetFillerReturn (curNode);
                 }
                 break;
             }
@@ -137,7 +129,6 @@ void SemanticAnalyzer::UselessStatementRecognizer (AST::Node *curNode)
                 case AST::OperNode::OperType::SCAN:
                 case AST::OperNode::OperType::ASSIGN:
                 case AST::OperNode::OperType::RETURN: break;
-                default: pushError_ (operNode->getLocation (), "useless statement");
             }
         }
     }
@@ -379,6 +370,7 @@ void SemanticAnalyzer::CheckExprScope (Scope *curScope, AST::OperNode *node)
         case AST::OperNode::OperType::OR:
         case AST::OperNode::OperType::AND:
         case AST::OperNode::OperType::MOD: HandleBinaryOperation (curScope, node); break;
+        case AST::OperNode::OperType::CALL: CheckCallOperatorInExpr (curScope, node); break;
 
         default: pushError_ (node->getLocation (), "unexpected operator type");
     }
@@ -386,6 +378,9 @@ void SemanticAnalyzer::CheckExprScope (Scope *curScope, AST::OperNode *node)
 
 void SemanticAnalyzer::CheckUnaryOperScope (Scope *curScope, AST::Node *node)
 {
+    if (!node->getChildrenNum())
+        return;
+
     AST::Node *leftChild = node->getLeftChild ();
 
     if (leftChild->getType () == AST::NodeT::OPERATOR) {
