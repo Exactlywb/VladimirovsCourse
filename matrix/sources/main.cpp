@@ -6,7 +6,7 @@ int main () {
     int size = 0;
     std::cin >> size;
 
-    Matrix::Matrix<int> matr (size, size);
+    Matrix::Matrix<double> matr (size, size);
 
     for (int y = 0; y < size; ++y) {
 
@@ -14,8 +14,6 @@ int main () {
             std::cin >> matr [y] [x];
 
     }
-
-    matr.textDump ();
 
     std::cout << matr.det () << std::endl;
 
