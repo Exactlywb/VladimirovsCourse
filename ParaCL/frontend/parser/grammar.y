@@ -159,7 +159,6 @@ namespace {
 
 %%
 
-/* FUNCTIONS IN THE NEAR FUTURE HAS TO BE ADDED HERE */
 translationStart            :   statementHandler                {
                                                                     AST::ScopeNode* globalScope = new AST::ScopeNode (@1, nullptr);
                                                                     if ($1) {
@@ -207,6 +206,7 @@ statement                   :   assignment                      {   $$ = $1;    
                             |   whileStatement                  {   $$ = $1;    }
                             |   orStatement SEMICOLON           {   $$ = $1;    }
                             |   printStatement                  {   $$ = $1;    }
+                            |   body                            {   $$ = $1;    }
                             |   returnStatement                 {   $$ = $1;    }
                             |   error SEMICOLON                 {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   }
                             |   error END                       {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   };
@@ -240,7 +240,7 @@ expA                        :   assignStatement                 {
                                                                 }
                             |   expA COMMA assignStatement      {   $1->push_back ($3); $$ = $1;    };
 
-ifStatement                 :   IF conditionExpression body     {
+ifStatement                 :   IF conditionExpression statement{
                                                                     if ($2 && $3) {
                                                                         $$ = makeCondNode (AST::CondNode::ConditionType::IF, $2, $3, @1);
                                                                     } else {
@@ -248,29 +248,9 @@ ifStatement                 :   IF conditionExpression body     {
                                                                         delete $2;
                                                                         delete $3;
                                                                     }
-                                                                }
-                            |   IF conditionExpression statement {
-                                                                    if ($2 && $3) {
-                                                                        AST::ScopeNode* newScope = new AST::ScopeNode (@3, nullptr);
-                                                                        newScope->addChild ($3);
-                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::IF, $2, newScope, @1);
-                                                                    } else {
-                                                                        $$ = nullptr;
-                                                                        delete $2;
-                                                                        delete $3;
-                                                                    }
                                                                 };
 
-whileStatement              :   WHILE conditionExpression body  {
-                                                                    if ($2 && $3) {
-                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::WHILE, $2, $3, @1);
-                                                                    } else {
-                                                                        $$ = nullptr;
-                                                                        delete $2;
-                                                                        delete $3;
-                                                                    }
-                                                                }
-                            |   WHILE conditionExpression statement
+whileStatement              :   WHILE conditionExpression statement
                                                                 {
                                                                    if ($2 && $3) {
                                                                         AST::ScopeNode* newScope = new AST::ScopeNode (@3, nullptr);
@@ -308,10 +288,9 @@ assignment                  :   ID ASSIGN assignStatement SEMICOLON
                             |   ID ASSIGN error SEMICOLON       {   driver->pushError (@3, "Bad expression after assignment");  
                                                                     $$ = nullptr;   
                                                                 }
-                            |   ID ASSIGN   body                {   $$ = makeAssign ($1, $3, @2, @1);  }
-                            |   ID ASSIGN   body SEMICOLON      {   $$ = makeAssign ($1, $3, @2, @1);  }
+                            |   ID ASSIGN body                  {   $$ = makeAssign ($1, $3, @2, @1);   }
                             |   ID error SEMICOLON              {   driver->pushError (@1, "Unexpected operation with variable");   
-                                                                    $$ = nullptr;   
+                                                                    $$ = nullptr;
                                                                 }
                             |   error ASSIGN assignStatement SEMICOLON 
                                                                 {   
@@ -405,6 +384,7 @@ atomic                      :   NUMBER                          {   $$ = new AST
                                                                     $$->addChild (funcArgs);
 
                                                                 }
+                            /* |   body                            {   $$ = $1;    } */
                             |   ID                              {   $$ = new AST::VarNode   ($1, @1);                               };
 
 %%
