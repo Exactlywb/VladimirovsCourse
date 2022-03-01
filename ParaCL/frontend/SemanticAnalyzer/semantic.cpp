@@ -165,11 +165,14 @@ namespace {
         return {rightChild->getType (), rightChild};
     }
 
-    void SetFunctionNameIntoNewScope (Scope *newScope, AST::FuncNode *preFuncName, AST::Node *rNode)
+    void SetFunctionNameIntoScopes (Scope *newScope, Scope *curScope, AST::FuncNode *preFuncName, AST::Node *rNode)
     {
         AST::VarNode *funcName = static_cast<AST::VarNode *> ((*preFuncName)[0]);
         FuncObject *insideFunc = new FuncObject (static_cast<AST::FuncNode *> (rNode));
-        newScope->add (funcName->getName (), insideFunc);
+        FuncObject *outsideFunc = new FuncObject (static_cast<AST::FuncNode *> (rNode));
+        auto name = funcName->getName();
+        newScope->add (name, insideFunc);
+        curScope->add (name, outsideFunc); 
     }
 
     void SetArgumentsIntoNewScope (Scope *newScope, AST::FuncNode *funcArgs)
@@ -342,7 +345,7 @@ void SemanticAnalyzer::CreateNewFunctionInScope (Scope *curScope,
     Scope *newScope = new Scope;
     AST::FuncNode *funcComp = static_cast<AST::FuncNode *> ((*funcNode)[0]);
     if (funcNode->getChildrenNum () == 3) {
-        SetFunctionNameIntoNewScope (newScope, funcComp, rNode);
+        SetFunctionNameIntoScopes (newScope, curScope, funcComp, rNode);
         funcComp = static_cast<AST::FuncNode *> ((*funcNode)[1]);
     }
 

@@ -76,6 +76,8 @@ namespace interpret {
 
         void push (tblSource obj) { tbl_.push_back (obj); }
 
+        Scope* getParent () const {return parent_;}
+
         tblIt tblBegin () const { return tbl_.cbegin (); }
         tblIt tblEnd () const { return tbl_.cend (); }
         bool tbl_empty () const { return tbl_.empty (); }
