@@ -32,6 +32,7 @@ MULTILINE_COMMENT       "/*"(.|\n)*"*/"
 {DIGIT}*                {   return yy::parser::token_type::NUMBER;      }
 
 "if"                    {   return yy::parser::token_type::IF;          }
+"else"                  {   return yy::parser::token_type::ELSE;        }
 "while"                 {   return yy::parser::token_type::WHILE;       }
 
 "print"                 {   return yy::parser::token_type::PRINT;       }
