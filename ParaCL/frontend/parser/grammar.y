@@ -138,8 +138,6 @@ namespace {
 %type <AST::Node*>                  expression
 %type <AST::Node*>                  opStatement
 
-%type <AST::Node*>                  fixSemicolon
-
 %start translationStart
 
 %%
@@ -188,11 +186,8 @@ statementHandler            :   statement                       {
                                                                     }
                                                                 };
 
-statement                   :   conditionStmt   {   $$ = $1;                    }
-                            |   expression SEMICOLON     {   $$ = $1;                    };
-                        
-/* fixSemicolon                :   %empty          {   $$ = new AST::Filler ();    }    //TODO: it's offencive
-                            |   SEMICOLON       {   $$ = new AST::Filler ();    }; */
+statement                   :   conditionStmt                   {   $$ = $1;                    }
+                            |   expression                      {   $$ = $1;                    };
 
 conditionStmt               :   IF OPCIRCBRACK opStatement CLCIRCBRACK statement ELSE statement
                                                                 {
@@ -232,11 +227,14 @@ conditionStmt               :   IF OPCIRCBRACK opStatement CLCIRCBRACK statement
                                                                 };
 
 expression                  :   ID ASSIGN expression            {   $$ = makeAssign ($1, $3, @2, @1);   }
-                            |   opStatement                     {   $$ = $1;                            };
+                            |   body pseudoSemicolon            {   $$ = $1;                            }
+                            |   opStatement SEMICOLON           {   $$ = $1;                            };
+
+pseudoSemicolon             :   %empty
+                            |   SEMICOLON;
 
 /*OPERATORS*/
 opStatement                 :   NUMBER                          {   $$ = new AST::NumNode   ($1);                                       }
-                            |   body                            {   $$ = $1;                                                            }
                             |   SUB opStatement %prec UNARY_OP  {   $$ = makeUnaryOperNode (AST::OperNode::OperType::UNARY_M, $2, @1);  }
                             |   ADD opStatement %prec UNARY_OP  {   $$ = makeUnaryOperNode (AST::OperNode::OperType::UNARY_P, $2, @1);  }
                             |   opStatement OR opStatement      {   $$ = makeBinOperNode (AST::OperNode::OperType::OR, $1, $3, @2);     }
@@ -251,7 +249,9 @@ opStatement                 :   NUMBER                          {   $$ = new AST
                             |   opStatement SUB opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::SUB, $1, $3, @2);    }
                             |   opStatement MUL opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::MUL, $1, $3, @2);    }
                             |   opStatement DIV opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::DIV, $1, $3, @2);    }
-                            |   opStatement MOD opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::MOD, $1, $3, @2);    };
+                            |   opStatement MOD opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::MOD, $1, $3, @2);    }
+                            |   OPCIRCBRACK opStatement CLCIRCBRACK 
+                                                                {   $$ = $2;                                                            };
 
 body                        :   OPCURVBRACK statementHandler CLCURVBRACK 
                                                                 {
