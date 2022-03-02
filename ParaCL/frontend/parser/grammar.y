@@ -77,9 +77,6 @@ namespace {
 %token                      ADD         "+"
 %token                      SUB         "-"
 
-%token                      UN_ADD      '+'
-%token                      UN_SUB      '-'
-
 %token                      MUL         "*"
 %token                      DIV         "/"
 %token                      MOD         "%"
@@ -192,14 +189,13 @@ statementHandler            :   statement                       {
                                                                 };
 
 statement                   :   conditionStmt   {   $$ = $1;                    }
-                            |   expression fixSemicolon     {   $$ = $1;                    };
-
-fixSemicolon                :   %empty          {   $$ = new AST::Filler ();    }
-                            |   SEMICOLON       {   $$ = new AST::Filler ();    };
+                            |   expression SEMICOLON     {   $$ = $1;                    };
+                        
+/* fixSemicolon                :   %empty          {   $$ = new AST::Filler ();    }    //TODO: it's offencive
+                            |   SEMICOLON       {   $$ = new AST::Filler ();    }; */
 
 conditionStmt               :   IF OPCIRCBRACK opStatement CLCIRCBRACK statement ELSE statement
                                                                 {
-
                                                                     if ($3 && $5) {
                                                                         $$ = makeCondNode (AST::CondNode::ConditionType::IF, $3, $5, @1);
                                                                         $$->addChild ($7);
@@ -241,6 +237,8 @@ expression                  :   ID ASSIGN expression            {   $$ = makeAss
 /*OPERATORS*/
 opStatement                 :   NUMBER                          {   $$ = new AST::NumNode   ($1);                                       }
                             |   body                            {   $$ = $1;                                                            }
+                            |   SUB opStatement %prec UNARY_OP  {   $$ = makeUnaryOperNode (AST::OperNode::OperType::UNARY_M, $2, @1);  }
+                            |   ADD opStatement %prec UNARY_OP  {   $$ = makeUnaryOperNode (AST::OperNode::OperType::UNARY_P, $2, @1);  }
                             |   opStatement OR opStatement      {   $$ = makeBinOperNode (AST::OperNode::OperType::OR, $1, $3, @2);     }
                             |   opStatement AND opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::AND, $1, $3, @2);    }
                             |   opStatement EQ opStatement      {   $$ = makeBinOperNode (AST::OperNode::OperType::EQ, $1, $3, @2);     }
@@ -253,9 +251,7 @@ opStatement                 :   NUMBER                          {   $$ = new AST
                             |   opStatement SUB opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::SUB, $1, $3, @2);    }
                             |   opStatement MUL opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::MUL, $1, $3, @2);    }
                             |   opStatement DIV opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::DIV, $1, $3, @2);    }
-                            |   opStatement MOD opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::MOD, $1, $3, @2);    }
-                            |   UN_SUB opStatement %prec UNARY_OP  {   $$ = makeUnaryOperNode (AST::OperNode::OperType::UNARY_M, $2, @1);  }
-                            |   UN_ADD opStatement %prec UNARY_OP  {   $$ = makeUnaryOperNode (AST::OperNode::OperType::UNARY_P, $2, @1);  };
+                            |   opStatement MOD opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::MOD, $1, $3, @2);    };
 
 body                        :   OPCURVBRACK statementHandler CLCURVBRACK 
                                                                 {

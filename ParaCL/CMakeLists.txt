@@ -29,7 +29,7 @@ bison_target (parser
 
     ${GRAMMAR}
     ${CMAKE_CURRENT_BINARY_DIR}/parser.cc
-    COMPILE_FLAGS "--defines=${CMAKE_CURRENT_BINARY_DIR}/grammar.tab.hh"
+    COMPILE_FLAGS "--defines=${CMAKE_CURRENT_BINARY_DIR}/grammar.tab.hh -Wcounterexamples"
 
 )
 
