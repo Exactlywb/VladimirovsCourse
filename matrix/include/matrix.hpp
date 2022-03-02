@@ -15,7 +15,7 @@ namespace Matrix {
 
     };
 
-    const double Epsilon = 1e-10;
+    const double Epsilon = 1e-16;
 
     template <typename T = double>
     class Matrix final {
@@ -225,7 +225,7 @@ namespace Matrix {
         double Gauss () {    //|!| THIS FUNCTION DESTROYS MATRIX
 
             if (nCols_ != nRows_)
-                std::runtime_error ("not a square matrix to evaluate determinant");
+                throw std::runtime_error ("not a square matrix to evaluate determinant");
 
             int sgn = 1;
             for (int curIt = 0; curIt < nCols_; ++curIt) {
