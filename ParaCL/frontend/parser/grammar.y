@@ -121,6 +121,7 @@ namespace {
 /*PRIORITIES*/
 %left SHIFT_THERE
 %right ELSE THEN
+%right ASSIGN
 %left OR
 %left AND
 %left EQ NEQ
@@ -128,7 +129,6 @@ namespace {
 %left ADD SUB
 %left MUL DIV MOD
 %right UNARY_OP
-%right ASSIGN
 %right REDUCE_THERE
 
 /* AST TREE */
@@ -147,6 +147,8 @@ namespace {
 
 %type <AST::Node*>                  returnStatement
 %type <AST::Node*>                  printStatement
+
+%type <AST::Node*>                  condition
 
 %type <AST::Node*>                  expression
 %type <AST::Node*>                  opStatement
@@ -172,7 +174,7 @@ translationStart            :   statementHandler                {
                                                                     driver->setRoot (globalScope);
                                                                     #if 1
                                                                         driver->callDump (std::cout);
-                                                                        exit (1);
+                                                                        exit (0);
                                                                     #endif
                                                                 };
 
@@ -204,50 +206,52 @@ statement                   :   conditionStmt                   {   $$ = $1;    
                             |   expression                      {   $$ = $1;                    }
                             |   printStatement                  {   $$ = $1;                    }
                             |   returnStatement                 {   $$ = $1;                    }
-                            |   SEMICOLON                       {   $$ = new AST::Filler ();    };
+                            |   SEMICOLON                       {   $$ = new AST::Filler ();    }
+                            |   error END                       {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   };
 
 returnStatement             :   RET opStatement SEMICOLON       {   $$ = makeUnaryOperNode (AST::OperNode::OperType::RETURN, $2, @1);   };                                    
 
 printStatement              :   PRINT opStatement SEMICOLON     {   $$ = makeUnaryOperNode (AST::OperNode::OperType::PRINT, $2, @1);     }
-                            |   PRINT error SEMICOLON           {   driver->pushError (@2, "Undefined expression in print");    $$ = nullptr;   }
                             |   PRINT error END                 {   driver->pushError (@2, "Undefined expression in print");    $$ = nullptr;   };
 
-conditionStmt               :   IF OPCIRCBRACK opStatement CLCIRCBRACK statement ELSE statement
+conditionStmt               :   IF condition statement ELSE statement
                                                                 {
-                                                                    if ($3 && $5) {
-                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::IF, $3, $5, @1);
-                                                                        $$->addChild ($7);
+                                                                    if ($2 && $3) {
+                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::IF, $2, $3, @1);
+                                                                        $$->addChild ($5);
                                                                     } else {
                                                                         $$ = nullptr;
+                                                                        delete $2;
                                                                         delete $3;
-                                                                        delete $5;
                                                                     }
 
                                                                 }
-                            |   IF OPCIRCBRACK opStatement CLCIRCBRACK statement %prec THEN
+                            |   IF condition statement %prec THEN
                                                                 {
-
-                                                                    if ($3 && $5) {
-                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::IF, $3, $5, @1);
+                                                                    if ($2 && $3) {
+                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::IF, $2, $3, @1);
                                                                     } else {
                                                                         $$ = nullptr;
+                                                                        delete $2;
                                                                         delete $3;
-                                                                        delete $5;
                                                                     }
-
                                                                 }
-                            |   WHILE OPCIRCBRACK opStatement CLCIRCBRACK statement     
+                            |   WHILE condition statement     
                                                                 {
-                                                                    if ($3 && $5) {
-                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::WHILE, $3, $5, @1);
+                                                                    if ($2 && $3) {
+                                                                        $$ = makeCondNode (AST::CondNode::ConditionType::WHILE, $2, $3, @1);
                                                                     } else {
                                                                         $$ = nullptr;
+                                                                        delete $2;
                                                                         delete $3;
-                                                                        delete $5;
                                                                     }
                                                                 };
 
+condition                   :   OPCIRCBRACK opStatement CLCIRCBRACK     {   $$ = $2; };
+
 expression                  :   ID ASSIGN func                  {   $$ = makeAssign ($1, $3, @2, @1);   }
+                            |   ID error SEMICOLON              {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   }
+                            |   error ASSIGN opStatement SEMICOLON {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   }
                             |   opStatement SEMICOLON           {   $$ = $1;                            };
 
 func                        :   FUNC_DECL argsList body         {
@@ -308,6 +312,7 @@ expA                        :   opStatement                     {
 /*OPERATORS*/
 opStatement                 :   NUMBER                          {   $$ = new AST::NumNode   ($1);                                       }
                             |   ID                              {   $$ = new AST::VarNode   ($1, @1);                                   }
+                            /* |   error                           {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;       } */
                             |   SCAN                            {   $$ = new AST::OperNode  (AST::OperNode::OperType::SCAN, @1);    }
                             |   ID exprList                     {
                                                                     $$ = new AST::OperNode  (AST::OperNode::OperType::CALL, @1);
@@ -322,7 +327,6 @@ opStatement                 :   NUMBER                          {   $$ = new AST
 
                                                                     $$->addChild (funcName);
                                                                     $$->addChild (funcArgs);
-
                                                                 }
                             |   body                            {   $$ = $1;                                                            }
                             |   SUB opStatement %prec UNARY_OP  {   $$ = makeUnaryOperNode (AST::OperNode::OperType::UNARY_M, $2, @1);  }
@@ -341,6 +345,7 @@ opStatement                 :   NUMBER                          {   $$ = new AST
                             |   opStatement DIV opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::DIV, $1, $3, @2);    }
                             |   opStatement MOD opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::MOD, $1, $3, @2);    }
                             |   ID ASSIGN opStatement           {   $$ = makeAssign ($1, $3, @2, @1);                                   }
+                            |   ID ASSIGN error                 {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;       }
                             |   OPCIRCBRACK opStatement CLCIRCBRACK 
                                                                 {   $$ = $2;                                                            };
 
