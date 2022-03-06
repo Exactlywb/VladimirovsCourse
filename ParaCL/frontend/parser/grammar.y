@@ -3,6 +3,7 @@
 %skeleton "lalr1.cc"
 
 %defines
+%define lr.type ielr
 %define api.value.type variant
 %param {yy::FrontendDriver* driver}
 
@@ -118,6 +119,7 @@ namespace {
 %token                      LEXERR
 
 /*PRIORITIES*/
+%left SHIFT_THERE
 %right ELSE THEN
 %left OR
 %left AND
@@ -125,8 +127,9 @@ namespace {
 %left MORE LESS GTE LTE
 %left ADD SUB
 %left MUL DIV MOD
-%precedence UNARY_OP
+%right UNARY_OP
 %right ASSIGN
+%right REDUCE_THERE
 
 /* AST TREE */
 %type <std::vector<AST::Node*>*>    statementHandler
@@ -135,10 +138,18 @@ namespace {
 %type <AST::Node*>                  conditionStmt
 %type <AST::Node*>                  body
 
+%type <AST::Node*>                  func
+%type <std::vector<AST::Node*>*>    argsList
+%type <std::vector<AST::Node*>*>    args
+
+%type <std::vector<AST::Node*>*>    exprList
+%type <std::vector<AST::Node*>*>    expA
+
+%type <AST::Node*>                  returnStatement
+%type <AST::Node*>                  printStatement
+
 %type <AST::Node*>                  expression
 %type <AST::Node*>                  opStatement
-
-%type <AST::Node*>                  fixSemicolon
 
 %start translationStart
 
@@ -188,11 +199,18 @@ statementHandler            :   statement                       {
                                                                     }
                                                                 };
 
-statement                   :   conditionStmt   {   $$ = $1;                    }
-                            |   expression SEMICOLON     {   $$ = $1;                    };
-                        
-/* fixSemicolon                :   %empty          {   $$ = new AST::Filler ();    }    //TODO: it's offencive
-                            |   SEMICOLON       {   $$ = new AST::Filler ();    }; */
+statement                   :   conditionStmt                   {   $$ = $1;                    }
+                            |   body                            {   $$ = $1;                    }
+                            |   expression                      {   $$ = $1;                    }
+                            |   printStatement                  {   $$ = $1;                    }
+                            |   returnStatement                 {   $$ = $1;                    }
+                            |   SEMICOLON                       {   $$ = new AST::Filler ();    };
+
+returnStatement             :   RET opStatement SEMICOLON       {   $$ = makeUnaryOperNode (AST::OperNode::OperType::RETURN, $2, @1);   };                                    
+
+printStatement              :   PRINT opStatement SEMICOLON     {   $$ = makeUnaryOperNode (AST::OperNode::OperType::PRINT, $2, @1);     }
+                            |   PRINT error SEMICOLON           {   driver->pushError (@2, "Undefined expression in print");    $$ = nullptr;   }
+                            |   PRINT error END                 {   driver->pushError (@2, "Undefined expression in print");    $$ = nullptr;   };
 
 conditionStmt               :   IF OPCIRCBRACK opStatement CLCIRCBRACK statement ELSE statement
                                                                 {
@@ -220,7 +238,6 @@ conditionStmt               :   IF OPCIRCBRACK opStatement CLCIRCBRACK statement
                                                                 }
                             |   WHILE OPCIRCBRACK opStatement CLCIRCBRACK statement     
                                                                 {
-
                                                                     if ($3 && $5) {
                                                                         $$ = makeCondNode (AST::CondNode::ConditionType::WHILE, $3, $5, @1);
                                                                     } else {
@@ -228,14 +245,85 @@ conditionStmt               :   IF OPCIRCBRACK opStatement CLCIRCBRACK statement
                                                                         delete $3;
                                                                         delete $5;
                                                                     }
-
                                                                 };
 
-expression                  :   ID ASSIGN expression            {   $$ = makeAssign ($1, $3, @2, @1);   }
-                            |   opStatement                     {   $$ = $1;                            };
+expression                  :   ID ASSIGN func                  {   $$ = makeAssign ($1, $3, @2, @1);   }
+                            |   opStatement SEMICOLON           {   $$ = $1;                            };
+
+func                        :   FUNC_DECL argsList body         {
+                                                                    AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL, @1);
+                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS, @2);
+                                                                    if ($2) {
+                                                                        for (auto v: *($2))
+                                                                            funcArgs->addChild (v);
+                                                                        delete $2;
+                                                                    }
+                                                                    funcDecl->addChild (funcArgs);
+                                                                    funcDecl->addChild ($3);
+                                                                    $$ = funcDecl;
+                                                                }
+                            |   FUNC_DECL argsList COLON ID body
+                                                                {
+                                                                    AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL, @1);
+                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS, @2);
+                                                                    if ($2) {
+                                                                        for (auto v: *($2))
+                                                                            funcArgs->addChild (v);
+                                                                        delete $2;
+                                                                    }
+
+                                                                    AST::FuncNode* funcName = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_NAME, @4);
+                                                                    AST::VarNode*  funcID   = new AST::VarNode ($4, @4);
+                                                                    funcName->addChild (funcID);
+
+                                                                    funcDecl->addChild (funcName);
+                                                                    funcDecl->addChild (funcArgs);
+                                                                    funcDecl->addChild ($5);
+                                                                    $$ = funcDecl;
+                                                                };
+
+argsList                    :   OPCIRCBRACK args CLCIRCBRACK    {   $$ = $2;        }
+                            |   OPCIRCBRACK CLCIRCBRACK         {   $$ = nullptr;   };
+
+args                        :   ID                              {
+                                                                    $$ = new std::vector<AST::Node*>;
+                                                                    AST::VarNode* newParam = new AST::VarNode ($1, @1);
+                                                                    $$->push_back (newParam);
+                                                                }
+                            |   args COMMA ID                   {
+                                                                    AST::VarNode* newParam = new AST::VarNode ($3, @3);
+                                                                    $1->push_back (newParam);
+                                                                    $$ = $1;
+                                                                };
+
+exprList                    :   OPCIRCBRACK expA CLCIRCBRACK    {   $$ = $2;        }
+                            |   OPCIRCBRACK CLCIRCBRACK         {   $$ = nullptr;   };
+
+expA                        :   opStatement                     {
+                                                                    $$ = new std::vector<AST::Node*>;
+                                                                    $$->push_back ($1);
+                                                                }
+                            |   expA COMMA opStatement          {   $1->push_back ($3); $$ = $1;    };
 
 /*OPERATORS*/
 opStatement                 :   NUMBER                          {   $$ = new AST::NumNode   ($1);                                       }
+                            |   ID                              {   $$ = new AST::VarNode   ($1, @1);                                   }
+                            |   SCAN                            {   $$ = new AST::OperNode  (AST::OperNode::OperType::SCAN, @1);    }
+                            |   ID exprList                     {
+                                                                    $$ = new AST::OperNode  (AST::OperNode::OperType::CALL, @1);
+                                                                    AST::VarNode* funcName  = new AST::VarNode ($1, @1);
+
+                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS, @2);
+                                                                    if ($2) {
+                                                                        for (auto v: *($2))
+                                                                            funcArgs->addChild (v);
+                                                                        delete $2;
+                                                                    }
+
+                                                                    $$->addChild (funcName);
+                                                                    $$->addChild (funcArgs);
+
+                                                                }
                             |   body                            {   $$ = $1;                                                            }
                             |   SUB opStatement %prec UNARY_OP  {   $$ = makeUnaryOperNode (AST::OperNode::OperType::UNARY_M, $2, @1);  }
                             |   ADD opStatement %prec UNARY_OP  {   $$ = makeUnaryOperNode (AST::OperNode::OperType::UNARY_P, $2, @1);  }
@@ -251,7 +339,10 @@ opStatement                 :   NUMBER                          {   $$ = new AST
                             |   opStatement SUB opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::SUB, $1, $3, @2);    }
                             |   opStatement MUL opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::MUL, $1, $3, @2);    }
                             |   opStatement DIV opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::DIV, $1, $3, @2);    }
-                            |   opStatement MOD opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::MOD, $1, $3, @2);    };
+                            |   opStatement MOD opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::MOD, $1, $3, @2);    }
+                            |   ID ASSIGN opStatement           {   $$ = makeAssign ($1, $3, @2, @1);                                   }
+                            |   OPCIRCBRACK opStatement CLCIRCBRACK 
+                                                                {   $$ = $2;                                                            };
 
 body                        :   OPCURVBRACK statementHandler CLCURVBRACK 
                                                                 {
