@@ -134,6 +134,7 @@ namespace {
 /* AST TREE */
 %type <std::vector<AST::Node*>*>    statementHandler
 %type <AST::Node*>                  statement
+%type <AST::Node*>                  pseudoSt
 
 %type <AST::Node*>                  conditionStmt
 %type <AST::Node*>                  body
@@ -185,6 +186,54 @@ statementHandler            :   statement                       {
                                                                     } else
                                                                         $$ = nullptr;
                                                                 }
+                            |   ID ASSIGN body pseudoSt         {
+                                                                    if ($3) {
+                                                                        $$ = new std::vector<AST::Node*>;
+                                                                        $$->push_back (makeAssign ($1, $3, @2, @1));
+                                                                        $$->push_back ($4);
+                                                                    } else
+                                                                        $$ = nullptr;
+                                                                }
+                            |   ID ASSIGN body END              {
+                                                                    if ($3) {
+                                                                        $$ = new std::vector<AST::Node*>;
+                                                                        $$->push_back (makeAssign ($1, $3, @2, @1));
+                                                                    } else
+                                                                        $$ = nullptr;
+                                                                }
+                            |   body pseudoSt                   {
+                                                                    if ($1) {
+                                                                        $$ = new std::vector<AST::Node*>;
+                                                                        $$->push_back ($1);
+                                                                        $$->push_back ($2);
+                                                                    } else
+                                                                        $$ = nullptr;
+                                                                }
+                            |   body END                        {   
+                                                                    if ($1) {
+                                                                        $$ = new std::vector<AST::Node*>;
+                                                                        $$->push_back ($1);
+                                                                    } else
+                                                                        $$ = nullptr;
+                                                                }
+                            |   statementHandler body pseudoSt  {
+                                                                    if ($1 && $2) {
+                                                                        if ($2->getType () != AST::NodeT::FILLER) {
+                                                                            $1->push_back ($2);
+                                                                            $1->push_back ($3);
+                                                                        }
+                                                                        $$ = $1;
+                                                                    } else {
+                                                                        $$ = nullptr;
+                                                                        if ($1) {
+                                                                            for (auto v: *($1))
+                                                                                delete v;
+                                                                        }
+                                                                        delete $1;
+                                                                        delete $2;
+                                                                    }
+
+                                                                }
                             |   statementHandler statement      {
                                                                     if ($1 && $2) {
                                                                         if ($2->getType () != AST::NodeT::FILLER)
@@ -201,12 +250,12 @@ statementHandler            :   statement                       {
                                                                     }
                                                                 };
 
-statement                   :   conditionStmt                   {   $$ = $1;                    }
-                            |   body                            {   $$ = $1;                    }
-                            |   expression                      {   $$ = $1;                    }
-                            |   printStatement                  {   $$ = $1;                    }
+statement                   :   expression                      {   $$ = $1;                    }
+                            |   pseudoSt                        {   $$ = $1;                    };
+
+pseudoSt                    :   printStatement                  {   $$ = $1;                    }
                             |   returnStatement                 {   $$ = $1;                    }
-                            |   error END                       {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   };
+                            |   conditionStmt                   {   $$ = $1;                    };
 
 returnStatement             :   RET opStatement SEMICOLON       {   $$ = makeUnaryOperNode (AST::OperNode::OperType::RETURN, $2, @1);   };
 
@@ -246,11 +295,15 @@ conditionStmt               :   IF condition statement ELSE statement
                                                                     }
                                                                 };
 
-condition                   :   OPCIRCBRACK opStatement CLCIRCBRACK     {   $$ = $2; };
+condition                   :   OPCIRCBRACK opStatement CLCIRCBRACK     
+                                                                {   $$ = $2; };
 
 expression                  :   ID ASSIGN func                  {   $$ = makeAssign ($1, $3, @2, @1);   }
+                            /* |   ID ASSIGN body         {   $$ = makeAssign ($1, $3, @2, @1);   } //leaking */
+                            /* |   ID ASSIGN body END              {   $$ = makeAssign ($1, $3, @2, @1);   } */
                             |   ID error SEMICOLON              {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   }
-                            |   error ASSIGN opStatement SEMICOLON {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   }
+                            |   error ASSIGN opStatement SEMICOLON 
+                                                                {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   }
                             |   opStatement SEMICOLON           {   $$ = $1;                            };
 
 func                        :   FUNC_DECL argsList body         {
@@ -342,6 +395,7 @@ expA                        :   opStatement                     {
 
 /*OPERATORS*/
 opStatement                 :   NUMBER                          {   $$ = new AST::NumNode   ($1);                                       }
+                            |   body                            {   $$ = $1;                                                            }
                             |   ID                              {   $$ = new AST::VarNode   ($1, @1);                                   }
                             |   error                           {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;       }
                             |   SCAN                            {   $$ = new AST::OperNode  (AST::OperNode::OperType::SCAN, @1);    }
@@ -359,7 +413,6 @@ opStatement                 :   NUMBER                          {   $$ = new AST
                                                                     $$->addChild (funcName);
                                                                     $$->addChild (funcArgs);
                                                                 }
-                            |   body                            {   $$ = $1;                                                            }
                             |   SUB opStatement %prec UNARY_OP  {   $$ = makeUnaryOperNode (AST::OperNode::OperType::UNARY_M, $2, @1);  }
                             |   ADD opStatement %prec UNARY_OP  {   $$ = makeUnaryOperNode (AST::OperNode::OperType::UNARY_P, $2, @1);  }
                             |   opStatement OR opStatement      {   $$ = makeBinOperNode (AST::OperNode::OperType::OR, $1, $3, @2);     }
