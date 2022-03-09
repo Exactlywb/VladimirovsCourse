@@ -206,10 +206,9 @@ statement                   :   conditionStmt                   {   $$ = $1;    
                             |   expression                      {   $$ = $1;                    }
                             |   printStatement                  {   $$ = $1;                    }
                             |   returnStatement                 {   $$ = $1;                    }
-                            |   SEMICOLON                       {   $$ = new AST::Filler ();    }
                             |   error END                       {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   };
 
-returnStatement             :   RET opStatement SEMICOLON       {   $$ = makeUnaryOperNode (AST::OperNode::OperType::RETURN, $2, @1);   };                                    
+returnStatement             :   RET opStatement SEMICOLON       {   $$ = makeUnaryOperNode (AST::OperNode::OperType::RETURN, $2, @1);   };
 
 printStatement              :   PRINT opStatement SEMICOLON     {   $$ = makeUnaryOperNode (AST::OperNode::OperType::PRINT, $2, @1);     }
                             |   PRINT error END                 {   driver->pushError (@2, "Undefined expression in print");    $$ = nullptr;   };
@@ -266,6 +265,38 @@ func                        :   FUNC_DECL argsList body         {
                                                                     funcDecl->addChild ($3);
                                                                     $$ = funcDecl;
                                                                 }
+                            |   FUNC_DECL argsList body SEMICOLON 
+                                                                {
+                                                                    AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL, @1);
+                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS, @2);
+                                                                    if ($2) {
+                                                                        for (auto v: *($2))
+                                                                            funcArgs->addChild (v);
+                                                                        delete $2;
+                                                                    }
+                                                                    funcDecl->addChild (funcArgs);
+                                                                    funcDecl->addChild ($3);
+                                                                    $$ = funcDecl;
+                                                                }
+                            |   FUNC_DECL argsList COLON ID body SEMICOLON  //FIXME please
+                                                                {
+                                                                    AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL, @1);
+                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS, @2);
+                                                                    if ($2) {
+                                                                        for (auto v: *($2))
+                                                                            funcArgs->addChild (v);
+                                                                        delete $2;
+                                                                    }
+
+                                                                    AST::FuncNode* funcName = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_NAME, @4);
+                                                                    AST::VarNode*  funcID   = new AST::VarNode ($4, @4);
+                                                                    funcName->addChild (funcID);
+
+                                                                    funcDecl->addChild (funcName);
+                                                                    funcDecl->addChild (funcArgs);
+                                                                    funcDecl->addChild ($5);
+                                                                    $$ = funcDecl;
+                                                                }
                             |   FUNC_DECL argsList COLON ID body
                                                                 {
                                                                     AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL, @1);
@@ -312,7 +343,7 @@ expA                        :   opStatement                     {
 /*OPERATORS*/
 opStatement                 :   NUMBER                          {   $$ = new AST::NumNode   ($1);                                       }
                             |   ID                              {   $$ = new AST::VarNode   ($1, @1);                                   }
-                            /* |   error                           {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;       } */
+                            |   error                           {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;       }
                             |   SCAN                            {   $$ = new AST::OperNode  (AST::OperNode::OperType::SCAN, @1);    }
                             |   ID exprList                     {
                                                                     $$ = new AST::OperNode  (AST::OperNode::OperType::CALL, @1);
@@ -345,11 +376,11 @@ opStatement                 :   NUMBER                          {   $$ = new AST
                             |   opStatement DIV opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::DIV, $1, $3, @2);    }
                             |   opStatement MOD opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::MOD, $1, $3, @2);    }
                             |   ID ASSIGN opStatement           {   $$ = makeAssign ($1, $3, @2, @1);                                   }
-                            |   ID ASSIGN error                 {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;       }
+                            /* |   ID ASSIGN error                 {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;       } */
                             |   OPCIRCBRACK opStatement CLCIRCBRACK 
                                                                 {   $$ = $2;                                                            };
 
-body                        :   OPCURVBRACK statementHandler CLCURVBRACK 
+body                        :   OPCURVBRACK statementHandler CLCURVBRACK
                                                                 {
                                                                     AST::ScopeNode* newScope = new AST::ScopeNode (@1);
                                                                     if ($2) {
