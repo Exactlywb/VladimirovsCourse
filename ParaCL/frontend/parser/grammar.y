@@ -186,6 +186,21 @@ statementHandler            :   statement                       {
                                                                     } else
                                                                         $$ = nullptr;
                                                                 }
+                            |   ID ASSIGN body pseudoSt         {
+                                                                    if ($3) {
+                                                                        $$ = new std::vector<AST::Node*>;
+                                                                        $$->push_back (makeAssign ($1, $3, @2, @1));
+                                                                        $$->push_back ($4);
+                                                                    } else
+                                                                        $$ = nullptr;
+                                                                }
+                            |   ID ASSIGN body END              {
+                                                                    if ($3) {
+                                                                        $$ = new std::vector<AST::Node*>;
+                                                                        $$->push_back (makeAssign ($1, $3, @2, @1));
+                                                                    } else
+                                                                        $$ = nullptr;
+                                                                }
                             |   body pseudoSt                   {
                                                                     if ($1) {
                                                                         $$ = new std::vector<AST::Node*>;
@@ -284,6 +299,8 @@ condition                   :   OPCIRCBRACK opStatement CLCIRCBRACK
                                                                 {   $$ = $2; };
 
 expression                  :   ID ASSIGN func                  {   $$ = makeAssign ($1, $3, @2, @1);   }
+                            /* |   ID ASSIGN body         {   $$ = makeAssign ($1, $3, @2, @1);   } //leaking */
+                            /* |   ID ASSIGN body END              {   $$ = makeAssign ($1, $3, @2, @1);   } */
                             |   ID error SEMICOLON              {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   }
                             |   error ASSIGN opStatement SEMICOLON 
                                                                 {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   }
