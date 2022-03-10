@@ -8,11 +8,13 @@
 #include <iostream>
 #include <utility>
 #include <fstream>
+#include <sstream>
 
 namespace OpenCLApp {
 
     class App {
 
+    protected:
         cl::Device          device_;
         cl::Context         context_;
         cl::CommandQueue    queue_;
@@ -74,6 +76,66 @@ namespace OpenCLApp {
                 context_ (getNewContext (device)), 
                 queue_ (getNewQueue (context_, device))
         {}
+
+        virtual ~App () = 0;
+
+    };
+
+    inline App::~App () {}
+
+    namespace {
+
+        std::string ReadKernelsCode (const std::string& source) {
+
+            std::ifstream file (source, std::ifstream::in);
+            if (!file.is_open ())
+                throw std::runtime_error ("Can't open source Kernel file");
+
+            std::ostringstream fileBuf;
+            fileBuf <<  file.rdbuf ();
+
+            return fileBuf.str ();
+
+        }
+
+    }
+
+    class BitSortApp final: public App {
+        
+        cl::Kernel kernel_;
+        std::string kernelSourceFile_ = "../source/BitSort.cl";
+
+    public:
+        BitSortApp (const cl::Device& device):
+            App (device) {
+
+            std::string kernelCode = ReadKernelsCode (kernelSourceFile_);
+            cl::Program program_ = cl::Program (App::context_, kernelCode, true);
+
+            int errCode = 0;
+
+            try {
+                kernel_ = cl::Kernel (program_, "BitonicSort");
+            } catch (const cl::Error& err) {
+
+                std::cerr << "cl::Kernel error: " << err.what () << ", error code = " << errCode << std::endl;
+
+            }
+
+        }
+
+        void run (std::vector<int>& data) {
+
+            size_t dataSize = data.size () * sizeof (int);
+
+            cl::Buffer buffer (App::context_, CL_MEM_READ_WRITE, dataSize);
+            App::queue_.enqueueWriteBuffer (buffer, CL_TRUE, 0, dataSize, data.data ());
+
+            kernel_.setArg (0, buffer);
+
+            //!TODO
+
+        }
 
     };
 
