@@ -153,6 +153,7 @@ namespace {
 
 %type <AST::Node*>                  expression
 %type <AST::Node*>                  opStatement
+%type <AST::Node*>                  opNotUnaryStatement
 
 %start translationStart
 
@@ -216,6 +217,8 @@ statementHandler            :   statement                       {
                                                                     } else
                                                                         $$ = nullptr;
                                                                 }
+                            |   body opNotUnaryStatement SEMICOLON        
+                                                                {   $$ = nullptr; }
                             |   statementHandler body pseudoSt  {
                                                                     if ($1 && $2) {
                                                                         if ($2->getType () != AST::NodeT::FILLER) {
@@ -361,6 +364,42 @@ expA                        :   opStatement                     {
                             |   expA COMMA opStatement          {   $1->push_back ($3); $$ = $1;    };
 
 /*OPERATORS*/
+opNotUnaryStatement         :   NUMBER                          {   $$ = new AST::NumNode   ($1);                                       }
+                            |   body                            {   $$ = $1;                                                            }
+                            |   ID                              {   $$ = new AST::VarNode   ($1, @1);                                   }
+                            |   error                           {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;       }
+                            |   SCAN                            {   $$ = new AST::OperNode  (AST::OperNode::OperType::SCAN, @1);    }
+                            |   ID exprList                     {
+                                                                    $$ = new AST::OperNode  (AST::OperNode::OperType::CALL, @1);
+                                                                    AST::VarNode* funcName  = new AST::VarNode ($1, @1);
+
+                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS, @2);
+                                                                    if ($2) {
+                                                                        for (auto v: *($2))
+                                                                            funcArgs->addChild (v);
+                                                                        delete $2;
+                                                                    }
+
+                                                                    $$->addChild (funcName);
+                                                                    $$->addChild (funcArgs);
+                                                                }
+                            |   opStatement OR opStatement      {   $$ = makeBinOperNode (AST::OperNode::OperType::OR, $1, $3, @2);     }
+                            |   opStatement AND opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::AND, $1, $3, @2);    }
+                            |   opStatement EQ opStatement      {   $$ = makeBinOperNode (AST::OperNode::OperType::EQ, $1, $3, @2);     }
+                            |   opStatement NEQ opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::NEQ, $1, $3, @2);    }
+                            |   opStatement MORE opStatement    {   $$ = makeBinOperNode (AST::OperNode::OperType::MORE, $1, $3, @2);   }
+                            |   opStatement LESS opStatement    {   $$ = makeBinOperNode (AST::OperNode::OperType::LESS, $1, $3, @2);   }
+                            |   opStatement GTE opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::GTE, $1, $3, @2);    }
+                            |   opStatement LTE opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::LTE, $1, $3, @2);    }
+                            |   opStatement ADD opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::ADD, $1, $3, @2);    }
+                            |   opStatement SUB opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::SUB, $1, $3, @2);    }
+                            |   opStatement MUL opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::MUL, $1, $3, @2);    }
+                            |   opStatement DIV opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::DIV, $1, $3, @2);    }
+                            |   opStatement MOD opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::MOD, $1, $3, @2);    }
+                            |   ID ASSIGN opStatement           {   $$ = makeAssign ($1, $3, @2, @1);                                   }
+                            |   OPCIRCBRACK opStatement CLCIRCBRACK 
+                                                                {   $$ = $2;                                                            };
+
 opStatement                 :   NUMBER                          {   $$ = new AST::NumNode   ($1);                                       }
                             |   body                            {   $$ = $1;                                                            }
                             |   ID                              {   $$ = new AST::VarNode   ($1, @1);                                   }
