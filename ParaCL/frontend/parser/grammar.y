@@ -409,6 +409,17 @@ body                        :   OPCURVBRACK statementHandler CLCURVBRACK
                                                                     delete $2;
                                                                     $$ = newScope;
                                                                 }
+                            |   OPCURVBRACK statementHandler body CLCURVBRACK 
+                                                                {
+                                                                    AST::ScopeNode* newScope = new AST::ScopeNode (@1);
+                                                                    if ($2) {
+                                                                        for (auto curStmtNode: *($2))
+                                                                           newScope->addChild (curStmtNode);
+                                                                    }
+                                                                    delete $2;
+                                                                    newScope->addChild ($3);
+                                                                    $$ = newScope;
+                                                                }
                             |   OPCURVBRACK CLCURVBRACK         {   $$ = new AST::ScopeNode (@1);   };
 
 %%
