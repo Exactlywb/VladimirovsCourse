@@ -251,7 +251,8 @@ statementHandler            :   statement                       {
                                                                 };
 
 statement                   :   expression                      {   $$ = $1;                    }
-                            |   pseudoSt                        {   $$ = $1;                    };
+                            |   pseudoSt                        {   $$ = $1;                    }
+                            |   SEMICOLON                       {   $$ = new AST::Filler;       };
 
 pseudoSt                    :   printStatement                  {   $$ = $1;                    }
                             |   returnStatement                 {   $$ = $1;                    }
@@ -299,8 +300,6 @@ condition                   :   OPCIRCBRACK opStatement CLCIRCBRACK
                                                                 {   $$ = $2; };
 
 expression                  :   ID ASSIGN func                  {   $$ = makeAssign ($1, $3, @2, @1);   }
-                            /* |   ID ASSIGN body         {   $$ = makeAssign ($1, $3, @2, @1);   } //leaking */
-                            /* |   ID ASSIGN body END              {   $$ = makeAssign ($1, $3, @2, @1);   } */
                             |   ID error SEMICOLON              {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   }
                             |   error ASSIGN opStatement SEMICOLON 
                                                                 {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   }
@@ -316,38 +315,6 @@ func                        :   FUNC_DECL argsList body         {
                                                                     }
                                                                     funcDecl->addChild (funcArgs);
                                                                     funcDecl->addChild ($3);
-                                                                    $$ = funcDecl;
-                                                                }
-                            |   FUNC_DECL argsList body SEMICOLON 
-                                                                {
-                                                                    AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL, @1);
-                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS, @2);
-                                                                    if ($2) {
-                                                                        for (auto v: *($2))
-                                                                            funcArgs->addChild (v);
-                                                                        delete $2;
-                                                                    }
-                                                                    funcDecl->addChild (funcArgs);
-                                                                    funcDecl->addChild ($3);
-                                                                    $$ = funcDecl;
-                                                                }
-                            |   FUNC_DECL argsList COLON ID body SEMICOLON  //FIXME please
-                                                                {
-                                                                    AST::FuncNode* funcDecl = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_DECL, @1);
-                                                                    AST::FuncNode* funcArgs = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_ARGS, @2);
-                                                                    if ($2) {
-                                                                        for (auto v: *($2))
-                                                                            funcArgs->addChild (v);
-                                                                        delete $2;
-                                                                    }
-
-                                                                    AST::FuncNode* funcName = new AST::FuncNode (AST::FuncNode::FuncComponents::FUNC_NAME, @4);
-                                                                    AST::VarNode*  funcID   = new AST::VarNode ($4, @4);
-                                                                    funcName->addChild (funcID);
-
-                                                                    funcDecl->addChild (funcName);
-                                                                    funcDecl->addChild (funcArgs);
-                                                                    funcDecl->addChild ($5);
                                                                     $$ = funcDecl;
                                                                 }
                             |   FUNC_DECL argsList COLON ID body
@@ -429,7 +396,6 @@ opStatement                 :   NUMBER                          {   $$ = new AST
                             |   opStatement DIV opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::DIV, $1, $3, @2);    }
                             |   opStatement MOD opStatement     {   $$ = makeBinOperNode (AST::OperNode::OperType::MOD, $1, $3, @2);    }
                             |   ID ASSIGN opStatement           {   $$ = makeAssign ($1, $3, @2, @1);                                   }
-                            /* |   ID ASSIGN error                 {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;       } */
                             |   OPCIRCBRACK opStatement CLCIRCBRACK 
                                                                 {   $$ = $2;                                                            };
 
