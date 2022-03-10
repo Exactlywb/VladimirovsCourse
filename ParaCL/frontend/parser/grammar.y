@@ -134,6 +134,7 @@ namespace {
 /* AST TREE */
 %type <std::vector<AST::Node*>*>    statementHandler
 %type <AST::Node*>                  statement
+%type <AST::Node*>                  statementNoUnaryOpers
 %type <AST::Node*>                  pseudoSt
 
 %type <AST::Node*>                  conditionStmt
@@ -152,6 +153,7 @@ namespace {
 %type <AST::Node*>                  condition
 
 %type <AST::Node*>                  expression
+%type <AST::Node*>                  expressionNoUnaryOpers
 %type <AST::Node*>                  opStatement
 %type <AST::Node*>                  opNotUnaryStatement
 
@@ -187,7 +189,7 @@ statementHandler            :   statement                       {
                                                                     } else
                                                                         $$ = nullptr;
                                                                 }
-                            |   ID ASSIGN body pseudoSt         {
+                            /* |   ID ASSIGN body pseudoSt         {
                                                                     if ($3) {
                                                                         $$ = new std::vector<AST::Node*>;
                                                                         $$->push_back (makeAssign ($1, $3, @2, @1));
@@ -201,8 +203,8 @@ statementHandler            :   statement                       {
                                                                         $$->push_back (makeAssign ($1, $3, @2, @1));
                                                                     } else
                                                                         $$ = nullptr;
-                                                                }
-                            |   body pseudoSt                   {
+                                                                } */
+                            |   body statementNoUnaryOpers      {
                                                                     if ($1) {
                                                                         $$ = new std::vector<AST::Node*>;
                                                                         $$->push_back ($1);
@@ -217,9 +219,8 @@ statementHandler            :   statement                       {
                                                                     } else
                                                                         $$ = nullptr;
                                                                 }
-                            |   body opNotUnaryStatement SEMICOLON        
-                                                                {   $$ = nullptr; }
-                            |   statementHandler body pseudoSt  {
+                            /* |   statementHandler body statementNoUnaryOpers
+                                                                {
                                                                     if ($1 && $2) {
                                                                         if ($2->getType () != AST::NodeT::FILLER) {
                                                                             $1->push_back ($2);
@@ -236,7 +237,7 @@ statementHandler            :   statement                       {
                                                                         delete $2;
                                                                     }
 
-                                                                }
+                                                                } */
                             |   statementHandler statement      {
                                                                     if ($1 && $2) {
                                                                         if ($2->getType () != AST::NodeT::FILLER)
@@ -260,6 +261,16 @@ statement                   :   expression                      {   $$ = $1;    
 pseudoSt                    :   printStatement                  {   $$ = $1;                    }
                             |   returnStatement                 {   $$ = $1;                    }
                             |   conditionStmt                   {   $$ = $1;                    };
+
+statementNoUnaryOpers       :   expressionNoUnaryOpers          {   $$ = $1;                    }
+                            |   pseudoSt                        {   $$ = $1;                    }
+                            |   SEMICOLON                       {   $$ = new AST::Filler;       };
+
+expressionNoUnaryOpers      :   ID ASSIGN func                  {   $$ = makeAssign ($1, $3, @2, @1);   }
+                            |   ID error SEMICOLON              {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   }
+                            |   error ASSIGN opStatement SEMICOLON 
+                                                                {   driver->pushError (@1, "Undefined statement");  $$ = nullptr;   }
+                            |   opNotUnaryStatement SEMICOLON   {   $$ = $1;                            };
 
 returnStatement             :   RET opStatement SEMICOLON       {   $$ = makeUnaryOperNode (AST::OperNode::OperType::RETURN, $2, @1);   };
 
